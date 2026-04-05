@@ -1,0 +1,220 @@
+.wishlist-section {
+    .wishlist-wapper {
+        .heading {
+            @include d-flex;
+            @include align-items-center;
+            @include justify-content-space-between;
+            gap: 30px;
+            margin-bottom: 30px;
+
+            h2 {
+                font-size: 32px;
+                line-height: 1.4em;
+                font-weight: 700;
+
+                @include maxQuery(767) {
+                    font-size: 26px;
+                }
+            }
+
+            span {
+                font-size: 16px;
+                font-weight: 700;
+                color: $black-color;
+            }
+        }
+
+        .wishlist-list-area {
+            border: 1px solid $border-color-one;
+            overflow: hidden;
+            @include border-radius-three;
+
+            @include maxQuery(767) {
+                padding: 0 20px;
+            }
+        }
+
+        .wishlist-table {
+            text-align: center;
+
+            @include maxQuery(767) {
+                text-align: left;
+                min-width: auto;
+                border-collapse: separate;
+                border-spacing: 0 20px;
+                border: none
+            }
+
+            thead {
+                @include maxQuery(767) {
+                    display: none;
+                }
+
+                tr {
+                    th {
+                        font-size: 18px;
+                        font-weight: 600;
+                        padding: 20px 15px;
+                    }
+                }
+            }
+
+            tbody {
+                tr {
+                    vertical-align: middle;
+
+                    @include maxQuery(767) {
+                        background-color: $white-color;
+                    }
+
+                    &:nth-last-child(1) {
+                        td {
+                            border: none;
+                        }
+                    }
+
+                    td {
+                        padding: 20px 15px;
+
+                        &::before {
+                            content: attr(data-title);
+                            position: absolute;
+                            left: 15px;
+                            top: 50%;
+                            vertical-align: top;
+                            padding: 0;
+                            color: $text-color;
+                            display: none;
+                            @include transform(translateY(-50%));
+
+                            @include maxQuery(767) {
+                                display: block;
+                            }
+                        }
+
+                        @include maxQuery(767) {
+                            padding: 20px;
+                            display: block;
+                            width: 100%;
+                            padding-left: 25%;
+                            text-align: right;
+                            position: relative;
+                            text-transform: capitalize;
+                            border: 1px solid $border-color-one;
+                            border-bottom: none;
+
+                            &:nth-last-child(1) {
+                                border: 1px solid $border-color-one;
+                            }
+                        }
+
+                        &.actions {
+                            padding: 30px;
+
+                            @include maxQuery(767) {
+                                padding: 20px;
+                            }
+                        }
+                    }
+                }
+            }
+
+            .product-img {
+                width: 100px;
+                height: 100px;
+
+                figure {
+                    display: block;
+                    background-color: $extra-color-four;
+                    @include border-radius($border-radius-two);
+                    position: relative;
+                    overflow: hidden;
+
+                    @include maxQuery(767) {
+                        @include border-radius($border-radius-one);
+                    }
+
+                    img {
+                        width: 100px;
+                        height: 100px;
+                        @include transition($transition);
+                        object-fit: cover;
+                    }
+                }
+            }
+
+            .product-info {
+                .product-name {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin-bottom: 5px;
+                }
+
+                .style-meta {
+                    li {
+                        font-size: 14px;
+                        color: $text-color;
+                    }
+                }
+
+            }
+
+            .quantity-content {
+                .qty-btn-minus {
+                    left: 0;
+                    width: 42px;
+                    height: 42px;
+
+                    svg {
+                        width: 12px;
+                    }
+                }
+
+                input {
+                    @include border-radius(100px);
+                    border-color: $border-color-one;
+                    width: 120px;
+                    padding: 0;
+                    height: 42px;
+                }
+
+                .qty-btn-plus {
+                    right: 0;
+                    width: 42px;
+                    height: 42px;
+
+                    svg {
+                        width: 12px;
+                    }
+                }
+
+                &:hover {
+                    input {
+                        border-color: $primary-color;
+                    }
+                }
+            }
+
+            .remove-product {
+                border: 0;
+                background-color: transparent;
+                color: $primary-color;
+                text-align: center;
+                font-size: 16px;
+                width: 37px;
+                height: 37px;
+                line-height: 37px;
+                @include border-radius(100%);
+                border: 1px solid $primary-color;
+                @include transition(all 0.3s ease-in-out);
+
+                @include maxQuery(991) {
+                    font-size: 14px;
+                    width: 30px;
+                    height: 30px;
+                    line-height: 30px;
+                }
+            }
+        }
+    }
+}

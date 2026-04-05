@@ -1,0 +1,82 @@
+.partners-section {
+    &-1 {
+        .partners-wapper {
+            background-color: $background-one;
+            @include border-radius-three;
+            padding: 100px;
+
+            @include maxQuery(991) {
+                padding: 50px;
+            }
+
+            @include maxQuery(576) {
+                padding: 20px;
+            }
+
+            .partners-item {
+                background: $white-color;
+            }
+        }
+
+        .partners-item {
+            background: $background-one;
+            @include border-radius-three;
+            padding: 20px;
+            height: 120px;
+            width: 100%;
+            @include flex-justify-align;
+
+            @include maxQuery(991) {
+                height: 120px;
+            }
+        }
+    }
+
+    &-2 {
+        .partners-title {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 50px;
+            text-align: center;
+
+            &::after {
+                content: '';
+                height: 1px;
+                width: 100%;
+                background-color: $border-color-one;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+                z-index: -1;
+            }
+
+            h2 {
+                background-color: $white-color;
+                display: inline-block;
+                border: 1px solid $border-color-one;
+                padding: 10px 20px;
+                @include border-radius(100px);
+                font-size: 22px;
+                line-height: 1.4em;
+
+                @include maxQuery(767) {
+                    font-size: 20px;
+                }
+            }
+        }
+
+        .partners-item {
+            background: $background-one;
+            height: 180px;
+            width: 100%;
+            @include flex-justify-align;
+            @include border-radius-three;
+
+            @include maxQuery(991) {
+                height: 120px;
+            }
+        }
+    }
+}

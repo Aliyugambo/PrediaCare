@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Staff Attendance | PrediaCare</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="assets/css/all.min.css" />
+  <style>body{font-family:Inter, sans-serif;background:#f8fafc;margin:0}.sidebar-slim{position:fixed;left:0;top:0;bottom:0;width:260px;background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;height:100vh}.main{margin-left:260px}.container{max-width:1200px;margin:88px auto;padding:24px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.stat-box{background:#fff;border-radius:8px;padding:16px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px;border-bottom:1px solid #f3f4f6;text-align:left}</style>
+</head>
+<body>
+  <div class="sidebar-slim">
+    <div style="padding:18px;font-weight:700;color:#0f172a">PrediaCare</div>
+    <nav style="padding:8px 12px">
+      <a href="staff-dashboard.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">All Staff</a>
+      <a href="staff-add.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">Add Staff</a>
+      <a href="staff-roles.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">Roles & Permissions</a>
+      <a href="staff-attendance.html" style="display:block;padding:8px 6px;color:#0f172a;font-weight:600;text-decoration:none">Attendance</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="container">
+      <h2 style="margin:0 0 12px 0">Staff Attendance</h2>
+      <p style="color:#64748b;margin-bottom:12px">Overview of today's attendance and records</p>
+
+      <div class="stats">
+        <div class="stat-box"><h4>Present Today</h4><div style="font-size:28px;font-weight:700">5</div></div>
+        <div class="stat-box"><h4>Absent Today</h4><div style="font-size:28px;font-weight:700">1</div></div>
+        <div class="stat-box"><h4>On Leave</h4><div style="font-size:28px;font-weight:700">1</div></div>
+        <div class="stat-box"><h4>Late Arrivals</h4><div style="font-size:28px;font-weight:700">1</div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Daily Attendance Record</h3>
+          <div><button onclick="alert('Record Time')" class="btn btn-outline-primary">Record Time</button></div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Staff</th><th>Department</th><th>Role</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Dr. Sarah Johnson</td><td>Medical</td><td>Cardiologist</td><td>08:45 AM</td><td>05:30 PM</td><td>8.75</td><td><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:12px;font-size:12px">Present</span></td></tr>
+            <tr><td>Dr. Michael Chen</td><td>Medical</td><td>Neurologist</td><td>09:15 AM</td><td>06:00 PM</td><td>8.75</td><td><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:12px;font-size:12px">Present</span></td></tr>
+            <tr><td>Nurse Emma Wilson</td><td>Nursing</td><td>Head Nurse</td><td>08:00 AM</td><td>04:30 PM</td><td>8.5</td><td><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:12px;font-size:12px">Present</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

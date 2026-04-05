@@ -1,0 +1,151 @@
+.features-section {
+    &-1 {
+        .features-item {
+            position: relative;
+            margin-bottom: 30px;
+            height: 528px;
+            z-index: 1;
+            @include box;
+
+            @include maxQuery(575) {
+                height: auto;
+            }
+
+            .features-item-content {
+                h3 {
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    margin-bottom: 20px;
+                }
+            }
+
+        }
+
+        .features {
+            &-1 {
+                background-color: $extra-color-one;
+                .features-item-content{
+                    max-width: 460px;
+                }
+                .features-item-image {
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    max-width: 80%;
+
+                    @include maxQuery(575) {
+                        margin-top: 30px;
+                        position: relative;
+                        bottom: 0;
+                        right: 0;
+                        max-width: 100%;
+                    }
+                }
+            }
+
+            &-2 {
+                background-color: $extra-color-two;
+
+                .features-item-image {
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    left: 0;
+                    margin: 0 auto;
+                    text-align: center;
+
+                    @include maxQuery(575) {
+                        position: relative;
+                    }
+                }
+            }
+
+            &-3 {
+                background-color: $extra-color-three;
+
+                .features-item-image {
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    left: 0;
+                    margin: 0 auto;
+                    text-align: center;
+
+                    @include maxQuery(575) {
+                        position: relative;
+                    }
+                }
+            }
+
+            &-4 {
+                background-color: $extra-color-four;
+
+                .features-item-content {
+                    @include d-flex;
+                    @include flex-column;
+                    @include justify-content-space-between;
+                    height: 100%;
+                    gap: 20px;
+                    .features-exam-text{
+                        max-width: 360px;
+                    }
+                    .features-specialist-box {
+                        position: relative;
+
+                        .features-specialist-list {
+                            li {
+                                &+li {
+                                    margin-left: -20px;
+                                }
+
+                                figure {
+                                    display: block;
+                                    @include border-radius-three;
+                                    overflow: hidden;
+
+                                    img {
+                                        width: 68px;
+                                        height: 68px;
+                                        object-fit: cover;
+                                        @include border-radius(50%);
+                                        border: 4px solid $white-color;
+                                    }
+                                }
+
+                                span {
+                                    position: relative;
+                                    background: $primary-color;
+                                    color: $white-color;
+                                    border: 4px solid $white-color;
+                                    font-size: 18px;
+                                    font-weight: bold;
+                                    width: 65px;
+                                    height: 65px;
+                                    line-height: 80px;
+                                    @include border-radius(100px);
+                                    @include flex-justify-align;
+                                    z-index: 3;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .features-item-image {
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    z-index: -1;
+
+                    @include maxQuery(575) {
+                        position: relative;
+                        max-width: 70%;
+                        margin-left: auto;
+                    }
+                }
+            }
+        }
+    }
+}

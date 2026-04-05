@@ -1,0 +1,4273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard | Carenix Medical Clinic</title>
+  <link rel="stylesheet" href="assets/css/doctor.css" />
+  <link rel="stylesheet" href="assets/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #080a10;
+      --blue-light: #dbeafe;
+      --emerald: #059669;
+      --emerald-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --rose: #e11d48;
+      --rose-light: #ffe4e6;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+    }
+    
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .welcome-section {
+      margin-bottom: 24px;
+    }
+    
+    .welcome-section h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .welcome-section p {
+      color: var(--slate-500);
+      font-size: 15px;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+    }
+    
+    /* Blue - Appointments */
+    .stat-card.blue {
+      border-left: 4px solid var(--blue);
+    }
+    .stat-card.blue .stat-icon-wrap {
+      background: var(--blue-light);
+    }
+    .stat-card.blue .stat-icon-wrap i {
+      color: var(--blue);
+    }
+    .stat-card.blue .stat-badge {
+      color: var(--blue);
+    }
+    
+    /* Emerald - Reports */
+    .stat-card.emerald {
+      border-left: 4px solid var(--emerald);
+    }
+    .stat-card.emerald .stat-icon-wrap {
+      background: var(--emerald-light);
+    }
+    .stat-card.emerald .stat-icon-wrap i {
+      color: var(--emerald);
+    }
+    .stat-card.emerald .stat-badge {
+      color: var(--emerald);
+    }
+    
+    /* Amber - Patients */
+    .stat-card.amber {
+      border-left: 4px solid var(--amber);
+    }
+    .stat-card.amber .stat-icon-wrap {
+      background: var(--amber-light);
+    }
+    .stat-card.amber .stat-icon-wrap i {
+      color: var(--amber);
+    }
+    .stat-card.amber .stat-badge {
+      color: var(--amber);
+    }
+    
+    /* Rose - Tasks */
+    .stat-card.rose {
+      border-left: 4px solid var(--rose);
+    }
+    .stat-card.rose .stat-icon-wrap {
+      background: var(--rose-light);
+    }
+    .stat-card.rose .stat-icon-wrap i {
+      color: var(--rose);
+    }
+    .stat-card.rose .stat-badge {
+      color: var(--rose);
+    }
+    
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .stat-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .stat-icon-wrap i {
+      font-size: 18px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--slate-600);
+      font-weight: 500;
+    }
+    
+    .stat-badge {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .stat-desc {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-bottom: 16px;
+    }
+    
+    .stat-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .stat-card.blue .stat-link { color: var(--blue); }
+    .stat-card.emerald .stat-link { color: var(--emerald); }
+    .stat-card.amber .stat-link { color: var(--amber); }
+    .stat-card.rose .stat-link { color: var(--rose); }
+    
+    .stat-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Tabs */
+    .tabs-container {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-500);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .tab-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    
+    .tab-btn.active {
+      background: var(--blue);
+      color: white;
+    }
+    
+    .tab-content {
+      padding: 24px;
+    }
+    
+    .tab-pane {
+      display: none;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 4fr 3fr;
+      gap: 24px;
+    }
+    
+    .content-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .content-card-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .content-card-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .content-card-header p {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin: 0;
+    }
+    
+    .content-card-body {
+      padding: 20px;
+    }
+    
+    /* Appointment Items */
+    .appointment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .appointment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .appointment-info .patient-name {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .appointment-info .appointment-time {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .appointment-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .appointment-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .appointment-badge.checkup {
+      background: #dbeafe;
+      color: var(--blue);
+    }
+    
+    .appointment-badge.followup {
+      background: #1e293b;
+      color: white;
+    }
+    
+    .appointment-badge.confirmed {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .appointment-badge.pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .view-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .view-btn:hover {
+      background: #333336;
+    }
+    
+    .view-btn.light {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .view-btn.light:hover {
+      background: #e2e8f0;
+    }
+    
+/* Layout with Sidebar */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    /* Main Header */
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .header-icon {
+      width: 28px;
+      height: 28px;
+      color: #0b0c0c;
+    }
+    
+    .header-brand {
+      font-weight: 700;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    
+    .header-search {
+      position: relative;
+      display: none;
+    }
+    
+    @media (min-width: 768px) {
+      .header-search {
+        display: block;
+      }
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    
+    .search-input {
+      width: 300px;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .search-input:focus {
+      border-color: #080808;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .header-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+    
+    .header-icon-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .user-dropdown {
+      position: relative;
+      margin-left: 8px;
+    }
+    
+    .user-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #141414;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .user-avatar {
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 220px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 300;
+    }
+    
+    .user-dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    
+    .dropdown-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .dropdown-header .user-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .dropdown-header .user-email {
+      font-size: 12px;
+      color: #64748b;
+      margin: 4px 0 0 0;
+    }
+    
+    .dropdown-divider {
+      height: 1px;
+      background: #e2e8f0;
+    }
+    
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      color: #475569;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    
+    .dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .dropdown-item i {
+      width: 16px;
+      font-size: 14px;
+    }
+    
+    /* Sidebar - Fixed position on the left */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 260px;
+      min-height: 100vh;
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    
+    .sidebar-logo img {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .sidebar-logo span {
+      font-weight: 700;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+    
+    .nav-section {
+      margin-bottom: 20px;
+    }
+    
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #475569;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .nav-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .nav-item.active {
+      background: #eff6ff;
+      color: #151515;
+    }
+    
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .nav-item i {
+      font-size: 18px;
+      width: 20px;
+    }
+    
+    .nav-item .chevron {
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    
+    .nav-item.expanded .chevron {
+      transform: rotate(180deg);
+    }
+    
+    /* Submenu */
+    .submenu {
+      display: none;
+      padding-left: 28px;
+      margin-top: 4px;
+    }
+    
+    .submenu.show {
+      display: block;
+    }
+    
+    .submenu-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #64748b;
+      border-radius: 6px;
+      text-decoration: none;
+      display: block;
+      transition: all 0.15s ease;
+    }
+    
+    .submenu-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .submenu-item.active {
+      background: #eff6ff;
+      color: #171718;
+    }
+    
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #0e0f0f;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .sidebar-profile-info {
+      flex: 1;
+    }
+    
+    .sidebar-profile-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    .sidebar-profile-role {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    /* Main Content Area */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      margin-top: 64px;
+      padding: 24px;
+      background: #f8fafc;
+    }
+    
+    /* Mobile toggle button */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* Date Picker */
+    .date-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .date-picker-container label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #64748b;
+    }
+    
+    .date-picker-container input[type="date"] {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .date-picker-container input[type="date"]:focus {
+      border-color: #080808;
+    }
+    
+    /* Max 5 per day indicator */
+    .appointment-limit-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-left: auto;
+    }
+    
+    .appointment-limit-indicator.green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .appointment-limit-indicator.yellow {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .appointment-limit-indicator.red {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .appointment-limit-indicator i {
+      font-size: 14px;
+    }
+    
+    /* Examination Button */
+    .exam-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: #0b0a0b;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .exam-btn:hover {
+      background: #434243;
+    }
+    
+    .exam-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    
+    /* Examination Modal */
+    .examination-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .examination-modal.active {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    
+    .examination-modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalSlideIn 0.3s ease;
+    }
+    
+    .examination-modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 10;
+    }
+    
+    .examination-modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .examination-modal-body {
+      padding: 20px;
+    }
+    
+    .examination-modal-footer {
+      padding: 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+    }
+    
+    /* Form Styles */
+    .form-section {
+      margin-bottom: 24px;
+    }
+    
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .form-section-title i {
+      color: #100f11;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .form-row.single {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-row.triple {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .form-row.quad {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #272629;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .form-group small {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    /* Vital Signs Grid */
+    .vital-signs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .vital-sign-item {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .vital-sign-item label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    
+    .vital-sign-item input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .vital-sign-item input:focus {
+      border-color: #0c0c0d;
+    }
+    
+    .vital-sign-item .unit {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    
+    /* Patient Info */
+    .patient-info-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .patient-avatar-large {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #0e0e0e;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 20px;
+    }
+    
+    .patient-details {
+      flex: 1;
+    }
+    
+    .patient-details h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+    }
+    
+    .patient-details p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    /* Prescription List */
+    .prescription-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .prescription-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .prescription-item-info {
+      flex: 1;
+    }
+    
+    .prescription-item-info .drug-name {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    
+    .prescription-item-info .drug-details {
+      font-size: 13px;
+      color: #64748b;
+    }
+    
+    .prescription-item-info .drug-instructions {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    
+    .prescription-remove-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    
+    .prescription-remove-btn:hover {
+      background: #fecaca;
+    }
+    
+    .add-prescription-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: 2px dashed #e2e8f0;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    
+    .add-prescription-btn:hover {
+      border-color: #2b2a2c;
+      color: #090909;
+    }
+    
+    /* File Upload */
+    .file-upload-container {
+      border: 2px dashed #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #111012;
+    }
+    
+    .file-upload-container input[type="file"] {
+      display: none;
+    }
+    
+    .file-upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .file-upload-label i {
+      font-size: 32px;
+      color: #94a3b8;
+    }
+    
+    .file-upload-label span {
+      font-size: 14px;
+    }
+    
+    .file-upload-label small {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    .selected-file {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    
+    .selected-file .file-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2563eb;
+    }
+    
+    .selected-file .file-info {
+      flex: 1;
+    }
+    
+    .selected-file .file-name {
+      font-weight: 500;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    
+    .selected-file .file-size {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    .selected-file .remove-file {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      cursor: pointer;
+    }
+    
+    /* Test Referral Checkbox */
+    .test-referral-options {
+      margin-top: 12px;
+      padding: 12px;
+      background: #fef3c7;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .test-referral-options.show {
+      display: block;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #8b5cf6;
+    }
+    
+    /* Animation */
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row.triple,
+      .form-row.quad {
+        grid-template-columns: 1fr;
+      }
+      
+      .vital-signs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .patient-info-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    /* Mobile toggle button */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* Date Picker */
+    .date-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .date-picker-container label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #64748b;
+    }
+    
+    .date-picker-container input[type="date"] {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .date-picker-container input[type="date"]:focus {
+      border-color: #080808;
+    }
+    
+    /* Max 5 per day indicator */
+    .appointment-limit-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-left: auto;
+    }
+    
+    .appointment-limit-indicator.green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .appointment-limit-indicator.yellow {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .appointment-limit-indicator.red {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .appointment-limit-indicator i {
+      font-size: 14px;
+    }
+    
+    /* Examination Button */
+    .exam-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: #8b5cf6;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .exam-btn:hover {
+      background: #7c3aed;
+    }
+    
+    .exam-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    
+    /* Examination Modal */
+    .examination-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .examination-modal.active {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    
+    .examination-modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalSlideIn 0.3s ease;
+    }
+    
+    .examination-modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 10;
+    }
+    
+    .examination-modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .examination-modal-body {
+      padding: 20px;
+    }
+    
+    .examination-modal-footer {
+      padding: 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+    }
+    
+    /* Form Styles */
+    .form-section {
+      margin-bottom: 24px;
+    }
+    
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .form-section-title i {
+      color: #8b5cf6;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .form-row.single {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-row.triple {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .form-row.quad {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #8b5cf6;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .form-group small {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    /* Vital Signs Grid */
+    .vital-signs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .vital-sign-item {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .vital-sign-item label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    
+    .vital-sign-item input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .vital-sign-item input:focus {
+      border-color: #8b5cf6;
+    }
+    
+    .vital-sign-item .unit {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    
+    /* Patient Info */
+    .patient-info-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .patient-avatar-large {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 20px;
+    }
+    
+    .patient-details {
+      flex: 1;
+    }
+    
+    .patient-details h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+    }
+    
+    .patient-details p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    /* Prescription List */
+    .prescription-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .prescription-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .prescription-item-info {
+      flex: 1;
+    }
+    
+    .prescription-item-info .drug-name {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    
+    .prescription-item-info .drug-details {
+      font-size: 13px;
+      color: #64748b;
+    }
+    
+    .prescription-item-info .drug-instructions {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    
+    .prescription-remove-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    
+    .prescription-remove-btn:hover {
+      background: #fecaca;
+    }
+    
+    .add-prescription-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: 2px dashed #e2e8f0;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    
+    .add-prescription-btn:hover {
+      border-color: #8b5cf6;
+      color: #8b5cf6;
+    }
+    
+    /* File Upload */
+    .file-upload-container {
+      border: 2px dashed #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #8b5cf6;
+    }
+    
+    .file-upload-container input[type="file"] {
+      display: none;
+    }
+    
+    .file-upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .file-upload-label i {
+      font-size: 32px;
+      color: #94a3b8;
+    }
+    
+    .file-upload-label span {
+      font-size: 14px;
+    }
+    
+    .file-upload-label small {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    .selected-file {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    
+    .selected-file .file-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2563eb;
+    }
+    
+    .selected-file .file-info {
+      flex: 1;
+    }
+    
+    .selected-file .file-name {
+      font-weight: 500;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    
+    .selected-file .file-size {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    .selected-file .remove-file {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      cursor: pointer;
+    }
+    
+    /* Test Referral Checkbox */
+    .test-referral-options {
+      margin-top: 12px;
+      padding: 12px;
+      background: #fef3c7;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .test-referral-options.show {
+      display: block;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #8b5cf6;
+    }
+    
+    /* Animation */
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row.triple,
+      .form-row.quad {
+        grid-template-columns: 1fr;
+      }
+      
+      .vital-signs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .patient-info-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar-close {
+        display: block;
+      }
+      
+      .main {
+        margin-left: 0;
+        padding-top: 60px;
+      }
+      
+      .mobile-toggle {
+        display: block;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tabs-header {
+        flex-wrap: wrap;
+      }
+      
+      .tab-btn {
+        flex: 1;
+        min-width: calc(50% - 4px);
+        text-align: center;
+      }
+      
+      .welcome-section h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+  
+  <div class="layout">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="doctor-dashboard.html" class="header-logo">
+         
+                <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo">
+         
+          <span class="header-brand">PrediaCare</span>
+        </a>
+        <div class="header-search">
+          <i class="fas fa-search search-icon"></i>
+          <input type="search" placeholder="Search patients, records..." class="search-input" />
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button class="header-icon-btn" title="Calendar">
+          <i class="far fa-calendar"></i>
+        </button>
+        <button class="header-icon-btn" title="Messages">
+          <i class="far fa-comment"></i>
+        </button>
+        <button class="header-icon-btn" title="Notifications">
+          <i class="far fa-bell"></i>
+        </button>
+        <button class="header-icon-btn" title="Theme">
+          <i class="far fa-moon"></i>
+        </button>
+        <div class="user-dropdown">
+          <button class="user-btn">
+            <div class="user-avatar">SJ</div>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <p class="user-name">Dr. Sarah Johnson</p>
+              <p class="user-email">admin@medixpro.com</p>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-comment"></i> Chat</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-question-circle"></i> Support</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <div class="dropdown-divider"></div>
+            <a href="sign-in.html" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Log out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index-3.html" class="sidebar-logo">
+          <img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" />
+          <span>Prediacare</span>
+        </a>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Dashboard Section -->
+        <div class="nav-section">
+          <p class="nav-section-title">Dashboard</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-th-large"></i>
+              <span>Dashboard</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Admin Dashboard</a>
+            <a href="doctor-dashboard.html" class="submenu-item active">Doctor Dashboard</a>
+            <a href="patient-dashboard.html" class="submenu-item">Patient Dashboard</a>
+          </div>
+        </div>
+
+        <!-- Main Management -->
+        <div class="nav-section">
+          <p class="nav-section-title">Main</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-md"></i>
+              <span>Doctors</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-injured"></i>
+              <span>Patients</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Appointments</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">All Appointments</a>
+            <a href="#" class="submenu-item">Add Appointment</a>
+            <a href="#" class="submenu-item">Calendar View</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-prescription"></i>
+              <span>Prescriptions</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">All Prescriptions</a>
+            <a href="#" class="submenu-item">Create Prescription</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-ambulance"></i>
+              <span>Ambulance</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-pills"></i>
+              <span>Pharmacy</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-tint"></i>
+              <span>Blood Bank</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Blood Stock</a>
+            <a href="#" class="submenu-item">Blood Donors</a>
+            <a href="#" class="submenu-item">Issue Blood</a>
+          </div>
+        </div>
+
+        <!-- Finance -->
+        <div class="nav-section">
+          <p class="nav-section-title">Finance</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-receipt"></i>
+              <span>Billing</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="cart.html" class="submenu-item">Invoices</a>
+            <a href="#" class="submenu-item">Payments</a>
+            <a href="#" class="submenu-item">Insurance Claims</a>
+          </div>
+        </div>
+
+        <!-- Hospital -->
+        <div class="nav-section">
+          <p class="nav-section-title">Hospital</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-building"></i>
+              <span>Departments</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Department List</a>
+            <a href="#" class="submenu-item">Add Department</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Inventory List</a>
+            <a href="#" class="submenu-item">Stock Alerts</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-tie"></i>
+              <span>Staff</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-file-medical"></i>
+              <span>Records</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Birth Records</a>
+            <a href="#" class="submenu-item">Death Records</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-bed"></i>
+              <span>Room Allotment</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Reports & Settings -->
+        <div class="nav-section">
+          <p class="nav-section-title">Reports & Settings</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-star"></i>
+              <span>Reviews</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comment-dots"></i>
+              <span>Feedback</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-chart-bar"></i>
+              <span>Reports</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Overview</a>
+            <a href="#" class="submenu-item">Appointment Reports</a>
+            <a href="#" class="submenu-item">Financial Reports</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">General Settings</a>
+            <a href="#" class="submenu-item">Notifications</a>
+            <a href="#" class="submenu-item">Working Hours</a>
+          </div>
+        </div>
+
+        <!-- Extra -->
+        <div class="nav-section">
+          <p class="nav-section-title">Extra</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-week"></i>
+              <span>Calendar</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-check-circle"></i>
+              <span>Tasks</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-envelope"></i>
+              <span>Email</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comments"></i>
+              <span>Chat</span>
+            </div>
+          </a>
+          
+          <a href="contact.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-question-circle"></i>
+              <span>Support</span>
+            </div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-profile">
+          <div class="sidebar-avatar">SJ</div>
+          <div class="sidebar-profile-info">
+            <p class="sidebar-profile-name">Dr. Sarah Johnson</p>
+            <p class="sidebar-profile-role">Administrator</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+          <h1>Welcome back, Dr. Sarah</h1>
+          <p>Here's what's happening with your patients today.</p>
+        </section>
+
+        <!-- Stats Grid -->
+        <section class="stats-grid">
+          <!-- Appointments Card - Blue -->
+          <div class="stat-card blue">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-calendar-check"></i>
+              </div>
+              <span class="stat-badge"></span>
+            </div>
+            <div class="stat-label">Appointments</div>
+            <div class="stat-number">12</div>
+            <p class="stat-desc">Today's consultations</p>
+            <a class="stat-link">
+              <span>View Schedule</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Pending Reports Card - Emerald -->
+          <div class="stat-card emerald">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-file-alt"></i>
+              </div>
+              <span class="stat-badge">2 ready</span>
+            </div>
+            <div class="stat-label">Pending Reports</div>
+            <div class="stat-number">7</div>
+            <p class="stat-desc">Lab results awaiting review</p>
+            <a class="stat-link">
+              <span>Review Reports</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Active Patients Card - Amber -->
+          <div class="stat-card amber" onclick="switchTab('patients')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-users"></i>
+              </div>
+              <span class="stat-badge">8 new</span>
+            </div>
+            <div class="stat-label">Active Patients</div>
+            <div class="stat-number">143</div>
+            <p class="stat-desc">Total patient count this week</p>
+            <a class="stat-link" onclick="event.stopPropagation(); switchTab('patients');">
+              <span>Patient Records</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Pending Tasks Card - Rose -->
+          <div class="stat-card rose">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-clipboard-list"></i>
+              </div>
+              <span class="stat-badge">2 high priority</span>
+            </div>
+            <div class="stat-label">Pending Tasks</div>
+            <div class="stat-number">5</div>
+            <p class="stat-desc">Tasks requiring attention</p>
+            <a class="stat-link">
+              <span>View Tasks</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </section>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+          <!-- Tabs Header -->
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="schedule">Schedule</button>
+            <button class="tab-btn" data-tab="patients">Patients</button>
+            <button class="tab-btn" data-tab="examinations">Examinations</button>
+            <button class="tab-btn" data-tab="prescriptions">Prescriptions</button>
+            <button class="tab-btn" data-tab="reports">Reports</button>
+            <button class="tab-btn" data-tab="tasks">Tasks</button>
+            <button class="tab-btn" data-tab="messages">Messages</button>
+            <button class="tab-btn" data-tab="stats">Stats</button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Schedule Tab -->
+            <div class="tab-pane active" id="schedule">
+              <div class="date-picker-container">
+                <label for="scheduleDatePicker">Select Date:</label>
+                <input type="date" id="scheduleDatePicker" />
+                <div class="appointment-limit-indicator green" id="appointmentLimitIndicator">
+                  <i class="fas fa-check-circle"></i> 0/5 appointments
+                </div>
+              </div>
+              <div class="content-grid">
+                <!-- Today's Schedule -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Schedule</h3>
+                    <p>Appointments for selected date <span class="meta-date" style="font-size:12px;color:#64748b;margin-left:8px"></span></p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="scheduleAppointmentList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Upcoming Appointments -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Upcoming Appointments</h3>
+                    <p>Your upcoming appointments for the week</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">John Doe</p>
+                          <span class="appointment-time">Sat, Apr 26 at 09:00 AM</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge confirmed">Confirmed</span>
+                          <button class="view-btn light">Follow-up</button>
+                        </div>
+                      </div>
+
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Jane Smith</p>
+                          <span class="appointment-time">Sat, Apr 26 at 10:30 AM</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge pending">Pending</span>
+                          <button class="view-btn light">New Patient</button>
+                        </div>
+                      </div>
+
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Robert Brown</p>
+                          <span class="appointment-time">Mon, Apr 28 at 02:00 PM</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge confirmed">Confirmed</span>
+                          <button class="view-btn light">Check-up</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Patients Tab -->
+            <div class="tab-pane" id="patients">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Today's Patients</h3>
+                    <p>Patients you're seeing today</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="todaysPatientsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>All Patients</h3>
+                    <p>Complete patient records</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="allPatientsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Recent Patient Notes</h3>
+                    <p>Your latest clinical notes</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Emma Thompson</p>
+                          <span class="appointment-time">Follow-up recommended in 2 weeks</span>
+                        </div>
+                      </div>
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Michael Chen</p>
+                          <span class="appointment-time">Prescription renewed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Examinations Tab -->
+            <div class="tab-pane" id="examinations">
+              <div class="content-grid">
+                <div class="content-card" style="grid-column: span 2;">
+                  <div class="content-card-header">
+                    <h3>Examination Records</h3>
+                    <p>View and manage patient examination history</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px;">
+                      <input type="text" id="examinationSearchInput" placeholder="Search by patient name..." style="flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                      <select id="examinationDateFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                        <option value="">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                      </select>
+                      <button onclick="loadExaminations()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Search</button>
+                    </div>
+                    <div class="appointment-list" id="examinationsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prescriptions Tab -->
+            <div class="tab-pane" id="prescriptions">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Active Prescriptions</h3>
+                    <p>Current prescriptions requiring attention</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px;">
+                      <input type="text" id="prescriptionSearchInput" placeholder="Search prescriptions..." style="flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                      <select id="prescriptionStatusFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                      <button onclick="loadPrescriptions()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Filter</button>
+                    </div>
+                    <div class="appointment-list" id="prescriptionsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Prescription Details</h3>
+                    <p>View and manage prescription</p>
+                  </div>
+                  <div class="content-card-body" id="prescriptionDetails">
+                    <p style="color: #64748b; text-align: center; padding: 40px 0;">Select a prescription to view details</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-pane" id="reports">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Upload Report</h3>
+                    <p>Upload lab results and medical reports</p>
+                  </div>
+                  <div class="content-card-body">
+                    <form id="reportUploadForm">
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Patient *</label>
+                          <select id="reportPatientSelect" required>
+                            <option value="">Select Patient</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label>Report Type</label>
+                          <select id="reportTypeSelect">
+                            <option value="">Select Type</option>
+                            <option value="lab">Laboratory</option>
+                            <option value="imaging">Imaging</option>
+                            <option value="specialist">Specialist Referral</option>
+                            <option value="discharge">Discharge Summary</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>Report Title *</label>
+                          <input type="text" id="reportTitleInput" placeholder="e.g., Complete Blood Count" required />
+                        </div>
+                      </div>
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Description</label>
+                          <textarea id="reportDescription" placeholder="Brief description of the report"></textarea>
+                        </div>
+                      </div>
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Visibility</label>
+                          <select id="reportVisibility">
+                            <option value="patient">Visible to Patient</option>
+                            <option value="all">Visible to All (Patient, Staff, Admin)</option>
+                            <option value="staff">Visible to Staff Only</option>
+                            <option value="admin">Visible to Admin Only</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-cloud-upload-alt"></i> File Upload</div>
+                        <div class="file-upload-container" id="reportFileUpload">
+                          <input type="file" id="reportFileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                          <label for="reportFileInput" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload or drag and drop</span>
+                            <small>PDF, PNG, JPG or DOC (max. 10MB)</small>
+                          </label>
+                        </div>
+                        <div id="selectedReportFile"></div>
+                      </div>
+                      <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-flask"></i> Test Referral Options</div>
+                        <div class="form-row single">
+                          <div class="form-group">
+                            <div class="checkbox-group">
+                              <input type="checkbox" id="isReportTestReferral" />
+                              <label for="isReportTestReferral">Create as Test Referral</label>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="test-referral-options" id="reportTestReferralOptions">
+                          <div class="form-row">
+                            <div class="form-group">
+                              <label>Refer To</label>
+                              <select id="reportReferTo">
+                                <option value="lab">In-house Laboratory</option>
+                                <option value="imaging">Imaging Department</option>
+                                <option value="cardiology">Cardiology</option>
+                                <option value="neurology">Neurology</option>
+                                <option value="orthopedics">Orthopedics</option>
+                                <option value="other">Other Specialist</option>
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label>Urgency</label>
+                              <select id="reportUrgency">
+                                <option value="routine">Routine</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="emergency">Emergency</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="form-row single">
+                            <div class="form-group">
+                              <label>Referral Notes</label>
+                              <textarea id="reportReferralNotes" placeholder="Additional notes for the referred department"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" onclick="uploadReport()" style="padding: 12px 24px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; width: 100%;">Upload Report</button>
+                    </form>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Uploaded Reports</h3>
+                    <p>View and manage patient reports</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="margin-bottom: 16px;">
+                      <input type="text" id="uploadedReportsSearch" placeholder="Search reports..." style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="appointment-list" id="uploadedReportsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div class="tab-pane" id="tasks">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Pending Tasks</h3>
+                    <p>Tasks requiring your attention</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Blood Test Report - John Doe</p>
+                          <span class="appointment-time">Pending review and approval</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge pending">Urgent</span>
+                          <button class="view-btn">Review</button>
+                        </div>
+                      </div>
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Prescription Renewal - Jane Smith</p>
+                          <span class="appointment-time">Awaiting signature</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge checkup">Normal</span>
+                          <button class="view-btn">Review</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Recent Prescriptions</h3>
+                    <p>Prescriptions you've written recently</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Metformin 500mg</p>
+                          <span class="appointment-time">For: Michael Chen - Apr 25, 2025</span>
+                        </div>
+                      </div>
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="patient-name">Lisinopril 10mg</p>
+                          <span class="appointment-time">For: Sarah Williams - Apr 24, 2025</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div class="tab-pane" id="messages">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Patient Messages</h3>
+                    <p id="messageCountText">You have no new messages</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="doctorMessagesList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div class="tab-pane" id="stats">
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Performance Metrics</h3>
+                  <p>Your clinical performance and patient outcomes</p>
+                </div>
+                <div class="content-card-body">
+                  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="stat-card blue">
+                      <div class="stat-label">Monthly Appointments</div>
+                      <div class="stat-number">48</div>
+                      <p class="stat-desc">Total consultations this month</p>
+                    </div>
+                    <div class="stat-card emerald">
+                      <div class="stat-label">Patient Satisfaction</div>
+                      <div class="stat-number">4.8/5.0</div>
+                      <p class="stat-desc">Average rating from patients</p>
+                    </div>
+                    <div class="stat-card amber">
+                      <div class="stat-label">Completion Rate</div>
+                      <div class="stat-number">95%</div>
+                      <p class="stat-desc">Appointments completed</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Appointment Details Modal -->
+  <div id="appointmentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 0;">Appointment Details</h3>
+        <button type="button" onclick="closeAppointmentModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div id="appointmentModalBody" style="padding: 20px;">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+      <div id="appointmentModalFooter" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <!-- Action buttons will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Profile Modal -->
+  <div id="patientProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; color: #0f172a;">Patient Profile</h3>
+        <button onclick="closePatientProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div id="patientProfileModalBody" style="padding: 20px;">
+        <!-- Content will be populated by JavaScript -->
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examination Modal -->
+  <div id="examinationModal" class="examination-modal">
+    <div class="examination-modal-content">
+      <div class="examination-modal-header">
+        <h3>Patient Examination</h3>
+        <button type="button" onclick="closeExaminationModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="examination-modal-body" id="examinationModalBody">
+        <div class="patient-info-header" id="examPatientInfo">
+          <div class="patient-avatar-large" id="examPatientAvatar">JD</div>
+          <div class="patient-details">
+            <h4 id="examPatientName">John Doe</h4>
+            <p id="examPatientDetails">Age: 45 • Blood Type: O+</p>
+          </div>
+        </div>
+        <form id="examinationForm">
+          <input type="hidden" id="examPatientId" value="">
+          <input type="hidden" id="examAppointmentId" value="">
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Examination Date</label>
+              <input type="date" id="examinationDate" required>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-heartbeat"></i> Vital Signs</div>
+            <div class="vital-signs-grid">
+              <div class="vital-sign-item"><label>BP Systolic</label><input type="number" id="vitalBpSystolic" placeholder="120"><span class="unit">mmHg</span></div>
+              <div class="vital-sign-item"><label>BP Diastolic</label><input type="number" id="vitalBpDiastolic" placeholder="80"><span class="unit">mmHg</span></div>
+              <div class="vital-sign-item"><label>Heart Rate</label><input type="number" id="vitalHeartRate" placeholder="72"><span class="unit">bpm</span></div>
+              <div class="vital-sign-item"><label>Temp</label><input type="number" step="0.1" id="vitalTemperature" placeholder="98.6"><span class="unit">°F</span></div>
+              <div class="vital-sign-item"><label>Resp. Rate</label><input type="number" id="vitalRespiratory" placeholder="16"><span class="unit">/min</span></div>
+              <div class="vital-sign-item"><label>SpO2</label><input type="number" id="vitalSpo2" placeholder="98"><span class="unit">%</span></div>
+              <div class="vital-sign-item"><label>Weight</label><input type="number" step="0.1" id="vitalWeight" placeholder="70"><span class="unit">kg</span></div>
+              <div class="vital-sign-item"><label>Height</label><input type="number" step="0.1" id="vitalHeight" placeholder="170"><span class="unit">cm</span></div>
+              <div class="vital-sign-item"><label>BMI</label><input type="number" step="0.1" id="vitalBmi" placeholder="24.2" readonly><span class="unit">auto</span></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-clipboard"></i> Clinical Notes</div>
+            <div class="form-row single"><div class="form-group"><label>Chief Complaint</label><textarea id="chiefComplaint" placeholder="Patient's main concern"></textarea></div></div>
+            <div class="form-row single"><div class="form-group"><label>Examination Notes</label><textarea id="examinationNotes" placeholder="Detailed examination findings"></textarea></div></div>
+            <div class="form-row single"><div class="form-group"><label>Findings</label><textarea id="findings" placeholder="Clinical findings"></textarea></div></div>
+            <div class="form-row"><div class="form-group"><label>Diagnosis</label><textarea id="diagnosis" placeholder="Diagnosis"></textarea></div><div class="form-group"><label>Treatment Plan</label><textarea id="treatmentPlan" placeholder="Treatment plan"></textarea></div></div>
+            <div class="form-row single"><div class="form-group"><label>Recommendations</label><textarea id="recommendations" placeholder="Additional recommendations"></textarea></div></div>
+            <div class="form-row"><div class="form-group"><label>Next Visit</label><input type="date" id="nextVisitDate"></div><div class="form-group"><label>Follow-up</label><select id="followUpRequired"><option value="yes">Yes</option><option value="no">No</option><option value="as_needed">As Needed</option></select></div></div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-flask"></i> Test Referrals</div>
+            <div class="test-referral-list" id="testReferralList" style="margin-bottom: 12px;"></div>
+            <button type="button" class="add-prescription-btn" onclick="addTestReferral()"><i class="fas fa-plus"></i> Add Test</button>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title"><i class="fas fa-prescription"></i> Prescriptions</div>
+            <div class="prescription-list" id="prescriptionList"></div>
+            <button type="button" class="add-prescription-btn" onclick="addPrescription()"><i class="fas fa-plus"></i> Add Medication</button>
+          </div>
+        </form>
+      </div>
+      <div class="examination-modal-footer">
+        <button type="button" onclick="closeExaminationModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #475569; font-size: 14px; font-weight: 500; cursor: pointer;">Cancel</button>
+        <button type="button" onclick="saveExamination()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #8b5cf6; color: white; font-size: 14px; font-weight: 500; cursor: pointer;">Save Examination</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prescription Modal -->
+  <div id="prescriptionModal" class="examination-modal">
+    <div class="examination-modal-content" style="max-width: 500px;">
+      <div class="examination-modal-header">
+        <h3 id="prescriptionModalTitle">Add Medication</h3>
+        <button type="button" onclick="closePrescriptionModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer;">✕</button>
+      </div>
+      <div class="examination-modal-body">
+        <form id="prescriptionForm">
+          <input type="hidden" id="prescriptionIndex" value="-1">
+          <div class="form-row single"><div class="form-group"><label>Medication *</label><input type="text" id="medicationName" placeholder="e.g., Amoxicillin" required></div></div>
+          <div class="form-row"><div class="form-group"><label>Dosage *</label><input type="text" id="medicationDosage" placeholder="e.g., 500mg" required></div><div class="form-group"><label>Frequency *</label><select id="medicationFrequency" required><option value="">Select</option><option value="once_daily">Once Daily</option><option value="twice_daily">Twice Daily</option><option value="three_times_daily">3x Daily</option><option value="as_needed">As Needed</option></select></div></div>
+          <div class="form-row"><div class="form-group"><label>Duration</label><input type="text" id="medicationDuration" placeholder="e.g., 7 days"></div><div class="form-group"><label>Refills</label><input type="number" id="medicationRefills" value="0" min="0"></div></div>
+          <div class="form-row single"><div class="form-group"><label>Instructions</label><textarea id="medicationInstructions" placeholder="Special instructions"></textarea></div></div>
+        </form>
+      </div>
+      <div class="examination-modal-footer">
+        <button type="button" onclick="closePrescriptionModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer;">Cancel</button>
+        <button type="button" onclick="savePrescription()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #8b5cf6; color: white; cursor: pointer;">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Referral Modal -->
+  <div id="testReferralModal" class="examination-modal">
+    <div class="examination-modal-content" style="max-width: 500px;">
+      <div class="examination-modal-header">
+        <h3 id="testReferralModalTitle">Add Test</h3>
+        <button type="button" onclick="closeTestReferralModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer;">✕</button>
+      </div>
+      <div class="examination-modal-body">
+        <form id="testReferralForm">
+          <input type="hidden" id="testReferralIndex" value="-1">
+          <div class="form-row single"><div class="form-group"><label>Test Type *</label><select id="testType" required><option value="">Select Test Type</option><option value="blood">Blood Test</option><option value="urine">Urine Test</option><option value="stool">Stool Test</option><option value="xray">X-Ray</option><option value="ultrasound">Ultrasound</option><option value="ct">CT Scan</option><option value="mri">MRI</option><option value="ecg">ECG</option><option value="echo">Echocardiogram</option><option value="other">Other</option></select></div></div>
+          <div class="form-row single"><div class="form-group"><label>Test Name *</label><input type="text" id="testName" placeholder="e.g., Complete Blood Count" required></div></div>
+          <div class="form-row single"><div class="form-group"><label>Clinical Notes</label><textarea id="testNotes" placeholder="Clinical reason for test"></textarea></div></div>
+          <div class="form-row"><div class="form-group"><label>Urgency</label><select id="testUrgency"><option value="routine">Routine</option><option value="urgent">Urgent</option><option value="emergency">Emergency</option></select></div><div class="form-group"><label>Referred To</label><select id="testReferredTo"><option value="lab">In-house Lab</option><option value="imaging">Imaging</option><option value="cardiology">Cardiology</option><option value="external">External Lab</option></select></div></div>
+        </form>
+      </div>
+      <div class="examination-modal-footer">
+        <button type="button" onclick="closeTestReferralModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer;">Cancel</button>
+        <button type="button" onclick="saveTestReferral()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #8b5cf6; color: white; cursor: pointer;">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Base URL
+    const API_BASE = 'http://localhost:5000/api';
+    
+    // Current user data
+    let currentUser = null;
+    let todayAppointments = [];
+    let upcomingAppointments = [];
+    
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+      await checkAuthentication();
+    });
+    
+    // Check if user is authenticated and authorized
+    async function checkAuthentication() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        currentUser = data.user;
+        console.log('authenticated user', currentUser);
+        
+        // Check if user is a doctor
+        if (currentUser.role !== 'doctor') {
+          showToast('error', 'Access Denied', 'You don\'t have access to this dashboard');
+          return;
+        }
+
+        // if the server provided a doctorId, keep it available for debug/logging
+        if (currentUser.doctorId !== undefined) {
+          console.log('session doctorId', currentUser.doctorId);
+        }
+        
+        // Update UI with user info
+        updateUserInfo();
+        
+        // Load dashboard data
+        loadDashboardData();
+        
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        window.location.href = 'sign-in.html';
+      }
+    }
+    
+    // Update user information in the UI
+    function updateUserInfo() {
+      if (!currentUser) return;
+      
+      const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'Doctor';
+      const initials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'DR';
+      
+      // Update welcome message
+      document.querySelector('.welcome-section h1').textContent = `Welcome back, Dr. ${firstName}`;
+      
+      // Update header avatar
+      const headerAvatar = document.querySelector('.user-avatar');
+      if (headerAvatar) headerAvatar.textContent = initials;
+      
+      // Update header dropdown
+      const headerName = document.querySelector('.dropdown-header .user-name');
+      const headerEmail = document.querySelector('.dropdown-header .user-email');
+      if (headerName) headerName.textContent = currentUser.name || 'Doctor';
+      if (headerEmail) headerEmail.textContent = currentUser.email || '';
+      
+      // Update sidebar profile
+      const sidebarName = document.querySelector('.sidebar-profile-name');
+      const sidebarAvatar = document.querySelector('.sidebar-avatar');
+      const sidebarRole = document.querySelector('.sidebar-profile-role');
+      if (sidebarName) sidebarName.textContent = currentUser.name || 'Doctor';
+      if (sidebarAvatar) sidebarAvatar.textContent = initials;
+      if (sidebarRole) sidebarRole.textContent = 'Doctor';
+    }
+    
+    // Load all dashboard data from API
+    async function loadDashboardData() {
+      try {
+        // Load stats
+        const statsRes = await fetch(`${API_BASE}/doctor/dashboard/stats`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.success) {
+            updateStatsCards(statsData.stats);
+          }
+        }
+        
+        loadTodayAppointments();
+        loadUpcomingAppointments();
+        loadTodaysPatients();
+        loadAllPatients();
+        loadPendingTasks();
+        loadDoctorMessages();
+        loadStatsData();
+        loadUploadedReports();
+        loadPatientsForReport();
+        
+        // Toggle test referral options visibility
+        const isReportTestReferral = document.getElementById('isReportTestReferral');
+        const reportTestReferralOptions = document.getElementById('reportTestReferralOptions');
+        if (isReportTestReferral && reportTestReferralOptions) {
+          isReportTestReferral.addEventListener('change', function() {
+            if (this.checked) {
+              reportTestReferralOptions.style.display = 'block';
+            } else {
+              reportTestReferralOptions.style.display = 'none';
+            }
+          });
+          // Initialize visibility
+          reportTestReferralOptions.style.display = isReportTestReferral.checked ? 'block' : 'none';
+        }
+        
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+    
+    // Update stats cards with API data
+    function updateStatsCards(stats) {
+      if (!stats) return;
+      
+      const appointmentsNumber = document.querySelector('.stat-card.blue .stat-number');
+      const appointmentsBadge = document.querySelector('.stat-card.blue .stat-badge');
+      if (appointmentsNumber) appointmentsNumber.textContent = stats.todayAppointments || 0;
+      if (appointmentsBadge) appointmentsBadge.textContent = `${stats.urgentAppointments || 0} urgent`;
+      
+      const reportsNumber = document.querySelector('.stat-card.emerald .stat-number');
+      const reportsBadge = document.querySelector('.stat-card.emerald .stat-badge');
+      if (reportsNumber) reportsNumber.textContent = stats.pendingReports || 0;
+      if (reportsBadge) reportsBadge.textContent = `${stats.readyReports || 0} ready`;
+      
+      const patientsNumber = document.querySelector('.stat-card.amber .stat-number');
+      const patientsBadge = document.querySelector('.stat-card.amber .stat-badge');
+      if (patientsNumber) patientsNumber.textContent = stats.patientsThisWeek || 0;
+      if (patientsBadge) patientsBadge.textContent = `${stats.newPatients || 0} new`;
+      
+      const tasksNumber = document.querySelector('.stat-card.rose .stat-number');
+      const tasksBadge = document.querySelector('.stat-card.rose .stat-badge');
+      if (tasksNumber) tasksNumber.textContent = stats.pendingTasks || 0;
+      if (tasksBadge) tasksBadge.textContent = `${stats.highPriorityTasks || 0} high priority`;
+    }
+    
+    // Load today's appointments
+    async function loadTodayAppointments() {
+      try {
+        console.log('\nFetching today appointments...');
+        const response = await fetch(`${API_BASE}/doctor/appointments/today`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Today appointments response:', data);
+          if (data.success) {
+            renderTodayAppointments(data.appointments, { date: data.date });
+          }
+        } else {
+          console.error('\u274c Failed to fetch today appointments:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading today appointments:', error);
+      }
+    }
+    
+    // Render today's appointments
+    function renderTodayAppointments(appointments, meta = {}) {
+      console.log('\n=== RENDER TODAY APPOINTMENTS ===');
+      console.log('Appointments received:', appointments);
+      console.log('Meta:', meta);
+      
+      const container = document.querySelector('#schedule .appointment-list');
+      console.log('Container found?', !!container);
+      if (!container) {
+        console.error('\u274c Container not found: #schedule .appointment-list');
+        return;
+      }
+      
+      // Store appointments globally for modal access
+      todayAppointments = appointments || [];
+      
+      // optionally show the date that the server considered "today" so that
+      // timezone mismatches are easier to spot
+      if (meta.date) {
+        const dateHeader = document.querySelector('#schedule .content-card-header .meta-date');
+        if (dateHeader) {
+          dateHeader.textContent = `(server date: ${meta.date})`;
+        }
+      }
+      
+      if (!appointments || appointments.length === 0) {
+        console.log('\u26a0 No appointments to render');
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No appointments today</p><span class="appointment-time">You have no scheduled appointments</span></div></div>`;
+        return;
+      }
+      
+      console.log('\u2705 Rendering', appointments.length, 'appointments');
+      container.innerHTML = appointments.map(apt => {
+        // normalize fields
+        const appointmentTime = apt.appointment_time || apt.time;
+        const canExamine = apt.status === 'confirmed' || apt.status === 'scheduled';
+        return `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="patient-name">${apt.patient_name || 'Patient'}</p>
+            <span class="appointment-time">${formatTime(appointmentTime)} • ${apt.duration || 30} min</span>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${getBadgeClass(apt.status)}">${capitalizeFirst(apt.status)}</span>
+            ${canExamine ? `<button class="exam-btn" onclick="openExamination(${apt.id}, '${(apt.patient_name || 'Patient').replace(/'/g, "\\'")}', ${apt.patient_id || apt.patientId})">Examine</button>` : ''}
+            <button class="view-btn" onclick="viewAppointment(${apt.id})">View</button>
+          </div>
+        </div>
+      `}).join('');
+      
+      const countElement = document.querySelector('#schedule .content-card-header p');
+      if (countElement) countElement.textContent = `You have ${appointments.length} appointments scheduled for today`;
+      console.log('\u2705 Render complete');
+    }
+    
+    // Load upcoming appointments
+    async function loadUpcomingAppointments() {
+      try {
+        console.log('\nFetching upcoming appointments...');
+        const response = await fetch(`${API_BASE}/doctor/appointments/upcoming`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Upcoming appointments response:', data);
+          if (data.success) {
+            renderUpcomingAppointments(data.appointments);
+          }
+        } else {
+          console.error('\u274c Failed to fetch upcoming appointments:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading upcoming appointments:', error);
+      }
+    }
+    
+    // Render upcoming appointments
+    function renderUpcomingAppointments(appointments) {
+      console.log('\n=== RENDER UPCOMING APPOINTMENTS ===');
+      console.log('Appointments received:', appointments);
+      
+      const container = document.querySelector('#schedule .content-card:nth-child(2) .appointment-list');
+      console.log('Container found?', !!container);
+      if (!container) {
+        console.error('\u274c Container not found: #schedule .content-card:nth-child(2) .appointment-list');
+        return;
+      }
+      
+      // Store appointments globally for modal access
+      upcomingAppointments = appointments || [];
+      
+      if (!appointments || appointments.length === 0) {
+        console.log('\u26a0 No upcoming appointments to render');
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No upcoming appointments</p><span class="appointment-time">Your schedule is clear for the coming days</span></div></div>`;
+        return;
+      }
+      
+      console.log('\u2705 Rendering', appointments.length, 'upcoming appointments');
+      container.innerHTML = appointments.map(apt => {
+        const appointmentDate = apt.appointment_date || apt.date;
+        const appointmentTime = apt.appointment_time || apt.time;
+        const canExamine = apt.status === 'confirmed' || apt.status === 'scheduled';
+        return `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="patient-name">${apt.patient_name || 'Patient'}</p>
+            <span class="appointment-time">${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}</span>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${getBadgeClass(apt.status)}">${capitalizeFirst(apt.status)}</span>
+            ${canExamine ? `<button class="exam-btn" onclick="openExamination(${apt.id}, '${(apt.patient_name || 'Patient').replace(/'/g, "\\'")}', ${apt.patient_id || apt.patientId})">Examine</button>` : ''}
+            <button class="view-btn light" onclick="viewAppointment(${apt.id})">Details</button>
+          </div>
+        </div>
+      `}).join('');
+    }
+    
+    // Load today's patients
+    async function loadTodayPatients() {
+      try {
+        console.log('\nFetching today patients...');
+        const response = await fetch(`${API_BASE}/doctor/patients/today`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Today patients response:', data);
+          if (data.success) {
+            renderTodayPatients(data.patients);
+          }
+        } else {
+          console.error('\u274c Failed to fetch today patients:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading today patients:', error);
+      }
+    }
+    
+    // Load today's patients
+    async function loadTodaysPatients() {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/patients/today`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        const container = document.getElementById('todaysPatientsList');
+        if (!container) return;
+        
+        if (data.success && data.patients && data.patients.length > 0) {
+          container.innerHTML = data.patients.map(patient => `
+            <div class="appointment-item">
+              <div class="appointment-info">
+                <p class="patient-name">${patient.name || 'N/A'}</p>
+                <span class="appointment-time">${patient.appointment_time || ''}</span>
+              </div>
+              <div class="appointment-actions">
+                <button class="btn-icon" onclick="viewPatientProfile(${patient.id})">
+                  <i class="fas fa-user"></i>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p class="empty-state">No patients scheduled for today</p>';
+        }
+      } catch (error) {
+        console.error('Error loading today\'s patients:', error);
+        const container = document.getElementById('todaysPatientsList');
+        if (container) container.innerHTML = '<p class="error-state">Failed to load patients</p>';
+      }
+    }
+
+    // Load all patients
+    async function loadAllPatients() {
+      try {
+        console.log('\nFetching all patients...');
+        const response = await fetch(`${API_BASE}/doctor/patients`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('All patients response:', data);
+          if (data.success) {
+            renderAllPatients(data.patients);
+          }
+        } else {
+          console.error('\u274c Failed to fetch patients:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading patients:', error);
+      }
+    }
+    
+    // Render all patients
+    function renderAllPatients(patients) {
+      console.log('\n=== RENDER ALL PATIENTS ===');
+      console.log('Patients received:', patients);
+      
+      const container = document.getElementById('allPatientsList');
+      console.log('Container found?', !!container);
+      if (!container) {
+        console.error('\u274c Container not found: #allPatientsList');
+        return;
+      }
+      
+      if (!patients || patients.length === 0) {
+        console.log('\u26a0 No patients to render');
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No patients found</p><span class="appointment-time">You have no patient records yet</span></div></div>`;
+        return;
+      }
+      
+      console.log('\u2705 Rendering', patients.length, 'patients');
+      container.innerHTML = patients.map(patient => `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="patient-name">${patient.name || 'Patient'}</p>
+            <span class="appointment-time">Email: ${patient.email || '--'} • Total Visits: ${patient.totalVisits || 0} • Last Visit: ${formatDate(patient.lastVisitDate)}</span>
+          </div>
+          <div class="appointment-actions">
+            <button class="view-btn" onclick="viewPatient(${patient.id})">View Profile</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Render today's patients
+    function renderTodayPatients(patients) {
+      console.log('\n=== RENDER TODAY PATIENTS ===');
+      console.log('Patients received:', patients);
+      
+      const container = document.querySelector('#patients .appointment-list');
+      console.log('Container found?', !!container);
+      if (!container) {
+        console.error('\u274c Container not found: #patients .appointment-list');
+        return;
+      }
+      
+      if (!patients || patients.length === 0) {
+        console.log('\u26a0 No patients to render');
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No patients today</p><span class="appointment-time">You have no patient appointments today</span></div></div>`;
+        return;
+      }
+      
+      console.log('\u2705 Rendering', patients.length, 'patients');
+      container.innerHTML = patients.map(patient => `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="patient-name">${patient.name || 'Patient'}</p>
+            <span class="appointment-time">Age: ${patient.age || '--'} • Blood Type: ${patient.blood_type || '--'} • Last Visit: ${formatDate(patient.last_visit)}</span>
+          </div>
+          <div class="appointment-actions">
+            <button class="view-btn" onclick="viewPatientProfile(${patient.id})">View Profile</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Load pending tasks
+    async function loadPendingTasks() {
+      try {
+        const resultsRes = await fetch(`${API_BASE}/results/doctor/pending`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const prescriptionsRes = await fetch(`${API_BASE}/medications/doctor/pending`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        let tasks = [];
+        
+        if (resultsRes.ok) {
+          const resultsData = await resultsRes.json();
+          if (resultsData.success && resultsData.results) {
+            tasks = tasks.concat(resultsData.results.map(r => ({ ...r, type: 'result', priority: r.priority || 'normal' })));
+          }
+        }
+        
+        if (prescriptionsRes.ok) {
+          const prescriptionsData = await prescriptionsRes.json();
+          if (prescriptionsData.success && prescriptionsData.medications) {
+            tasks = tasks.concat(prescriptionsData.medications.map(p => ({ ...p, type: 'prescription', priority: p.priority || 'normal' })));
+          }
+        }
+        
+        renderPendingTasks(tasks);
+      } catch (error) {
+        console.error('Error loading pending tasks:', error);
+      }
+    }
+    
+    // Render pending tasks
+    function renderPendingTasks(tasks) {
+      const container = document.querySelector('#tasks .appointment-list');
+      if (!container) return;
+      
+      if (!tasks || tasks.length === 0) {
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No pending tasks</p><span class="appointment-time">You're all caught up!</span></div></div>`;
+        return;
+      }
+      
+      container.innerHTML = tasks.slice(0, 5).map(task => {
+        const title = task.type === 'result' ? `Blood Test Report - ${task.patient_name || 'Patient'}` : `Prescription Renewal - ${task.patient_name || 'Patient'}`;
+        const description = task.type === 'result' ? 'Pending review and approval' : 'Awaiting signature';
+        
+        return `
+          <div class="appointment-item">
+            <div class="appointment-info">
+              <p class="patient-name">${title}</p>
+              <span class="appointment-time">${description}</span>
+            </div>
+            <div class="appointment-actions">
+              <span class="appointment-badge ${task.priority === 'urgent' ? 'pending' : 'checkup'}">${capitalizeFirst(task.priority)}</span>
+              <button class="view-btn" onclick="review${capitalizeFirst(task.type)}(${task.id})">Review</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Load uploaded reports (patient test results for doctor)
+    let uploadedReports = [];
+    async function loadUploadedReports() {
+      try {
+        const response = await fetch(`${API_BASE}/results/doctor/pending`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            uploadedReports = data.results || [];
+            renderUploadedReports();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading uploaded reports:', error);
+      }
+    }
+    
+    // Render uploaded reports
+    function renderUploadedReports() {
+      const container = document.getElementById('uploadedReportsList');
+      if (!container) return;
+      
+      if (uploadedReports.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-file-medical"></i>
+            </div>
+            <h4>No Reports</h4>
+            <p>Patient reports will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = uploadedReports.map(report => `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="patient-name">${report.testName || report.test_name || 'Test Result'} - ${report.patientName || report.patient_name || 'Patient'}</p>
+            <span class="appointment-time">${report.testType || report.test_type || 'Lab'} • ${formatDate(report.resultDate || report.result_date)}</span>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${report.status || 'completed'}">${capitalizeFirst(report.status || 'completed')}</span>
+            <button class="view-btn" onclick="viewReportDocument(${report.id})">View</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // View report document
+    function viewReportDocument(reportId) {
+      window.open(`${API_BASE}/results/${reportId}`, '_blank');
+    }
+    
+    // Upload Report function
+    async function uploadReport() {
+      const patientId = document.getElementById('reportPatientSelect').value;
+      const reportType = document.getElementById('reportTypeSelect').value;
+      const reportTitle = document.getElementById('reportTitleInput').value.trim();
+      const reportDescription = document.getElementById('reportDescription').value.trim();
+      const reportVisibility = document.getElementById('reportVisibility')?.value || 'patient';
+      const reportFileInput = document.getElementById('reportFileInput');
+      const isTestReferral = document.getElementById('isReportTestReferral')?.checked || false;
+      
+      if (!patientId) {
+        alert('Please select a patient');
+        return;
+      }
+      
+      if (!reportTitle) {
+        alert('Please enter a report title');
+        return;
+      }
+      
+      try {
+        // If there's a file, upload it first
+        let reportFile = null;
+        if (reportFileInput && reportFileInput.files.length > 0) {
+          const formData = new FormData();
+          formData.append('file', reportFileInput.files[0]);
+          
+          const uploadResponse = await fetch(`${API_BASE}/upload`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+          });
+          
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json();
+            reportFile = uploadData.filePath || uploadData.path;
+          }
+        }
+        
+        if (isTestReferral) {
+          // TEST REFERRAL: Create a test referral for lab staff to upload results
+          // This goes to staff/lab who will then upload the actual test result
+          const referralResponse = await fetch(`${API_BASE}/doctor/reports`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              patient_id: parseInt(patientId),
+              report_type: reportType || 'lab',
+              report_title: reportTitle,
+              report_description: reportDescription || 'Test referral - lab staff will upload results',
+              file_path: reportFile,
+              file_name: reportFile ? reportFile.split('/').pop() : null,
+              is_test_referral: true,
+              test_referred_to: 'lab',
+              urgency: document.getElementById('reportUrgency')?.value || 'routine',
+              visibility: 'staff',
+              status: 'submitted'
+            })
+          });
+          
+          const referralData = await referralResponse.json();
+          
+          if (referralData.success) {
+            alert('Test referral created successfully! Lab staff will upload the test results.');
+          } else {
+            alert(referralData.message || 'Failed to create test referral');
+          }
+        } else {
+          // MEDICAL REPORT: Doctor's examination findings - goes directly to patient's Medical Reports
+          const medicalReportResponse = await fetch(`${API_BASE}/doctor/reports`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              patient_id: parseInt(patientId),
+              report_type: reportType || 'medical',
+              report_title: reportTitle,
+              report_description: reportDescription || 'Medical report from examination',
+              file_path: reportFile,
+              file_name: reportFile ? reportFile.split('/').pop() : null,
+              visibility: reportVisibility,
+              status: 'submitted',
+              is_test_referral: false
+            })
+          });
+          
+          const reportData = await medicalReportResponse.json();
+          
+          if (reportData.success) {
+            alert('Medical report uploaded successfully!');
+          } else {
+            alert(reportData.message || 'Failed to upload medical report');
+          }
+        }
+        
+        // Reset form
+        document.getElementById('reportUploadForm').reset();
+        document.getElementById('selectedReportFile').innerHTML = '';
+        // Reload uploaded reports
+        loadUploadedReports();
+        loadStatsData();
+      } catch (error) {
+        console.error('Error uploading report:', error);
+        alert('Error uploading report: ' + error.message);
+      }
+    }
+    
+    // Load patients for report upload
+    async function loadPatientsForReport() {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/patients`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const select = document.getElementById('reportPatientSelect');
+            select.innerHTML = '<option value="">Select Patient</option>';
+            
+            data.patients.forEach(patient => {
+              const option = document.createElement('option');
+              option.value = patient.id;
+              option.textContent = `${patient.name} - ${patient.email}`;
+              select.appendChild(option);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading patients:', error);
+      }
+    }
+    
+    // Load stats data
+    async function loadStatsData() {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/dashboard/stats`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderStatsData(data.stats);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+    
+    // Render stats data
+    function renderStatsData(stats) {
+      if (!stats) return;
+      
+      const container = document.querySelector('#stats .stats-grid');
+      if (!container) return;
+      
+      container.innerHTML = `
+        <div class="stat-card blue">
+          <div class="stat-label">Monthly Appointments</div>
+          <div class="stat-number">${stats.monthlyAppointments || 0}</div>
+          <p class="stat-desc">Total consultations this month</p>
+        </div>
+        <div class="stat-card emerald">
+          <div class="stat-label">Patient Satisfaction</div>
+          <div class="stat-number">${stats.satisfaction || 'N/A'}</div>
+          <p class="stat-desc">Average rating from patients</p>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Pending Reports</div>
+          <div class="stat-number">${stats.pendingReports || 0}</div>
+          <p class="stat-desc">Reports awaiting upload</p>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Completion Rate</div>
+          <div class="stat-number">${stats.completionRate || '0%'}</div>
+          <p class="stat-desc">Appointments completed</p>
+        </div>
+      `;
+    }
+    
+    // Handle logout
+    async function handleLogout() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          window.location.href = 'sign-in.html';
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout error: ' + error.message);
+      }
+    }
+    
+    // View appointment details
+    function viewAppointment(appointmentId) {
+      // Find the appointment from the current data
+      const apt = todayAppointments.find(a => a.id === appointmentId) || upcomingAppointments.find(a => a.id === appointmentId);
+      
+      if (!apt) {
+        alert('Appointment not found');
+        return;
+      }
+      
+      // Show the modal
+      const modal = document.getElementById('appointmentModal');
+      const modalBody = document.getElementById('appointmentModalBody');
+      const modalFooter = document.getElementById('appointmentModalFooter');
+      
+      if (!modal || !modalBody || !modalFooter) {
+        alert('Modal not found');
+        return;
+      }
+      
+      // Populate modal content
+      console.log('doctor viewAppointment modal data', apt);
+      const appointmentDate = apt.appointment_date || apt.date;
+      const appointmentTime = apt.appointment_time || apt.time;
+      modalBody.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; margin: 0 auto 12px;">
+            ${getInitials(apt.patient_name)}
+          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #0f172a;">${apt.patient_name || 'Patient'}</h4>
+          <p style="font-size: 13px; color: #64748b;">${apt.patient_email || ''}</p>
+        </div>
+        
+        <div style="padding: 16px; background: #f8fafc; border-radius: 10px;">
+          <p style="margin-bottom: 8px;"><strong>Date:</strong> ${formatDate(appointmentDate)}</p>
+          <p style="margin-bottom: 8px;"><strong>Time:</strong> ${formatTime(appointmentTime)}</p>
+          <p style="margin-bottom: 8px;"><strong>Reason:</strong> ${apt.reason || 'General Consultation'}</p>
+          <p style="margin-bottom: 8px;"><strong>Status:</strong> <span class="appointment-badge ${getBadgeClass(apt.status)}">${capitalizeFirst(apt.status)}</span></p>
+          ${apt.notes ? `<p style="margin-bottom: 8px;"><strong>Notes:</strong> ${apt.notes}</p>` : ''}
+        </div>
+      `;
+      
+      // Populate footer with action buttons based on status
+      let footerButtons = '';
+      if (apt.status === 'scheduled' || apt.status === 'confirmed') {
+        footerButtons = `
+          <button type="button" onclick="completeAppointment(${apt.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #059669; color: white; font-size: 13px; font-weight: 500; cursor: pointer;">Mark Complete</button>
+          <button type="button" onclick="cancelAppointment(${apt.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 500; cursor: pointer;">Cancel</button>
+        `;
+      } else if (apt.status === 'pending') {
+        footerButtons = `
+          <button type="button" onclick="confirmAppointment(${apt.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #059669; color: white; font-size: 13px; font-weight: 500; cursor: pointer;">Confirm</button>
+          <button type="button" onclick="cancelAppointment(${apt.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 500; cursor: pointer;">Cancel</button>
+        `;
+      }
+      
+      footerButtons += `<button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>`;
+      
+      modalFooter.innerHTML = footerButtons;
+      
+      // Show modal
+      modal.style.display = 'flex';
+    }
+    
+    // Close appointment modal
+    function closeAppointmentModal() {
+      const modal = document.getElementById('appointmentModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // View patient profile
+    async function viewPatientProfile(patientId) {
+      console.log('viewPatientProfile called with id:', patientId);
+      const modal = document.getElementById('patientProfileModal');
+      const modalBody = document.getElementById('patientProfileModalBody');
+      
+      if (!modal) {
+        console.error('Modal not found!');
+        return;
+      }
+      
+      modal.style.display = 'flex';
+      modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      try {
+        // Fetch patient details
+        const response = await fetch(`${API_BASE}/doctor/patients/${patientId}`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.patient) {
+            const p = data.patient;
+            const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'N/A';
+            
+            modalBody.innerHTML = `
+              <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; margin: 0 auto 12px;">
+                  ${p.name ? p.name.charAt(0).toUpperCase() : 'P'}
+                </div>
+                <h3 style="margin: 0; color: #0f172a;">${p.name || 'Patient'}</h3>
+                <p style="margin: 4px 0 0; color: #64748b;">${p.email || ''}</p>
+              </div>
+              
+              <div style="padding: 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px;">
+                <div style="font-size: 14px; color: #64748b;">Patient since: <strong style="color: #0f172a;">${createdAt}</strong></div>
+              </div>
+              
+              ${data.appointments && data.appointments.length > 0 ? `
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Recent Appointments</h4>
+                ${data.appointments.slice(0, 5).map(apt => `
+                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <div style="font-size: 14px; font-weight: 500; color: #0f172a;">${apt.date ? new Date(apt.date).toLocaleDateString() : 'N/A'}</div>
+                        <div style="font-size: 12px; color: #64748b;">${apt.time || ''} - ${apt.reason || 'General visit'}</div>
+                      </div>
+                      <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: ${apt.status === 'completed' ? '#dcfce7' : apt.status === 'scheduled' ? '#dbeafe' : '#fef3c7'}; color: ${apt.status === 'completed' ? '#16a34a' : apt.status === 'scheduled' ? '#2563eb' : '#d97706'};">${apt.status || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              ` : ''}
+              
+              ${data.medications && data.medications.length > 0 ? `
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Current Medications</h4>
+                ${data.medications.slice(0, 5).map(med => `
+                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="font-size: 14px; font-weight: 500; color: #0f172a;">${med.medicationName || 'N/A'}</div>
+                    <div style="font-size: 12px; color: #64748b;">${med.dosage || ''} - ${med.frequency || ''}</div>
+                    <div style="font-size: 11px; color: ${med.status === 'active' ? '#16a34a' : '#64748b'};">${med.status}</div>
+                  </div>
+                `).join('')}
+              </div>
+              ` : ''}
+              
+              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closePatientProfileModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; font-size: 14px;">Close</button>
+              </div>
+            `;
+          } else {
+            modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Failed to load patient details</p>';
+          }
+        } else {
+          modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Failed to load patient details</p>';
+        }
+      } catch (error) {
+        console.error('Error loading patient profile:', error);
+        modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Error loading patient details</p>';
+      }
+    }
+
+    // Close patient profile modal
+    function closePatientProfileModal() {
+      const modal = document.getElementById('patientProfileModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+    
+    // Complete appointment
+    async function completeAppointment(appointmentId) {
+      if (!confirm('Are you sure you want to mark this appointment as completed?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/doctor/appointments/${appointmentId}/complete`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          alert('Appointment marked as completed');
+          closeAppointmentModal();
+          loadTodayAppointments();
+          loadUpcomingAppointments();
+        } else {
+          alert('Failed to complete appointment');
+        }
+      } catch (error) {
+        console.error('Error completing appointment:', error);
+        alert('Error completing appointment');
+      }
+    }
+    
+    // Cancel appointment
+    async function cancelAppointment(appointmentId) {
+      if (!confirm('Are you sure you want to cancel this appointment?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/doctor/appointments/${appointmentId}/cancel`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          alert('Appointment cancelled');
+          closeAppointmentModal();
+          loadTodayAppointments();
+          loadUpcomingAppointments();
+        } else {
+          alert('Failed to cancel appointment');
+        }
+      } catch (error) {
+        console.error('Error cancelling appointment:', error);
+        alert('Error cancelling appointment');
+      }
+    }
+    
+    // Get initials from name
+    function getInitials(name) {
+      if (!name) return '??';
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    
+    // Confirm appointment
+    async function confirmAppointment(appointmentId) {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/appointments/${appointmentId}/confirm`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          alert('Appointment confirmed');
+          closeAppointmentModal();
+          loadTodayAppointments();
+          loadUpcomingAppointments();
+        } else {
+          alert('Failed to confirm appointment');
+        }
+      } catch (error) {
+        console.error('Error confirming appointment:', error);
+        alert('Error confirming appointment');
+      }
+    }
+    
+    // Get initials from name
+    function getInitials(name) {
+      if (!name) return '??';
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    
+    // Helper functions
+    function formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    function formatTime(timeStr) {
+      if (!timeStr) return 'N/A';
+      const time = timeStr.substring(0, 5);
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    }
+    
+    function capitalizeFirst(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    function getBadgeClass(status) {
+      const classes = { 'scheduled': 'checkup', 'confirmed': 'confirmed', 'completed': 'followup', 'cancelled': 'pending', 'pending': 'pending' };
+      return classes[status] || 'checkup';
+    }
+    
+    // View patient profile
+    function viewPatient(id) { viewPatientProfile(id); }
+    function reviewResult(id) { window.location.href = `#results?id=${id}`; }
+    function reviewPrescription(id) { window.location.href = `#prescriptions?id=${id}`; }
+    
+    // Close modal when clicking outside (on the overlay)
+    document.addEventListener('click', function(e) {
+      const appointmentModal = document.getElementById('appointmentModal');
+      if (appointmentModal && appointmentModal.style.display === 'flex') {
+        if (e.target === appointmentModal) {
+          closeAppointmentModal();
+        }
+      }
+      
+      const patientProfileModal = document.getElementById('patientProfileModal');
+      if (patientProfileModal && patientProfileModal.style.display === 'flex') {
+        if (e.target === patientProfileModal) {
+          closePatientProfileModal();
+        }
+      }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const appointmentModal = document.getElementById('appointmentModal');
+        if (appointmentModal && appointmentModal.style.display === 'flex') {
+          closeAppointmentModal();
+        }
+        
+        const patientProfileModal = document.getElementById('patientProfileModal');
+        if (patientProfileModal && patientProfileModal.style.display === 'flex') {
+          closePatientProfileModal();
+        }
+      }
+    });
+    
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+        
+        // Load data for specific tabs
+        if (tabId === 'examinations') {
+          if (typeof loadExaminations === 'function') loadExaminations();
+        } else if (tabId === 'prescriptions') {
+          if (typeof loadPrescriptions === 'function') loadPrescriptions();
+        } else if (tabId === 'reports') {
+          if (typeof initReportsTab === 'function') initReportsTab();
+        } else if (tabId === 'patients') {
+          if (typeof loadTodaysPatients === 'function') loadTodaysPatients();
+          if (typeof loadAllPatients === 'function') loadAllPatients();
+        } else if (tabId === 'messages') {
+          if (typeof loadDoctorMessages === 'function') loadDoctorMessages();
+        } else if (tabId === 'tasks') {
+          if (typeof loadPendingTasks === 'function') loadPendingTasks();
+        }
+      });
+    });
+    
+    
+    // Current doctor's messages
+    let doctorMessages = [];
+    
+    // Load doctor messages
+    async function loadDoctorMessages() {
+      try {
+        console.log('\nFetching doctor messages...');
+        const response = await fetch(`${API_BASE}/messages/doctor/inbox`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Doctor messages response:', data);
+          if (data.success) {
+            renderDoctorMessages(data.messages, data.unreadCount);
+          }
+        } else {
+          console.error('Failed to fetch doctor messages:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading doctor messages:', error);
+      }
+    }
+    
+    // Render doctor messages
+    function renderDoctorMessages(messages, unreadCount) {
+      console.log('\n=== RENDER DOCTOR MESSAGES ===');
+      console.log('Messages received:', messages);
+      
+      const container = document.getElementById('doctorMessagesList');
+      if (!container) {
+        console.error('Container not found: #doctorMessagesList');
+        return;
+      }
+      
+      // Store messages globally
+      doctorMessages = messages || [];
+      
+      // Update message count
+      const countText = document.getElementById('messageCountText');
+      if (countText) {
+        if (unreadCount > 0) {
+          countText.textContent = `You have ${unreadCount} unread message${unreadCount !== 1 ? 's' : ''}`;
+        } else if (messages.length > 0) {
+          countText.textContent = `You have ${messages.length} message${messages.length !== 1 ? 's' : ''}`;
+        } else {
+          countText.textContent = 'You have no messages';
+        }
+      }
+      
+      if (!messages || messages.length === 0) {
+        console.log('No messages to render');
+        container.innerHTML = `<div class="appointment-item"><div class="appointment-info"><p class="patient-name">No messages</p><span class="appointment-time">Your patients haven't sent you any messages yet</span></div></div>`;
+        return;
+      }
+      
+      console.log('Rendering', messages.length, 'messages');
+      container.innerHTML = messages.map(msg => `
+        <div class="appointment-item" onclick="viewDoctorMessage(${msg.id})" style="cursor: pointer;">
+          <div class="appointment-info">
+            <p class="patient-name">${msg.patientName || 'Patient'}</p>
+            <span class="appointment-time">${msg.subject || 'No Subject'} • ${formatDate(msg.createdAt)}</span>
+            <p style="font-size: 12px; color: #64748b; margin-top: 4px;">${msg.message.substring(0, 100)}${msg.message.length > 100 ? '...' : ''}</p>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${msg.category === 'Urgent' ? 'pending' : 'checkup'}">${msg.category || 'General'}</span>
+            ${!msg.isRead ? '<span class="appointment-badge pending">New</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // View doctor message details
+    function viewDoctorMessage(messageId) {
+      const msg = doctorMessages.find(m => m.id === messageId);
+      if (!msg) {
+        alert('Message not found');
+        return;
+      }
+      
+      // Mark as read
+      if (!msg.isRead) {
+        markMessageAsRead(messageId);
+      }
+      
+      const modal = document.getElementById('appointmentModal');
+      const modalBody = document.getElementById('appointmentModalBody');
+      const modalFooter = document.getElementById('appointmentModalFooter');
+      
+      if (!modal || !modalBody || !modalFooter) {
+        alert('Modal not found');
+        return;
+      }
+      
+      console.log('Viewing message:', msg);
+      
+      modalBody.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: #8b5cf6; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; margin: 0 auto 12px;">
+            ${msg.patientName ? msg.patientName.charAt(0).toUpperCase() : '?'}
+          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #0f172a;">${msg.patientName || 'Patient'}</h4>
+          <p style="font-size: 13px; color: #64748b;">${msg.patientEmail || ''}</p>
+        </div>
+        
+        <div style="padding: 16px; background: #f8fafc; border-radius: 10px;">
+          <p style="margin-bottom: 8px;"><strong>Category:</strong> <span class="appointment-badge">${msg.category || 'General'}</span></p>
+          <p style="margin-bottom: 8px;"><strong>Subject:</strong> ${msg.subject || 'No Subject'}</p>
+          <p style="margin-bottom: 8px;"><strong>Date:</strong> ${formatDate(msg.createdAt)}</p>
+          ${msg.appointmentDate ? `<p style="margin-bottom: 8px;"><strong>Appointment:</strong> ${formatDate(msg.appointmentDate)} at ${formatTime(msg.appointmentTime)}</p>` : ''}
+          ${msg.appointmentReason ? `<p style="margin-bottom: 8px;"><strong>Appointment Reason:</strong> ${msg.appointmentReason}</p>` : ''}
+          <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;"><strong>Message:</strong></p>
+          <p style="margin-top: 8px; line-height: 1.6;">${msg.message}</p>
+        </div>
+      `;
+      
+      modalFooter.innerHTML = `
+        <button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>
+        <button type="button" onclick="showReplyForm(${msg.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #8b5cf6; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Reply</button>
+      `;
+      
+      modal.style.display = 'flex';
+    }
+    
+    // Show reply form for a message
+    function showReplyForm(messageId) {
+      const msg = doctorMessages.find(m => m.id === messageId);
+      if (!msg) {
+        alert('Message not found');
+        return;
+      }
+      
+      const modal = document.getElementById('appointmentModal');
+      const modalBody = document.getElementById('appointmentModalBody');
+      const modalFooter = document.getElementById('appointmentModalFooter');
+      
+      if (!modal || !modalBody || !modalFooter) {
+        alert('Modal not found');
+        return;
+      }
+      
+      // Close current modal first
+      modal.style.display = 'none';
+      
+      // Create reply modal
+      const replyModal = document.createElement('div');
+      replyModal.id = 'replyModal';
+      replyModal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      
+      replyModal.innerHTML = `
+        <div style="background:white;padding:24px;border-radius:12px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;">
+          <h3 style="margin-top:0;font-size:18px;color:#0f172a;">Reply to ${msg.patientName || 'Patient'}</h3>
+          <p style="font-size:13px;color:#64748b;margin-bottom:16px;"><strong>Subject:</strong> ${msg.subject || 'No Subject'}</p>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;font-weight:500;color:#0f172a;margin-bottom:4px;">Your Reply <span style="color:red;">*</span></label>
+            <textarea id="replyMessage" rows="6" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;resize:vertical;" placeholder="Type your reply here..."></textarea>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;font-weight:500;color:#0f172a;margin-bottom:4px;">Subject (optional)</label>
+            <input type="text" id="replySubject" value="Re: ${msg.subject || 'Message'}" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button type="button" onclick="closeReplyModal()" style="padding:10px 20px;border-radius:8px;border:none;background:#f1f5f9;color:#0f172a;font-size:14px;font-weight:500;cursor:pointer;">Cancel</button>
+            <button type="button" onclick="sendReply(${msg.id})" style="padding:10px 20px;border-radius:8px;border:none;background:#8b5cf6;color:white;font-size:14px;font-weight:500;cursor:pointer;">Send Reply</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(replyModal);
+    }
+    
+    // Close reply modal
+    function closeReplyModal() {
+      const replyModal = document.getElementById('replyModal');
+      if (replyModal) {
+        replyModal.remove();
+      }
+    }
+    
+    // Send reply to patient
+    async function sendReply(messageId) {
+      const message = document.getElementById('replyMessage').value.trim();
+      const subject = document.getElementById('replySubject').value.trim();
+      
+      if (!message) {
+        alert('Please enter a reply message');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/messages/doctor/reply/${messageId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, subject })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Reply sent successfully!');
+          closeReplyModal();
+          // Reload messages
+          loadDoctorMessages();
+        } else {
+          alert(data.message || 'Failed to send reply');
+        }
+      } catch (error) {
+        console.error('Error sending reply:', error);
+        alert('Error sending reply: ' + error.message);
+      }
+    }
+    
+    // Mark message as read
+    async function markMessageAsRead(messageId) {
+      try {
+        const response = await fetch(`${API_BASE}/messages/doctor/${messageId}/read`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const msg = doctorMessages.find(m => m.id === messageId);
+          if (msg) {
+            msg.isRead = true;
+          }
+          // Reload messages to update UI
+          await loadDoctorMessages();
+        }
+      } catch (error) {
+        console.error('Error marking message as read:', error);
+      }
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    
+    function toggleSubmenu(element) {
+      element.classList.toggle('expanded');
+      const submenu = element.nextElementSibling;
+      if (submenu && submenu.classList.contains('submenu')) submenu.classList.toggle('show');
+    }
+    
+    function formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    
+    window.handleLogout = handleLogout;
+    window.showReplyForm = showReplyForm;
+    window.closeReplyModal = closeReplyModal;
+    window.sendReply = sendReply;
+  </script>
+  <script src="assets/js/examination.js"></script>
+</body>
+</html>

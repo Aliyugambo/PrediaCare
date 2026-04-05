@@ -1,0 +1,141 @@
+.photo-gallery {
+    position: relative;
+    margin-bottom: 30px;
+
+    &::before {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        content: '';
+        background: $extra-color-five;
+        @include border-radius-three;
+        @include transform(scale(0.9));
+        @include transition(all 0.4s);
+        z-index: 2;
+        opacity: 0;
+    }
+
+    .photo-gallery-image {
+        figure {
+            display: block;
+            @include border-radius-three;
+            overflow: hidden;
+
+            img {
+                object-fit: cover;
+                height: 100%;
+                width: 100%;
+            }
+        }
+    }
+
+    .photo-gallery-icon {
+        @include flex-justify-align;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 3;
+        height: 100%;
+        width: 100%;
+
+        a {
+            font-size: 24px;
+            color: $black-color;
+            @include flex-justify-align;
+            height: 100%;
+            width: 100%;
+            @include transform(scale(0));
+            @include transition(all 500ms ease);
+            opacity: 0;
+
+            i {
+                background-color: $white-color;
+                @include border-radius(100px);
+                @include flex-justify-align;
+                height: 60px;
+                width: 60px;
+            }
+        }
+    }
+
+    &:hover {
+        &::before {
+            @include transform(scale(1));
+            opacity: 0.82;
+        }
+
+        .photo-gallery-icon {
+            a {
+                @include transform(scale(1));
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.video-gallery-item {
+    margin-bottom: 30px;
+
+    a {
+        position: relative;
+        display: block;
+
+        figure {
+            display: block;
+            @include border-radius-three;
+            overflow: hidden;
+
+            img {
+                object-fit: cover;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .play-button {
+            @include flex-justify-align;
+            position: absolute;
+            height: 60px;
+            width: 60px;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            z-index: 2;
+            background-color: $primary-color;
+            @include border-radius(100px);
+            color: $white-color;
+        }
+
+        &::before {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            content: '';
+            background: $extra-color-five;
+            @include border-radius-three;
+            @include transform(scale(0.9));
+            @include transition(all 0.4s);
+            z-index: 2;
+            opacity: 0;
+        }
+
+        &:hover {
+            &::before {
+                @include transform(scale(1));
+                opacity: 0.82;
+            }
+
+            .play-button {
+                background-color: $white-color;
+                color: $black-color;
+            }
+        }
+    }
+}

@@ -1,0 +1,4659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Dashboard | Carenix Medical Clinic</title>
+  <link rel="stylesheet" href="assets/css/patient.css" />
+  <link rel="stylesheet" href="assets/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #05080e;
+      --blue-light: #dbeafe;
+      --emerald: #059669;
+      --emerald-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --rose: #e11d48;
+      --rose-light: #ffe4e6;
+      --purple: #9333ea;
+      --purple-light: #f3e8ff;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+    }
+    
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .welcome-section {
+      margin-bottom: 24px;
+    }
+    
+    .welcome-section h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .welcome-section p {
+      color: var(--slate-500);
+      font-size: 15px;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .stat-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+    }
+    
+    /* Blue - Appointments */
+    .stat-card.blue {
+      border-left: 4px solid var(--blue);
+    }
+    .stat-card.blue .stat-icon-wrap {
+      background: var(--blue-light);
+    }
+    .stat-card.blue .stat-icon-wrap i {
+      color: var(--blue);
+    }
+    .stat-card.blue .stat-badge {
+      color: var(--blue);
+    }
+    
+    /* Emerald - Medications */
+    .stat-card.emerald {
+      border-left: 4px solid var(--emerald);
+    }
+    .stat-card.emerald .stat-icon-wrap {
+      background: var(--emerald-light);
+    }
+    .stat-card.emerald .stat-icon-wrap i {
+      color: var(--emerald);
+    }
+    .stat-card.emerald .stat-badge {
+      color: var(--emerald);
+    }
+    
+    /* Amber - Records */
+    .stat-card.amber {
+      border-left: 4px solid var(--amber);
+    }
+    .stat-card.amber .stat-icon-wrap {
+      background: var(--amber-light);
+    }
+    .stat-card.amber .stat-icon-wrap i {
+      color: var(--amber);
+    }
+    .stat-card.amber .stat-badge {
+      color: var(--amber);
+    }
+    
+    /* Purple - Vitals */
+    .stat-card.purple {
+      border-left: 4px solid var(--purple);
+    }
+    .stat-card.purple .stat-icon-wrap {
+      background: var(--purple-light);
+    }
+    .stat-card.purple .stat-icon-wrap i {
+      color: var(--purple);
+    }
+    .stat-card.purple .stat-badge {
+      color: var(--purple);
+    }
+    
+    /* Rose - Messages */
+    .stat-card.rose {
+      border-left: 4px solid var(--rose);
+    }
+    .stat-card.rose .stat-icon-wrap {
+      background: var(--rose-light);
+    }
+    .stat-card.rose .stat-icon-wrap i {
+      color: var(--rose);
+    }
+    .stat-card.rose .stat-badge {
+      color: var(--rose);
+    }
+    
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .stat-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .stat-icon-wrap i {
+      font-size: 18px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--slate-600);
+      font-weight: 500;
+    }
+    
+    .stat-badge {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .stat-desc {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-bottom: 16px;
+    }
+    
+    .stat-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    
+    .stat-card.blue .stat-link { color: var(--blue); }
+    .stat-card.emerald .stat-link { color: var(--emerald); }
+    .stat-card.amber .stat-link { color: var(--amber); }
+    .stat-card.purple .stat-link { color: var(--purple); }
+    .stat-card.rose .stat-link { color: var(--rose); }
+    
+    .stat-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Tabs */
+    .tabs-container {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-500);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .tab-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    
+    .tab-btn.active {
+      background: var(--blue);
+      color: white;
+    }
+    
+    .tab-content {
+      padding: 24px;
+    }
+    
+    .tab-pane {
+      display: none;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 4fr 3fr;
+      gap: 24px;
+    }
+    
+    .content-grid-full {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    
+    .content-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .content-card-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .content-card-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .content-card-header p {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin: 0;
+    }
+    
+    .content-card-body {
+      padding: 20px;
+    }
+    
+    /* Action Button */
+    .action-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .action-btn:hover {
+      background: #101010;
+    }
+    
+    .action-btn.secondary {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .action-btn.secondary:hover {
+      background: #e2e8f0;
+    }
+    
+    /* Appointment Items */
+    .appointment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .appointment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .appointment-info .doctor-name,
+    .appointment-info .patient-name {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .appointment-info .appointment-dept {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-bottom: 4px;
+    }
+    
+    .appointment-info .appointment-time {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .appointment-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .appointment-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .appointment-badge.checkup {
+      background: #dbeafe;
+      color: var(--blue);
+    }
+    
+    .appointment-badge.followup {
+      background: #1e293b;
+      color: white;
+    }
+    
+    .appointment-badge.confirmed {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .appointment-badge.pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .appointment-badge.completed {
+      background: #d1fae5;
+      color: #059669;
+    }
+    
+    .appointment-badge.cancelled {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .appointment-badge.scheduled {
+      background: #e0e7ff;
+      color: #0f0e0f;
+    }
+    
+    .view-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .view-btn:hover {
+      background: #343435;
+    }
+    
+    .view-btn.light {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .view-btn.light:hover {
+      background: #e2e8f0;
+    }
+    
+    .view-btn.danger {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .view-btn.danger:hover {
+      background: #fecaca;
+    }
+    
+    .view-btn.download-btn {
+      background: #059669;
+      margin-left: 6px;
+    }
+    
+    .view-btn.download-btn:hover {
+      background: #047857;
+    }
+    
+    /* Layout with Sidebar */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    /* Main Header */
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .header-icon {
+      width: 28px;
+      height: 28px;
+      color: #101010;
+    }
+    
+    .header-brand {
+      font-weight: 700;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    
+    .header-search {
+      position: relative;
+      display: none;
+    }
+    
+    @media (min-width: 768px) {
+      .header-search {
+        display: block;
+      }
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    
+    .search-input {
+      width: 300px;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .search-input:focus {
+      border-color: #121213;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .header-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 18px;
+      transition: background 0.2s;
+      position: relative;
+    }
+    
+    .header-icon-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: #dc2626;
+      border-radius: 50%;
+    }
+    
+    .user-dropdown {
+      position: relative;
+      margin-left: 8px;
+    }
+    
+    .user-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #0b0b0b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .user-avatar {
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 220px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 300;
+    }
+    
+    .user-dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    
+    .dropdown-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .dropdown-header .user-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .dropdown-header .user-email {
+      font-size: 12px;
+      color: #64748b;
+      margin: 4px 0 0 0;
+    }
+    
+    .dropdown-divider {
+      height: 1px;
+      background: #e2e8f0;
+    }
+    
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      color: #475569;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    
+    .dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .dropdown-item i {
+      width: 16px;
+      font-size: 14px;
+    }
+    
+    /* Sidebar - Fixed position on the left */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 260px;
+      min-height: 100vh;
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    
+    .sidebar-logo img {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .sidebar-logo span {
+      font-weight: 700;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    
+    /* Custom Scrollbar */
+    .sidebar-nav::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .sidebar-nav::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    
+    .sidebar-nav::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    .nav-section {
+      margin-bottom: 20px;
+    }
+    
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #475569;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .nav-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .nav-item.active {
+      background: #eff6ff;
+      color: #0a0f18;
+    }
+    
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .nav-item i {
+      font-size: 18px;
+      width: 20px;
+    }
+    
+    .nav-item .chevron {
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+    
+    .nav-item.expanded .chevron {
+      transform: rotate(180deg);
+    }
+    
+    /* Submenu */
+    .submenu {
+      display: none;
+      padding-left: 28px;
+      margin-top: 4px;
+    }
+    
+    .submenu.show {
+      display: block;
+    }
+    
+    .submenu-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #64748b;
+      border-radius: 6px;
+      text-decoration: none;
+      display: block;
+      transition: all 0.15s ease;
+    }
+    
+    .submenu-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .submenu-item.active {
+      background: #eff6ff;
+      color: #131313;
+    }
+    
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #161617;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .sidebar-profile-info {
+      flex: 1;
+    }
+    
+    .sidebar-profile-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    .sidebar-profile-role {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    /* Main Content Area */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      margin-top: 64px;
+      padding: 24px;
+      background: #f8fafc;
+    }
+    
+    /* Mobile toggle button */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* Medication List */
+    .medication-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .medication-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .medication-info {
+      flex: 1;
+    }
+    
+    .medication-name {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .medication-details {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .medication-dosage {
+      font-size: 12px;
+      color: var(--blue);
+      background: var(--blue-light);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+    
+    .medication-status {
+      font-size: 13px;
+      color: var(--emerald);
+      font-weight: 500;
+    }
+    
+    .medication-status.expired {
+      color: #dc2626;
+    }
+    
+    /* Health Metrics */
+    .health-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    .metric-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .metric-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--slate-600);
+    }
+    
+    .metric-value {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 15px;
+    }
+    
+    .metric-value.normal {
+      color: var(--emerald);
+    }
+    
+    .metric-value.warning {
+      color: var(--amber);
+    }
+    
+    .metric-value.danger {
+      color: var(--rose);
+    }
+    
+    /* Records List */
+    .record-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .record-info {
+      flex: 1;
+    }
+    
+    .record-title {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .record-date {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    /* Message List */
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .message-item {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .message-item:hover {
+      background: #f1f5f9;
+    }
+    
+    .message-item.unread {
+      border-left: 3px solid var(--blue);
+    }
+    
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--blue-light);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .message-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .message-sender {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    
+    .message-time {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    
+    .message-subject {
+      font-size: 13px;
+      color: var(--slate-600);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .message-preview {
+      font-size: 12px;
+      color: var(--slate-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Health Tips */
+    .health-tips {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .health-tip {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 10px;
+      border: 1px solid #bae6fd;
+    }
+    
+    .tip-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1c1d1d;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .tip-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0c4a6e;
+      margin-bottom: 4px;
+    }
+    
+    .tip-content p {
+      font-size: 12px;
+      color: #0b0c0c;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    /* Vital Signs Card */
+    .vital-signs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    
+    .vital-card {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .vital-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 20px;
+    }
+    
+    .vital-icon.heart {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .vital-icon.bp {
+      background: #e0e7ff;
+      color: #131314;
+    }
+    
+    .vital-icon.glucose {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .vital-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .vital-label {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    
+    .vital-status {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    
+    .vital-status.normal {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .vital-status.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .vital-status.danger {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+   /* Base modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* When active */
+.modal-overlay.active {
+  display: flex;
+}
+
+/* Modal box */
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease;
+}
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f1f5f9;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    .modal-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    
+    .form-label.required::after {
+      content: '*';
+      color: #dc2626;
+      margin-left: 4px;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .form-control:focus {
+      border-color: #29292a;
+    }
+    
+    .form-control::placeholder {
+      color: #94a3b8;
+    }
+    
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .form-hint {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-top: 4px;
+    }
+    
+    .form-error {
+      font-size: 12px;
+      color: #dc2626;
+      margin-top: 4px;
+    }
+    
+    
+    /* Loading Spinner */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #0a0a0a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .empty-state-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+      color: var(--slate-500);
+    }
+    
+    .empty-state h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+      color: var(--slate-500);
+      margin: 0;
+    }
+    
+    /* Billing Table */
+    .billing-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .billing-table th,
+    .billing-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .billing-table th {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      background: #f8fafc;
+    }
+    
+    .billing-table td {
+      font-size: 14px;
+      color: #0f172a;
+    }
+    
+    .billing-table tr:hover td {
+      background: #f8fafc;
+    }
+    
+    .billing-amount {
+      font-weight: 600;
+    }
+    
+    .billing-amount.paid {
+      color: var(--emerald);
+    }
+    
+    .billing-amount.pending {
+      color: var(--amber);
+    }
+    
+    .billing-amount.overdue {
+      color: #dc2626;
+    }
+    
+    /* Notification Toast */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .toast {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      animation: toastSlideIn 0.3s ease;
+    }
+    
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .toast.success {
+      border-left: 4px solid var(--emerald);
+    }
+    
+    .toast.error {
+      border-left: 4px solid #dc2626;
+    }
+    
+    .toast.warning {
+      border-left: 4px solid var(--amber);
+    }
+    
+    .toast-icon {
+      font-size: 18px;
+    }
+    
+    .toast.success .toast-icon {
+      color: var(--emerald);
+    }
+    
+    .toast.error .toast-icon {
+      color: #dc2626;
+    }
+    
+    .toast.warning .toast-icon {
+      color: var(--amber);
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+    }
+    
+    .toast-message {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .vital-signs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar-close {
+        display: block;
+      }
+      
+      .main {
+        margin-left: 0;
+        padding-top: 60px;
+      }
+      
+      .mobile-toggle {
+        display: block;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tabs-header {
+        flex-wrap: wrap;
+      }
+      
+      .tab-btn {
+        flex: 1;
+        min-width: calc(50% - 4px);
+        text-align: center;
+      }
+      
+      .welcome-section h1 {
+        font-size: 22px;
+      }
+      
+      .health-metrics {
+        grid-template-columns: 1fr;
+      }
+      
+      .vital-signs-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+  
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+  
+  <div class="layout">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="patient-dashboard.html" class="header-logo">
+          <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo">
+          <span class="header-brand">PrediaCare</span>
+        </a>
+        <div class="header-search">
+          <i class="fas fa-search search-icon"></i>
+          <input type="search" placeholder="Search appointments, records..." class="search-input" />
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button class="header-icon-btn" title="Calendar" onclick="switchTab('appointments')">
+          <i class="far fa-calendar"></i>
+        </button>
+        <button class="header-icon-btn" title="Messages" onclick="switchTab('messages')">
+          <i class="far fa-comment"></i>
+          <span class="notification-badge" id="messageBadge" style="display: none;"></span>
+        </button>
+        <button class="header-icon-btn" title="Notifications">
+          <i class="far fa-bell"></i>
+        </button>
+        <button class="header-icon-btn" title="Theme">
+          <i class="far fa-moon"></i>
+        </button>
+        <div class="user-dropdown">
+          <button class="user-btn">
+            <div class="user-avatar" id="headerAvatar">JD</div>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <p class="user-name" id="headerUserName">John Doe</p>
+              <p class="user-email" id="headerUserEmail">john.doe@example.com</p>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+            <a href="#" class="dropdown-item" onclick="switchTab('messages'); return false;"><i class="fas fa-comment"></i> Chat</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-question-circle"></i> Support</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <div class="dropdown-divider"></div>
+            <a href="sign-in.html" class="dropdown-item" onclick="handleLogout(); return false;"><i class="fas fa-sign-out-alt"></i> Log out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index-3.html" class="sidebar-logo">
+          <img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" />
+          <span>Prediacare</span>
+        </a>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Dashboard Section -->
+        <div class="nav-section">
+          <p class="nav-section-title">Dashboard</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-th-large"></i>
+              <span>Dashboard</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Admin Dashboard</a>
+            <a href="doctor-dashboard.html" class="submenu-item">Doctor Dashboard</a>
+            <a href="patient-dashboard.html" class="submenu-item active">Patient Dashboard</a>
+          </div>
+        </div>
+
+        <!-- Main Management -->
+        <div class="nav-section">
+          <p class="nav-section-title">Main</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-md"></i>
+              <span>Doctors</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-injured"></i>
+              <span>Patients</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Appointments</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">All Appointments</a>
+            <a href="#" class="submenu-item">Add Appointment</a>
+            <a href="#" class="submenu-item">Calendar View</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-prescription"></i>
+              <span>Prescriptions</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">All Prescriptions</a>
+            <a href="#" class="submenu-item">Create Prescription</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-ambulance"></i>
+              <span>Ambulance</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-pills"></i>
+              <span>Pharmacy</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-tint"></i>
+              <span>Blood Bank</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Blood Stock</a>
+            <a href="#" class="submenu-item">Blood Donors</a>
+            <a href="#" class="submenu-item">Issue Blood</a>
+          </div>
+        </div>
+
+        <!-- Finance -->
+        <div class="nav-section">
+          <p class="nav-section-title">Finance</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-receipt"></i>
+              <span>Billing</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="cart.html" class="submenu-item">Invoices</a>
+            <a href="#" class="submenu-item">Payments</a>
+            <a href="#" class="submenu-item">Insurance Claims</a>
+          </div>
+        </div>
+
+        <!-- Hospital -->
+        <div class="nav-section">
+          <p class="nav-section-title">Hospital</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-building"></i>
+              <span>Departments</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Department List</a>
+            <a href="#" class="submenu-item">Add Department</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Inventory List</a>
+            <a href="#" class="submenu-item">Stock Alerts</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-tie"></i>
+              <span>Staff</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-file-medical"></i>
+              <span>Records</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Birth Records</a>
+            <a href="#" class="submenu-item">Death Records</a>
+          </div>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-bed"></i>
+              <span>Room Allotment</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Reports & Settings -->
+        <div class="nav-section">
+          <p class="nav-section-title">Reports & Settings</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-star"></i>
+              <span>Reviews</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comment-dots"></i>
+              <span>Feedback</span>
+            </div>
+          </a>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-chart-bar"></i>
+              <span>Reports</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">Overview</a>
+            <a href="#" class="submenu-item">Appointment Reports</a>
+            <a href="#" class="submenu-item">Financial Reports</a>
+          </div>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="#" class="submenu-item">General Settings</a>
+            <a href="#" class="submenu-item">Notifications</a>
+            <a href="#" class="submenu-item">Working Hours</a>
+          </div>
+        </div>
+
+        <!-- Extra -->
+        <div class="nav-section">
+          <p class="nav-section-title">Extra</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-week"></i>
+              <span>Calendar</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-check-circle"></i>
+              <span>Tasks</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-envelope"></i>
+              <span>Email</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comments"></i>
+              <span>Chat</span>
+            </div>
+          </a>
+          
+          <a href="contact.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-question-circle"></i>
+              <span>Support</span>
+            </div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-profile">
+          <div class="sidebar-avatar" id="sidebarAvatar">JD</div>
+          <div class="sidebar-profile-info">
+            <p class="sidebar-profile-name" id="sidebarProfileName">John Doe</p>
+            <p class="sidebar-profile-role">Patient</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+          <h1>Welcome back, <span id="welcomeName">John</span></h1>
+          <p>Here's your health overview and upcoming appointments.</p>
+        </section>
+
+        <!-- Stats Grid -->
+        <section class="stats-grid">
+          <!-- Appointments Card - Blue -->
+          <div class="stat-card blue" onclick="switchTab('appointments')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-calendar-check"></i>
+              </div>
+              <span class="stat-badge" id="appointmentBadge">0 upcoming</span>
+            </div>
+            <div class="stat-label">Appointments</div>
+            <div class="stat-number" id="appointmentCount">0</div>
+            <p class="stat-desc">Total appointments</p>
+            <span class="stat-link">
+              <span>View All</span>
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+
+          <!-- Medications Card - Emerald -->
+          <div class="stat-card emerald" onclick="switchTab('medications')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-pills"></i>
+              </div>
+              <span class="stat-badge" id="medicationBadge">0 active</span>
+            </div>
+            <div class="stat-label">Medications</div>
+            <div class="stat-number" id="medicationCount">0</div>
+            <p class="stat-desc">Active prescriptions</p>
+            <span class="stat-link">
+              <span>View Medications</span>
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+
+          <!-- Messages Card - Rose -->
+          <div class="stat-card rose" onclick="switchTab('messages')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-comment-dots"></i>
+              </div>
+              <span class="stat-badge" id="messageBadgeText">0 unread</span>
+            </div>
+            <div class="stat-label">Messages</div>
+            <div class="stat-number" id="messageCount">0</div>
+            <p class="stat-desc">Total messages</p>
+            <span class="stat-link">
+              <span>View Messages</span>
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+
+          <!-- Vitals Card - Purple -->
+          <div class="stat-card purple" onclick="switchTab('vitals')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <span class="stat-badge" id="vitalsBadge">Normal</span>
+            </div>
+            <div class="stat-label">Vitals</div>
+            <div class="stat-number" id="vitalsCount">Good</div>
+            <p class="stat-desc">Last checked: <span id="vitalsLastChecked">Today</span></p>
+            <span class="stat-link">
+              <span>View Vitals</span>
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+
+          <!-- Test Results Card - Amber -->
+          <div class="stat-card amber" onclick="switchTab('records')">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-file-medical-alt"></i>
+              </div>
+              <span class="stat-badge" id="pendingReportsBadge">0 pending</span>
+            </div>
+            <div class="stat-label">Test Results</div>
+            <div class="stat-number" id="testResultsCount">0</div>
+            <p class="stat-desc">Total reports</p>
+            <span class="stat-link">
+              <span>View All</span>
+              <i class="fas fa-arrow-right"></i>
+            </span>
+          </div>
+        </section>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+          <!-- Tabs Header -->
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="appointments">Appointments</button>
+            <button class="tab-btn" data-tab="medications">Medications</button>
+            <button class="tab-btn" data-tab="records">Test Results</button>
+            <button class="tab-btn" data-tab="reports">Medical Reports</button>
+            <button class="tab-btn" data-tab="vitals">Vitals</button>
+            <button class="tab-btn" data-tab="billing">Billing</button>
+            <button class="tab-btn" data-tab="doctors">Doctors</button>
+            <button class="tab-btn" data-tab="messages">Messages</button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Overview Tab (Health Summary) -->
+            <div class="tab-pane active" id="overview">
+              <div class="content-grid">
+                <!-- Left Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                  <!-- Vital Signs Card -->
+                  <div class="content-card">
+                    <div class="content-card-header">
+                      <h3>Health Vitals</h3>
+                      <p>Your latest health readings</p>
+                    </div>
+                    <div class="content-card-body">
+                      <div class="vital-signs-grid" id="healthVitalsGrid">
+                        <!-- Heart Rate -->
+                        <div class="vital-card">
+                          <div class="vital-icon heart">
+                            <i class="fas fa-heart"></i>
+                          </div>
+                          <div class="vital-value" id="heartRate">--</div>
+                          <div class="vital-label">Heart Rate</div>
+                          <span class="vital-status normal" id="heartRateStatus">Normal</span>
+                        </div>
+                        <!-- Blood Pressure -->
+                        <div class="vital-card">
+                          <div class="vital-icon bp">
+                            <i class="fas fa-tint"></i>
+                          </div>
+                          <div class="vital-value" id="bloodPressure">--/--</div>
+                          <div class="vital-label">Blood Pressure</div>
+                          <span class="vital-status normal" id="bloodPressureStatus">Normal</span>
+                        </div>
+                        <!-- Glucose Level -->
+                        <div class="vital-card">
+                          <div class="vital-icon glucose">
+                            <i class="fas fa-bolt"></i>
+                          </div>
+                          <div class="vital-value" id="glucoseLevel">--</div>
+                          <div class="vital-label">Glucose (mg/dL)</div>
+                          <span class="vital-status normal" id="glucoseStatus">Normal</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Upcoming Appointment -->
+                  <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Upcoming Appointment</h3>
+                    <button class="action-btn" onclick="openBookingModal();">
+                        <i class="fas fa-plus"></i> Book New
+                      </button>
+                    </div>
+                    <div class="content-card-body" id="upcomingAppointmentContainer">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                  <!-- Medication Reminders -->
+                  <div class="content-card">
+                    <div class="content-card-header">
+                      <h3>Medication Reminders</h3>
+                    </div>
+                    <div class="content-card-body" id="medicationRemindersContainer">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Recent Messages from Doctor -->
+                  <div class="content-card">
+                    <div class="content-card-header">
+                      <h3>Recent Messages</h3>
+                      <button class="action-btn secondary" onclick="openMessageModal()">
+                        <i class="fas fa-plus"></i> New Message
+                      </button>
+                    </div>
+                    <div class="content-card-body" id="recentMessagesContainer">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Health Tips -->
+                  <div class="content-card">
+                    <div class="content-card-header">
+                      <h3>Health Tips</h3>
+                    </div>
+                    <div class="content-card-body">
+                      <div class="health-tips" id="healthTips">
+                        <div class="loading"><div class="spinner"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appointments Tab -->
+            <div class="tab-pane" id="appointments">
+              <div class="content-grid">
+                <!-- Upcoming Appointments -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Upcoming Appointments</h3>
+                    <button class="action-btn" onclick="openBookingModal();">
+                      <i class="fas fa-plus"></i> Book Appointment
+                    </button>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="upcomingAppointmentsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Past Appointments -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Past Appointments</h3>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="pastAppointmentsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medications Tab -->
+            <div class="tab-pane" id="medications">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Current Medications</h3>
+                    <p>Your active prescriptions with dosage instructions</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="medication-list" id="medicationsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Medication Schedule</h3>
+                    <p>Your upcoming doses</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list" id="medicationSchedule">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Records Tab (Test Results) -->
+            <div class="tab-pane" id="records">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Test Results</h3>
+                    <p>Your laboratory and diagnostic results</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="record-list" id="testResultsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Recent Documents</h3>
+                    <p>Recently added or updated</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="record-list" id="recentDocumentsList">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">
+                          <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <h4>No Documents</h4>
+                        <p>Medical documents will appear here</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Medical Reports Tab -->
+            <div class="tab-pane" id="reports">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Medical Reports & Examinations</h3>
+                    <p>Reports, documents, and examination records from your doctors</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div id="medicalReportsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vitals Tab -->
+            <div class="tab-pane" id="vitals">
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Health Metrics History</h3>
+                  <p>Your complete vital signs history</p>
+                </div>
+                <div class="content-card-body">
+                  <div class="health-metrics" id="vitalsHistory">
+                    <div class="loading"><div class="spinner"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Billing Tab -->
+            <div class="tab-pane" id="billing">
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Billing & Payments</h3>
+                  <p>Your invoices and payment history</p>
+                </div>
+                <div class="content-card-body">
+                  <table class="billing-table" id="billingTable">
+                    <thead>
+                      <tr>
+                        <th>Invoice #</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="billingTableBody">
+                      <tr>
+                        <td colspan="6">
+                          <div class="loading"><div class="spinner"></div></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Doctors Tab -->
+            <div class="tab-pane" id="doctors">
+              <div class="content-grid">
+                <div class="content-card" style="grid-column: 1 / -1;">
+                  <div class="content-card-header">
+                    <h3>Our Doctors</h3>
+                    <p>Browse our team of medical professionals</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="doctor-grid" id="doctorsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div class="tab-pane" id="messages">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Messages</h3>
+                    <button class="action-btn" onclick="openMessageModal()">
+                      <i class="fas fa-plus"></i> New Message
+                    </button>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="message-list" id="messagesList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Book Appointment Modal -->
+  <div class="modal-overlay" id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Book Appointment</h3>
+        <button type="button" onclick="closeBookingModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form id="bookingForm">
+          <div class="form-group">
+            <label class="form-label required">Select Doctor</label>
+            <select class="form-control" id="doctorSelect" required>
+              <option value="">Choose a provider</option>
+            </select>
+            <input type="hidden" id="selectedDoctorId" required>
+            <!-- department/location shown inside the dropdown options, no external info needed -->
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Appointment Date</label>
+              <input type="date" class="form-control" id="appointmentDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Appointment Time</label>
+              <select class="form-control" id="appointmentTime" required>
+                <option value="">Select time</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label required">Reason for Visit</label>
+            <select class="form-control" id="appointmentReason" required>
+              <option value="">Select reason</option>
+              <option value="General Check-up">General Check-up</option>
+              <option value="Follow-up">Follow-up</option>
+              <option value="Consultation">Consultation</option>
+              <option value="Lab Work">Lab Work</option>
+              <option value="Prescription Renewal">Prescription Renewal</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Additional Notes</label>
+            <textarea class="form-control" id="appointmentNotes" placeholder="Any additional information for the doctor..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="action-btn secondary" onclick="closeBookingModal()">Cancel</button>
+        <button type="button" class="action-btn" onclick="bookAppointment()">Book Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Message Modal -->
+  <div class="modal-overlay" id="messageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Send Message to Doctor</h3>
+        <button type="button" onclick="closeMessageModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <form id="messageForm">
+          <div class="form-group">
+            <label class="form-label required">Select Doctor</label>
+            <select class="form-control" id="messageDoctor" required>
+              <option value="">Select doctor</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Message Category</label>
+            <select class="form-control" id="messageCategory">
+              <option value="General">General Inquiry</option>
+              <option value="Report Status">Report Status</option>
+              <option value="Medication">Medication Dosage</option>
+              <option value="Appointment">Appointment Related</option>
+              <option value="Follow-up">Follow-up Question</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-control" id="messageSubject" placeholder="Message subject">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label required">Message</label>
+            <textarea class="form-control" id="messageContent" placeholder="Type your message here..." required></textarea>
+          </div>
+          <input type="hidden" id="appointmentIdForMessage">
+        </form>
+      </div>
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="action-btn secondary" onclick="closeMessageModal()">Cancel</button>
+        <button type="button" class="action-btn" onclick="sendMessage()">Send Message</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointment Details Modal -->
+  <div class="modal-overlay" id="appointmentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Appointment Details</h3>
+        <button type="button" onclick="closeAppointmentModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body" id="appointmentModalBody" style="padding: 20px;">
+        <!-- Content populated by JavaScript -->
+      </div>
+      <div class="modal-footer" id="appointmentModalFooter" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <!-- Buttons populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Base URL - Use full URL to backend server
+    // IMPORTANT: Access this page through http://localhost:5500/patient-dashboard.html
+    // Do NOT open the file directly (file://) or API calls will fail
+    const API_BASE = 'http://localhost:5000/api';
+    
+    // CSRF Token for POSTs
+    let csrfToken = null;
+    
+    // Current user data
+    let currentUser = null;
+    let doctors = [];
+    let appointments = [];
+    let medications = [];
+    let messages = [];
+    let receivedMessages = [];
+    let testResults = [];
+    let medicalReports = [];
+    let pendingReportsCount = 0;
+    let vitals = [];
+    let examinations = [];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async function() {
+      await initializeCsrfToken();
+      await checkAuthentication();
+    });
+    
+    // Get CSRF token from server
+    async function initializeCsrfToken() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        // Capture CSRF token from response header
+        const token = response.headers.get('XSRF-TOKEN');
+        if (token) {
+          csrfToken = token;
+          console.log('CSRF token initialized:', csrfToken);
+        }
+      } catch (error) {
+        console.error('Error initializing CSRF token:', error);
+      }
+    }
+    
+    // Check authentication and load data
+    async function checkAuthentication() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        currentUser = data.user;
+        
+        console.log('🔍 DEBUG - Auth check response:', data);
+        console.log('🔍 DEBUG - User role received:', currentUser.role, '| Type:', typeof currentUser.role);
+        console.log('🔍 DEBUG - Role check result:', currentUser.role === 'patient');
+        
+        if (currentUser.role !== 'patient') {
+          showToast('error', 'Access Denied', 'You don\'t have access to this dashboard');
+          // user not allowed, stop further initialization
+          return;
+        }
+        
+        updateUserInfo();
+        
+        // Load all dashboard data from database
+        await loadAllDashboardData();
+        
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        showToast('error', 'Connection Error', 'Unable to connect to server. Please ensure the backend is running.');
+      }
+    }
+    
+    // NOTE: Demo data functions removed - using database only
+    // All data is now loaded from the backend API
+    
+    // Update user info in UI
+    function updateUserInfo() {
+      if (!currentUser) return;
+      
+      const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
+      const initials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'US';
+      
+      // Update welcome message
+      document.getElementById('welcomeName').textContent = firstName;
+      
+      // Update header
+      document.getElementById('headerAvatar').textContent = initials;
+      document.getElementById('headerUserName').textContent = currentUser.name || 'Patient';
+      document.getElementById('headerUserEmail').textContent = currentUser.email || '';
+      
+      // Update sidebar
+      document.getElementById('sidebarAvatar').textContent = initials;
+      document.getElementById('sidebarProfileName').textContent = currentUser.name || 'Patient';
+    }
+    
+    // Load all dashboard data from database
+    async function loadAllDashboardData() {
+      try {
+        // Show loading state
+        showLoadingStates();
+        
+        // Load all data in parallel
+        const results = await Promise.allSettled([
+          loadDoctors(),
+          loadAppointments(),
+          loadMedications(),
+          loadMessages(),
+          loadReceivedMessages(),
+          loadTestResults(),
+          loadMedicalReports(),
+          loadHealthSummary(),
+          loadHealthTips()
+        ]);
+        
+        // Check for failures
+        const failedLoads = results.filter(r => r.status === 'rejected');
+        if (failedLoads.length > 0) {
+          console.warn('Some data failed to load:', failedLoads);
+        }
+        
+        // Render all data
+        renderAllData();
+        
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showToast('error', 'Error', 'Some data failed to load. Please refresh the page.');
+      }
+    }
+    
+    // Show loading states for all containers
+    function showLoadingStates() {
+      const loadingHtml = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const containers = [
+        'upcomingAppointmentContainer',
+        'medicationRemindersContainer',
+        'recentMessagesContainer',
+        'upcomingAppointmentsList',
+        'pastAppointmentsList',
+        'medicationsList',
+        'medicationSchedule',
+        'testResultsList',
+        'medicalReportsList',
+        'vitalsHistory',
+        'billingTableBody',
+        'doctorsList',
+        'messagesList',
+        'doctorList'
+      ];
+      
+      containers.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = loadingHtml;
+        }
+      });
+    }
+    
+    // Doctor list is now loaded from API only
+    
+    // Render all data
+    function renderAllData() {
+      renderStats();
+      renderOverview();
+      renderAppointmentsTab();
+      renderMedicationsTab();
+      renderRecordsTab();
+      renderMedicalReportsTab();
+      renderVitalsTab();
+      renderBillingTab();
+      renderDoctorsTab();
+      renderMessagesTab();
+    }
+    
+    // Render stats cards
+    function renderStats() {
+      const upcomingAppointments = appointments.filter(a => ['scheduled', 'confirmed', 'pending'].includes(a.status));
+      const activeMedications = medications.filter(m => m.status === 'active');
+      
+      // Handle both demo data format (isRead) and database format (is_read)
+      const unreadMessages = messages.filter(m => m.isRead !== undefined ? !m.isRead : !m.is_read);
+      
+      document.getElementById('appointmentCount').textContent = appointments.length;
+      document.getElementById('appointmentBadge').textContent = `${upcomingAppointments.length} upcoming`;
+      
+      document.getElementById('medicationCount').textContent = medications.length;
+      document.getElementById('medicationBadge').textContent = `${activeMedications.length} active`;
+      
+      document.getElementById('messageCount').textContent = messages.length;
+      document.getElementById('messageBadgeText').textContent = `${unreadMessages.length} unread`;
+      
+      if (unreadMessages.length > 0) {
+        document.getElementById('messageBadge').style.display = 'block';
+      }
+      
+      // Test Results stats
+      document.getElementById('testResultsCount').textContent = testResults.length;
+      document.getElementById('pendingReportsBadge').textContent = `${pendingReportsCount} pending`;
+    }
+    
+    // Render Overview tab
+    function renderOverview() {
+      renderHealthVitals();
+      renderUpcomingAppointment();
+      renderMedicationReminders();
+      renderRecentMessages();
+    }
+    
+    // Render health vitals
+    function renderHealthVitals() {
+      if (vitals.length > 0) {
+        // Parse vitalSigns if it's a string (from database)
+        let latestVitals = vitals[0].vitalSigns;
+        if (typeof latestVitals === 'string') {
+          try {
+            latestVitals = JSON.parse(latestVitals);
+          } catch (e) {
+            console.error('Error parsing vital signs:', e);
+          }
+        }
+        
+        if (latestVitals) {
+          // Heart Rate
+          const heartRate = latestVitals.heartRate || '--';
+          document.getElementById('heartRate').textContent = heartRate + ' bpm';
+          const hrStatus = document.getElementById('heartRateStatus');
+          const hrNum = parseInt(heartRate);
+          if (hrNum >= 60 && hrNum <= 100) {
+            hrStatus.textContent = 'Normal';
+            hrStatus.className = 'vital-status normal';
+          } else if (hrNum < 60) {
+            hrStatus.textContent = 'Low';
+            hrStatus.className = 'vital-status warning';
+          } else {
+            hrStatus.textContent = 'High';
+            hrStatus.className = 'vital-status danger';
+          }
+          
+          // Blood Pressure - handle both formats (old: bloodPressure, new: bpSystolic/bpDiastolic)
+          let bp = latestVitals.bloodPressure;
+          if (!bp && (latestVitals.bpSystolic || latestVitals.bpDiastolic)) {
+            bp = (latestVitals.bpSystolic || '--') + '/' + (latestVitals.bpDiastolic || '--');
+          }
+          bp = bp || '--/--';
+          document.getElementById('bloodPressure').textContent = bp;
+          const bpStatus = document.getElementById('bloodPressureStatus');
+          const bpParts = bp.split('/');
+          if (bpParts.length === 2) {
+            const systolic = parseInt(bpParts[0]);
+            const diastolic = parseInt(bpParts[1]);
+            if (systolic < 120 && diastolic < 80) {
+              bpStatus.textContent = 'Normal';
+              bpStatus.className = 'vital-status normal';
+            } else if (systolic < 130 && diastolic < 80) {
+              bpStatus.textContent = 'Elevated';
+              bpStatus.className = 'vital-status warning';
+            } else {
+              bpStatus.textContent = 'High';
+              bpStatus.className = 'vital-status danger';
+            }
+          }
+          
+          // Glucose
+          const glucose = latestVitals.glucoseLevel || '--';
+          document.getElementById('glucoseLevel').textContent = glucose;
+          const glucoseStatus = document.getElementById('glucoseStatus');
+          const glucoseNum = parseInt(glucose);
+          if (glucoseNum >= 70 && glucoseNum <= 100) {
+            glucoseStatus.textContent = 'Normal';
+            glucoseStatus.className = 'vital-status normal';
+          } else if (glucoseNum < 70) {
+            glucoseStatus.textContent = 'Low';
+            glucoseStatus.className = 'vital-status warning';
+          } else if (glucoseNum <= 125) {
+            glucoseStatus.textContent = 'Pre-diabetic';
+            glucoseStatus.className = 'vital-status warning';
+          } else {
+            glucoseStatus.textContent = 'High';
+            glucoseStatus.className = 'vital-status danger';
+          }
+          
+          // Get the correct date field (examinationDate, createdAt, or recordedAt)
+          const recordDate = vitals[0].examinationDate || vitals[0].createdAt || vitals[0].recordedAt;
+          document.getElementById('vitalsLastChecked').textContent = formatDate(recordDate);
+        }
+      } else {
+        // No vitals data - show placeholder
+        document.getElementById('heartRate').textContent = '--';
+        document.getElementById('bloodPressure').textContent = '--/--';
+        document.getElementById('glucoseLevel').textContent = '--';
+        document.getElementById('vitalsLastChecked').textContent = 'No data';
+      }
+    }
+    
+    // Render upcoming appointment
+    function renderUpcomingAppointment() {
+      const container = document.getElementById('upcomingAppointmentContainer');
+      const upcomingAppointments = appointments
+        .filter(a => ['scheduled', 'confirmed', 'pending'].includes(a.status))
+        .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+      
+      if (upcomingAppointments.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="far fa-calendar-check"></i>
+            </div>
+            <h4>No Upcoming Appointments</h4>
+            <p>Book an appointment with a doctor</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const apt = upcomingAppointments[0];
+      // Handle both demo data format and database format
+      const doctorName = apt.doctor?.name || apt.doctorName || 'Doctor';
+      const doctorSpecialization = apt.doctor?.specialization || apt.doctorSpecialization || 'General Medicine';
+      const doctorLocation = apt.doctor?.location || apt.doctorLocation || 'Main Clinic';
+      const appointmentDate = apt.date || apt.appointment_date;
+      const appointmentTime = apt.time || apt.appointment_time;
+      const appointmentReason = apt.reason || apt.reasonForVisit || 'Consultation';
+      const appointmentStatus = apt.status || 'pending';
+      
+      container.innerHTML = `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="doctor-name">${doctorName}</p>
+            <p class="appointment-dept">${doctorSpecialization}${doctorLocation ? ` • ${doctorLocation}` : ''}</p>
+            <p class="appointment-time">📅 ${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}</p>
+            <p class="appointment-reason">📋 Reason: ${appointmentReason}</p>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${appointmentStatus}">${capitalizeFirst(appointmentStatus)}</span>
+            <button class="view-btn" onclick="viewAppointment(${apt.id})">View</button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Render medication reminders
+    function renderMedicationReminders() {
+      const container = document.getElementById('medicationRemindersContainer');
+      const activeMeds = medications.filter(m => m.status === 'active');
+      
+      if (activeMeds.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-pills"></i>
+            </div>
+            <h4>No Active Medications</h4>
+            <p>Your prescriptions will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = activeMeds.slice(0, 3).map(med => {
+        // Handle both demo data format and database format
+        const medName = med.medicationName || med.medication_name || med.name || 'Medication';
+        const dosage = med.dosage || med.dosageAmount || 'As prescribed';
+        const freq = med.frequency || med.freq || 'As directed';
+        
+        return `
+          <div class="medication-item">
+            <div class="medication-info">
+              <p class="medication-name">${medName}</p>
+              <span class="medication-details">${freq}</span>
+              <span class="medication-dosage">${dosage}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html || `
+        <div class="empty-state">
+          <p>No medication reminders</p>
+        </div>
+      `;
+    }
+    
+    // Render recent messages
+    function renderRecentMessages() {
+      const container = document.getElementById('recentMessagesContainer');
+      
+      if (messages.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="far fa-comment"></i>
+            </div>
+            <h4>No Messages</h4>
+            <p>Messages you sent to doctors will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = messages.slice(0, 3).map(msg => {
+        // For sent messages, show receiver (doctor) name
+        const contactName = msg.receiverName || msg.senderName || 'Doctor';
+        return `
+        <div class="message-item ${msg.isRead ? '' : 'unread'}" onclick="viewMessage(${msg.id})">
+          <div class="message-avatar">${getInitials(contactName)}</div>
+          <div class="message-content">
+            <div class="message-header">
+              <span class="message-sender">To: ${contactName}</span>
+              <span class="message-time">${formatRelativeTime(msg.createdAt)}</span>
+            </div>
+            <p class="message-subject">${msg.subject || 'No Subject'}</p>
+            <p class="message-preview">${(msg.message || '').substring(0, 60)}...</p>
+          </div>
+        </div>
+      `;
+      }).join('');
+      
+      container.innerHTML = html;
+    }
+    
+    // Render Appointments Tab
+    function renderAppointmentsTab() {
+      const upcomingContainer = document.getElementById('upcomingAppointmentsList');
+      const pastContainer = document.getElementById('pastAppointmentsList');
+      
+      const upcomingAppointments = appointments
+        .filter(a => ['scheduled', 'confirmed', 'pending'].includes(a.status))
+        .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+      
+      const pastAppointments = appointments
+        .filter(a => ['completed', 'cancelled'].includes(a.status))
+        .sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+      
+      if (upcomingAppointments.length === 0) {
+        upcomingContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="far fa-calendar-check"></i>
+            </div>
+            <h4>No Upcoming Appointments</h4>
+            <p>Book an appointment with a doctor</p>
+            <button class="action-btn" onclick="openBookingModal();" style="margin-top: 12px;">
+              <i class="fas fa-plus"></i> Book Now
+            </button>
+          </div>
+        `;
+      } else {
+        upcomingContainer.innerHTML = upcomingAppointments.map(apt => createAppointmentHTML(apt)).join('');
+      }
+      
+      if (pastAppointments.length === 0) {
+        pastContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="far fa-calendar-check"></i>
+            </div>
+            <h4>No Past Appointments</h4>
+            <p>Your appointment history will appear here</p>
+          </div>
+        `;
+      } else {
+        pastContainer.innerHTML = pastAppointments.map(apt => createAppointmentHTML(apt)).join('');
+      }
+    }
+    
+    function createAppointmentHTML(apt) {
+      // Handle both demo data format and database format
+      const doctorName = apt.doctor?.name || apt.doctorName || 'Doctor';
+      const doctorSpecialization = apt.doctor?.specialization || apt.doctorSpecialization || 'General Medicine';
+      const appointmentDate = apt.date || apt.appointment_date;
+      const appointmentTime = apt.time || apt.appointment_time;
+      const appointmentReason = apt.reason || apt.reasonForVisit || 'Consultation';
+      const appointmentStatus = apt.status || 'pending';
+      
+      return `
+        <div class="appointment-item">
+          <div class="appointment-info">
+            <p class="doctor-name">${doctorName}</p>
+            <p class="appointment-dept">${doctorSpecialization}</p>
+            <p class="appointment-time">📅 ${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}</p>
+            <p class="appointment-reason">📋 Reason: ${appointmentReason}</p>
+          </div>
+          <div class="appointment-actions">
+            <span class="appointment-badge ${appointmentStatus}">${capitalizeFirst(appointmentStatus)}</span>
+            ${appointmentStatus !== 'completed' && appointmentStatus !== 'cancelled' ? `<button class="view-btn danger" onclick="cancelAppointment(${apt.id})">Cancel</button>` : ''}
+            <button class="view-btn" onclick="viewAppointment(${apt.id})">View</button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Render Medications Tab
+    function renderMedicationsTab() {
+      const listContainer = document.getElementById('medicationsList');
+      const scheduleContainer = document.getElementById('medicationSchedule');
+      
+      const activeMeds = medications.filter(m => m.status === 'active');
+      
+      if (activeMeds.length === 0) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-pills"></i>
+            </div>
+            <h4>No Active Medications</h4>
+            <p>Your prescriptions will appear here</p>
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = activeMeds.map(med => {
+          // Handle both demo data format and database format
+          const medName = med.medicationName || med.medication_name || med.name || 'Medication';
+          const dosage = med.dosage || med.dosageAmount || 'As prescribed';
+          const freq = med.frequency || med.freq || 'As directed';
+          const instructions = med.instructions || med.notes || '';
+          const doctorName = med.doctor?.name || med.doctorName || med.prescribedBy || 'Doctor';
+          
+          return `
+            <div class="medication-item">
+              <div class="medication-info">
+                <p class="medication-name">${medName}</p>
+                <span class="medication-details">For: ${doctorName} • ${instructions || freq}</span>
+                <span class="medication-dosage">${dosage} - ${freq}</span>
+              </div>
+              <div class="medication-status">${capitalizeFirst(med.status)}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Render Records Tab (Test Results)
+    function renderRecordsTab() {
+      const container = document.getElementById('testResultsList');
+      
+      if (testResults.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-vials"></i>
+            </div>
+            <h4>No Test Results</h4>
+            <p>Your lab results will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = testResults.map(result => {
+        const doctorName = result.doctor?.name || result.doctorName || 'Doctor';
+        const hasReport = result.reportFile || result.report_file;
+        
+        return `
+          <div class="record-item">
+            <div class="record-info">
+              <p class="record-title">${result.testName || result.test_name || 'Test Result'}</p>
+              <span class="record-date">${result.testType || result.test_type || 'Lab'} • ${formatDate(result.resultDate || result.result_date)} • Ordered by: ${doctorName}</span>
+            </div>
+            <div class="record-actions">
+              <span class="appointment-badge ${result.status || 'completed'}">${capitalizeFirst(result.status || 'completed')}</span>
+              ${hasReport ? `
+                <button class="view-btn" onclick="viewResultDocument(${result.id})">View</button>
+                <button class="view-btn download-btn" onclick="downloadResultDocument(${result.id})">Download</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // View result document
+    function viewResultDocument(resultId) {
+      window.open(`${API_BASE}/results/${resultId}/file`, '_blank');
+    }
+    
+    // Download result document
+    function downloadResultDocument(resultId) {
+      const link = document.createElement('a');
+      link.href = `${API_BASE}/results/${resultId}/file`;
+      link.download = '';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    
+    // Render Vitals Tab
+    function renderVitalsTab() {
+      const container = document.getElementById('vitalsHistory');
+      
+      if (vitals.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-heartbeat"></i>
+            </div>
+            <h4>No Vitals History</h4>
+            <p>Your vital signs history will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = vitals.map(vital => {
+        // Parse vitalSigns if it's a string (from database)
+        let vitalData = vital.vitalSigns;
+        if (typeof vitalData === 'string') {
+          try {
+            vitalData = JSON.parse(vitalData);
+          } catch (e) {
+            console.error('Error parsing vital signs:', e);
+          }
+        }
+        
+        // Get the correct date field
+        const recordDate = vital.examinationDate || vital.createdAt || vital.recordedAt;
+        
+        const hr = vitalData?.heartRate || '--';
+        const bpSystolic = vitalData?.bpSystolic || '--';
+        const bpDiastolic = vitalData?.bpDiastolic || '--';
+        const glucose = vitalData?.glucoseLevel || '--';
+        
+        return `
+          <div class="metric-item">
+            <div class="metric-label">
+              <i class="fas fa-calendar"></i>
+              ${formatDate(recordDate)}
+            </div>
+            <div class="metric-value">
+              HR: ${hr} bpm | BP: ${bpSystolic}/${bpDiastolic} | Glucose: ${glucose}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Billing Tab
+    function renderBillingTab() {
+      const tbody = document.getElementById('billingTableBody');
+      
+      // Demo billing data
+      const billingData = [
+        { invoice: 'INV-001', date: '2025-04-15', description: 'General Consultation', status: 'paid', amount: 150.00 },
+        { invoice: 'INV-002', date: '2025-04-20', description: 'Blood Test', status: 'pending', amount: 85.00 },
+        { invoice: 'INV-003', date: '2025-04-25', description: 'Follow-up Visit', status: 'pending', amount: 100.00 }
+      ];
+      
+      if (billingData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-state">
+              <div class="empty-state-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <h4>No Invoices</h4>
+              <p>Your billing history will appear here</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = billingData.map(bill => `
+        <tr>
+          <td>${bill.invoice}</td>
+          <td>${formatDate(bill.date)}</td>
+          <td>${bill.description}</td>
+          <td><span class="appointment-badge ${bill.status}">${capitalizeFirst(bill.status)}</span></td>
+          <td class="billing-amount ${bill.status}">$${bill.amount.toFixed(2)}</td>
+          <td>
+            <button class="view-btn ${bill.status === 'paid' ? 'light' : ''}" onclick="viewInvoice('${bill.invoice}')">
+              ${bill.status === 'paid' ? 'View' : 'Pay'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Doctors Tab
+    function renderDoctorsTab() {
+      const container = document.getElementById('doctorsList');
+      
+      if (doctors.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">
+              <i class="fas fa-user-md"></i>
+            </div>
+            <h4>No Doctors Available</h4>
+            <p>Our doctor list is currently unavailable</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = doctors.map(doc => `
+        <div class="doctor-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.2s ease;">
+          <div class="doctor-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; margin: 0 auto 16px;">
+            ${getInitials(doc.name)}
+          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">${doc.name}</h4>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 8px;">${doc.specialization || 'General Medicine'}</p>
+          ${doc.qualification ? `<p style="font-size: 12px; color: #2563eb; margin-bottom: 12px;">${doc.qualification}</p>` : ''}
+          ${doc.experienceYears ? `<p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">${doc.experienceYears} years experience</p>` : ''}
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+            <button class="view-btn" onclick="viewDoctorDetails(${doc.id})" style="padding: 8px 16px; border-radius: 6px; border: none; background: #2563eb; color: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s ease;">
+              View Details
+            </button>
+            <button class="view-btn light" onclick="openBookingModal();" style="padding: 8px 16px; border-radius: 6px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s ease;">
+              Book Now
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // View doctor details
+    function viewDoctorDetails(doctorId) {
+      const doctor = doctors.find(d => d.id === doctorId);
+      if (!doctor) {
+        showToast('error', 'Error', 'Doctor not found');
+        return;
+      }
+      
+      // Create a modal for doctor details
+      const modalHtml = `
+        <div class="modal-overlay active" id="doctorDetailsModal" onclick="closeDoctorDetailsModal(event)">
+          <div class="modal" style="max-width: 600px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Doctor Details</h3>
+              <button class="modal-close" onclick="closeDoctorDetailsModalDirect()">✕</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+              <div style="width: 100px; height: 100px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 600; margin: 0 auto 20px;">
+                ${getInitials(doctor.name)}
+              </div>
+              <h3 style="font-size: 20px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">${doctor.name}</h3>
+              <p style="font-size: 14px; color: #64748b; margin-bottom: 4px;">${doctor.specialization || 'General Medicine'}</p>
+              ${doctor.qualification ? `<p style="font-size: 13px; color: #2563eb; margin-bottom: 16px;">${doctor.qualification}</p>` : ''}
+              
+              <div style="text-align: left; margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 10px;">
+                ${doctor.experienceYears ? `<p style="margin-bottom: 8px;"><strong>Experience:</strong> ${doctor.experienceYears} years</p>` : ''}
+                ${doctor.email ? `<p style="margin-bottom: 8px;"><strong>Email:</strong> ${doctor.email}</p>` : ''}
+                ${doctor.bio ? `<p style="margin-bottom: 8px;"><strong>About:</strong> ${doctor.bio}</p>` : ''}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="action-btn secondary" onclick="closeDoctorDetailsModalDirect()">Close</button>
+              <button class="action-btn" onclick="openBookingModal();">Book Appointment</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Remove existing modal if any
+      const existingModal = document.getElementById('doctorDetailsModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // Add modal to body
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    function closeDoctorDetailsModal(event) {
+      if (event.target.classList.contains('modal-overlay')) {
+        event.target.remove();
+      }
+    }
+    
+    function closeDoctorDetailsModalDirect() {
+      const modal = document.getElementById('doctorDetailsModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+    
+    // Book with a specific doctor (pre-select them in the form)
+    function bookWithDoctor(doctorId) {
+      try {
+        const doctor = doctors.find(d => d.id === doctorId);
+        if (!doctor) {
+          console.warn('Doctor not found when attempting to pre-select', doctorId);
+          openBookingModal();
+          return;
+        }
+
+        openBookingModal();
+
+        // helper that attempts to select once the dropdown has options
+        function attemptSelect() {
+          const select = document.getElementById('doctorSelect');
+          if (select && select.options.length > 1) {
+            select.value = doctorId;
+            selectDoctor(doctorId);
+          } else {
+            // try again after a short delay
+            setTimeout(attemptSelect, 100);
+          }
+        }
+        attemptSelect();
+      } catch (e) {
+        console.error('Error in bookWithDoctor:', e);
+        openBookingModal();
+      }
+    }
+
+    // Render Messages Tab (shows received messages from doctors)
+    function renderMessagesTab() {
+      const container = document.getElementById('messagesList');
+      
+      const messagesToShow = receivedMessages.length > 0 ? receivedMessages : messages;
+      
+      if (messagesToShow.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="far fa-comment-dots"></i>
+            </div>
+            <h4>No Messages</h4>
+            <p>Replies from doctors will appear here</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = messagesToShow.map(msg => {
+        // Handle both demo data format and database format
+        const senderName = msg.senderName || msg.sender_name || 'Doctor';
+        const subject = msg.subject || msg.subject || 'No Subject';
+        const message = msg.message || msg.content || '';
+        const isRead = msg.isRead !== undefined ? msg.isRead : msg.is_read;
+        
+        return `
+          <div class="message-item ${isRead ? '' : 'unread'}" onclick="viewMessage(${msg.id})">
+            <div class="message-avatar">${getInitials(senderName)}</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-sender">${senderName}</span>
+                <span class="message-time">${formatRelativeTime(msg.createdAt)}</span>
+              </div>
+              <p class="message-subject">${subject}</p>
+              <p class="message-preview">${message}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // API Loading Functions
+    async function loadDoctors() {
+      try {
+        const response = await fetch(`${API_BASE}/doctors`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            doctors = data.doctors || [];
+          }
+        }
+        
+        // Always render doctor list after trying to load
+        renderDoctorList();
+        populateMessageDoctorSelect();
+        
+      } catch (error) {
+        console.error('Error loading doctors:', error);
+        throw error;
+      }
+    }
+
+    async function loadAppointments() {
+      try {
+        const response = await fetch(`${API_BASE}/appointments`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // make sure we always have "date" and "time" properties for consistency
+            appointments = (data.appointments || []).map(a => ({
+              ...a,
+              date: a.date || a.appointment_date,
+              time: a.time || a.appointment_time
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        throw error;
+      }
+    }
+
+    async function loadMedications() {
+      try {
+        const response = await fetch(`${API_BASE}/medications`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            medications = data.medications || [];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading medications:', error);
+        throw error;
+      }
+    }
+
+    async function loadMessages() {
+      try {
+        const response = await fetch(`${API_BASE}/messages?type=sent`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            messages = data.messages || [];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        throw error;
+      }
+    }
+    
+    // Load received messages for Messages tab
+    async function loadReceivedMessages() {
+      try {
+        const response = await fetch(`${API_BASE}/messages?type=received`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            receivedMessages = data.messages || [];
+            // Render messages tab with received messages
+            renderMessagesTab();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading received messages:', error);
+      }
+    }
+
+    async function loadTestResults() {
+      try {
+        const response = await fetch(`${API_BASE}/results`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            testResults = data.results || [];
+            // Store pending count for display
+            pendingReportsCount = data.pendingCount || 0;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading test results:', error);
+        throw error;
+      }
+    }
+    
+    // Load medical reports from doctors
+    async function loadMedicalReports() {
+      try {
+        const response = await fetch(`${API_BASE}/results/reports`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            medicalReports = data.reports || [];
+            // Render the reports
+            renderMedicalReportsTab();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading medical reports:', error);
+        // Don't throw - just log the error so other data can still load
+      }
+    }
+    
+    // Load Health Tips from API
+    async function loadHealthTips() {
+      try {
+        const response = await fetch(`${API_BASE}/health-tips?limit=3`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderHealthTips(data.tips || []);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading health tips:', error);
+        // Don't throw - keep the static content as fallback
+      }
+    }
+    
+    // Render Health Tips
+    function renderHealthTips(tips) {
+      const container = document.getElementById('healthTips');
+      if (!container) return;
+      
+      if (tips.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b;">No health tips available</p>';
+        return;
+      }
+      
+      const html = tips.map(tip => `
+        <div class="health-tip">
+          <div class="tip-icon">
+            <i class="fas ${tip.icon || 'fa-lightbulb'}"></i>
+          </div>
+          <div class="tip-content">
+            <h4>${escapeHtml(tip.title || 'Health Tip')}</h4>
+            <p>${escapeHtml(tip.content || '')}</p>
+          </div>
+        </div>
+      `).join('');
+      
+      container.innerHTML = html;
+    }
+    
+    // Render Medical Reports Tab (includes Examinations)
+    function renderMedicalReportsTab() {
+      const container = document.getElementById('medicalReportsList');
+      
+      if (!container) return;
+      
+      let html = '';
+      
+      // Render Examinations (PDF-like format)
+      if (examinations && examinations.length > 0) {
+        html += `<h3 style="margin: 0 0 16px; color: #0f172a; font-size: 18px; font-weight: 600;">Examination Records</h3>`;
+        
+        html += examinations.map(exam => {
+          // Parse vital signs if it's a string
+          let vitalData = exam.vitalSigns;
+          if (typeof vitalData === 'string') {
+            try {
+              vitalData = JSON.parse(vitalData);
+            } catch (e) {}
+          }
+          
+          const examDate = exam.examinationDate || exam.createdAt;
+          const doctorName = exam.doctor?.name || 'Doctor';
+          const specialization = exam.doctor?.specialization || '';
+          
+          // Format vital signs
+          const hr = vitalData?.heartRate || '--';
+          const bp = vitalData?.bpSystolic && vitalData?.bpDiastolic ? 
+            `${vitalData.bpSystolic}/${vitalData.bpDiastolic}` : '--';
+          const temp = vitalData?.temperature || '--';
+          const weight = vitalData?.weight || '--';
+          const glucose = vitalData?.glucoseLevel || '--';
+          
+          // Parse diagnosis
+          let diagnosis = exam.diagnosis;
+          if (typeof diagnosis === 'string') {
+            try {
+              diagnosis = JSON.parse(diagnosis);
+            } catch (e) {}
+          }
+          const diagnosisText = Array.isArray(diagnosis) ? diagnosis.join(', ') : (diagnosis || 'N/A');
+          
+          return `
+            <div class="examination-record" id="examination-${exam.id}" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+              <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Examination Report</h3>
+                  <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Dr. ${escapeHtml(doctorName)} ${specialization ? `(${escapeHtml(specialization)})` : ''}</p>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 14px; font-weight: 500;">${formatDate(examDate)}</div>
+                  <div style="font-size: 12px; opacity: 0.8;">${exam.status || 'Completed'}</div>
+                </div>
+              </div>
+              
+              <div style="padding: 20px;">
+                <div style="margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #10b981;">
+                  <h4 style="margin: 0 0 12px; color: #0f172a; font-size: 14px; font-weight: 600;">Vital Signs: 
+                    <span style="font-weight: 400; font-size: 13px;">HR ${hr} bpm | BP ${bp} mmHg | Temp ${temp}°F | Glucose ${glucose} mg/dL | Weight ${weight} kg</span>
+                  </h4>
+                </div>
+                
+                ${exam.chiefComplaint ? `
+                <div style="margin-bottom: 12px;">
+                  <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #f59e0b;">Chief Complaint</h4>
+                  <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(exam.chiefComplaint)}</p>
+                </div>
+                ` : ''}
+                
+                ${exam.findings ? `
+                <div style="margin-bottom: 12px;">
+                  <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #06b6d4;">Findings</h4>
+                  <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(exam.findings)}</p>
+                </div>
+                ` : ''}
+                
+                <div style="margin-bottom: 12px;">
+                  <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #ef4444;">Diagnosis</h4>
+                  <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(diagnosisText)}</p>
+                </div>
+                
+                ${exam.treatmentPlan ? `
+                <div style="margin-bottom: 12px;">
+                  <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #10b981;">Treatment Plan</h4>
+                  <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(exam.treatmentPlan)}</p>
+                </div>
+                ` : ''}
+                
+                <div style="margin-top: 16px; text-align: right;">
+                  <button onclick="printExamination(${exam.id})" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    <i class="fas fa-print" style="margin-right: 6px;"></i>Print / Save PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Render Medical Reports
+      if (medicalReports && medicalReports.length > 0) {
+        html += `<h3 style="margin: ${examinations?.length ? '24px' : '0 0 16px'} 0 16px; color: #0f172a; font-size: 18px; font-weight: 600;">Medical Reports</h3>`;
+        
+        html += medicalReports.map(report => {
+          const doctorName = report.doctorName || report.doctor?.name || 'Doctor';
+          const date = report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'N/A';
+          const hasFile = report.filePath || report.fileName;
+          
+          return `
+            <div class="record-item">
+              <div class="record-info">
+                <p class="record-title">${escapeHtml(report.reportTitle || 'Medical Report')}</p>
+                <span class="record-date">${escapeHtml(report.reportType || 'Report')} • ${date} • By: Dr. ${escapeHtml(doctorName)}</span>
+                ${report.reportDescription ? `<p class="record-description">${escapeHtml(report.reportDescription)}</p>` : ''}
+              </div>
+              <div class="record-actions">
+                <span class="appointment-badge ${report.status || 'completed'}">${capitalizeFirst(report.status || 'completed')}</span>
+                ${hasFile ? `
+                  <button class="view-btn" onclick="viewMedicalReport(${report.id})">View</button>
+                  <button class="view-btn download-btn" onclick="downloadMedicalReport(${report.id})">Download</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Empty state
+      if ((!medicalReports || medicalReports.length === 0) && (!examinations || examinations.length === 0)) {
+        html = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-file-medical-alt"></i>
+            </div>
+            <h4>No Medical Reports or Examinations</h4>
+            <p>Medical reports and examination records from your doctors will appear here</p>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    // View medical report file
+    function viewMedicalReport(reportId) {
+      window.open(`${API_BASE}/results/reports/${reportId}/file`, '_blank');
+    }
+    
+    // Download medical report file
+    function downloadMedicalReport(reportId) {
+      const link = document.createElement('a');
+      link.href = `${API_BASE}/results/reports/${reportId}/file`;
+      link.download = '';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    async function loadHealthSummary() {
+      try {
+        // Get vitals history from examinations
+        const vitalsResponse = await fetch(`${API_BASE}/health-summary/examinations?limit=5`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (vitalsResponse.ok) {
+          const data = await vitalsResponse.json();
+          if (data.success) {
+            // Use the examinations data
+            const exams = data.examinations || [];
+            vitals = exams;
+            examinations = exams;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading health summary:', error);
+        throw error;
+      }
+    }
+
+    // Render doctor list in booking modal (populate dropdown)
+    function renderDoctorList() {
+      const select = document.getElementById('doctorSelect');
+      select.innerHTML = '<option value="">Choose a provider</option>';
+      if (doctors.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No doctors available';
+        select.appendChild(option);
+        return;
+      }
+      doctors.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.id;
+        // include dept/location inline to act like a tag
+        const dept = doc.specialization || 'General Medicine';
+        const loc = doc.location || 'Main Clinic';
+        option.textContent = `${doc.name} (${dept} • ${loc})`;
+        select.appendChild(option);
+      });
+      // onchange handler to store selection
+      select.onchange = () => {
+        const id = select.value;
+        if (id) selectDoctor(parseInt(id));
+        else {
+          document.getElementById('selectedDoctorId').value = '';
+        }
+      };
+    }
+
+    // Populate doctor select in message modal
+    function populateMessageDoctorSelect(preselectedDoctorId = null) {
+      const select = document.getElementById('messageDoctor');
+      select.innerHTML = '<option value="">Select doctor</option>';
+      
+      doctors.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.userId || doc.id; // Use userId for messaging, fallback to id
+        const dept = doc.specialization || 'General Medicine';
+        const loc = doc.location || 'Main Clinic';
+        option.textContent = `${doc.name} (${dept} • ${loc})`;
+        select.appendChild(option);
+      });
+      
+      // Set preselected doctor if provided
+      if (preselectedDoctorId) {
+        select.value = preselectedDoctorId;
+      }
+    }
+
+    // Select doctor in booking modal
+    function selectDoctor(doctorId) {
+      document.getElementById('selectedDoctorId').value = doctorId;
+      // additional UI not needed since details are inside the option text
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Update tab panes
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+      });
+      
+      const targetPane = document.getElementById(tabName);
+      if (targetPane) {
+        targetPane.classList.add('active');
+      }
+    }
+
+    // Tab button click handlers
+   document.addEventListener('DOMContentLoaded', function () {
+
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  if (tabButtons.length > 0) {
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        switchTab(this.dataset.tab);
+      });
+    });
+  }
+
+});
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Submenu toggle
+    function toggleSubmenu(element) {
+      element.classList.toggle('expanded');
+      const submenu = element.nextElementSibling;
+      if (submenu && submenu.classList.contains('submenu')) {
+        submenu.classList.toggle('show');
+      }
+    }
+
+    
+    // Format time from 24-hour to 12-hour format
+    function formatTime(time) {
+    const [hour, minute] = time.split(':');
+    const h = parseInt(hour);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const formattedHour = h % 12 || 12;
+    return `${formattedHour}:${minute} ${ampm}`;
+}
+
+    // Modal functions are now defined in the global scope below
+
+    function openMessageModal(appointmentId = null, doctorId = null) {
+      const modal = document.getElementById('messageModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+      
+      // Store appointment context if available
+      if (appointmentId) {
+        document.getElementById('appointmentIdForMessage').value = appointmentId;
+        console.log('Setting appointment ID:', appointmentId);
+      }
+      
+      // Pre-fill doctor if available and valid
+      if (doctorId) {
+        const doctorSelect = document.getElementById('messageDoctor');
+        doctorSelect.value = doctorId;
+        console.log('Setting doctor ID:', doctorId);
+      }
+      
+      // Load doctors if not already loaded
+      if (doctors.length === 0) {
+        loadDoctors().then(() => populateMessageDoctorSelect(doctorId));
+      } else {
+        populateMessageDoctorSelect(doctorId);
+      }
+    }
+
+    function closeMessageModal() {
+      const modal = document.getElementById('messageModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+      const form = document.getElementById('messageForm');
+      if (form) {
+        form.reset();
+      }
+      document.getElementById('appointmentIdForMessage').value = '';
+    }
+
+    // Book appointment
+    async function bookAppointment() {
+      const doctorId = document.getElementById('selectedDoctorId').value;
+      const date = document.getElementById('appointmentDate').value;
+      const time = document.getElementById('appointmentTime').value;
+      const reason = document.getElementById('appointmentReason').value;
+      const notes = document.getElementById('appointmentNotes').value;
+      
+      console.log('=== BOOKING APPOINTMENT ===');
+      console.log('Form values:', { doctorId, date, time, reason, notes });
+      console.log('CSRF Token:', csrfToken);
+      
+      if (!doctorId || !date || !time || !reason) {
+        showToast('error', 'Missing Information', 'Please fill in all required fields');
+        return;
+      }
+      
+      try {
+        const selectedDoc = doctors.find(d => d.id === parseInt(doctorId));
+        const payload = {
+          doctor_id: parseInt(doctorId),
+          appointment_date: date,
+          appointment_time: time,
+          reason: reason,
+          notes: notes,
+          location: selectedDoc ? selectedDoc.location : undefined
+        };
+        console.log('Sending payload:', JSON.stringify(payload));
+        if (payload.location) console.log('Location included:', payload.location);
+        
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) {
+          headers['X-CSRF-Token'] = csrfToken;
+          console.log('Adding CSRF header');
+        }
+        
+        const response = await fetch(`${API_BASE}/appointments`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response headers:', { 'content-type': response.headers.get('content-type') });
+        
+        // Capture new CSRF token from response
+        const newToken = response.headers.get('XSRF-TOKEN');
+        if (newToken) {
+          csrfToken = newToken;
+          console.log('CSRF token refreshed');
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (response.ok && data.success) {
+          console.log('✅ Appointment booked successfully');
+          showToast('success', 'Appointment Booked', 'Your appointment has been scheduled successfully');
+          closeBookingModal();
+          
+          // Reload appointments and re-render
+          await loadAppointments();
+          renderAllData();
+          
+          // Switch to appointments tab to show the new appointment
+          switchTab('appointments');
+        } else {
+          console.error('❌ Booking failed:', data);
+          alert(data.message || 'Failed to book appointment');
+          showToast('error', 'Booking Failed', data.message || 'Failed to book appointment');
+        }
+      } catch (error) {
+        console.error('❌ Error booking appointment:', error);
+        // Demo mode - add appointment locally
+        const selectedDoctor = doctors.find(d => d.id == doctorId);
+        const newAppointment = {
+          id: Date.now(),
+          date: date,
+          time: time,
+          status: 'pending',
+          reason: reason,
+          notes: notes,
+          doctor: selectedDoctor || { id: doctorId, name: 'Dr. Selected', specialization: 'General' }
+        };
+        appointments.push(newAppointment);
+        showToast('success', 'Appointment Booked (Demo)', 'Your appointment has been scheduled');
+        closeBookingModal();
+        renderAllData();
+        
+        // Switch to appointments tab
+        switchTab('appointments');
+      }
+    }
+
+    // Send message
+    async function sendMessage() {
+      const doctorId = document.getElementById('messageDoctor').value;
+      const subject = document.getElementById('messageSubject').value;
+      const content = document.getElementById('messageContent').value;
+      const category = document.getElementById('messageCategory').value;
+      const appointmentId = document.getElementById('appointmentIdForMessage').value;
+      
+      if (!doctorId || !content) {
+        showToast('error', 'Missing Information', 'Please select a doctor and enter a message');
+        return;
+      }
+      
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) {
+          headers['X-CSRF-Token'] = csrfToken;
+        }
+        
+        const response = await fetch(`${API_BASE}/messages`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify({
+            receiver_id: doctorId,
+            subject: subject,
+            message: content,
+            category: category,
+            appointment_id: appointmentId ? parseInt(appointmentId) : null
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          showToast('success', 'Message Sent', 'Your message has been sent to the doctor');
+          closeMessageModal();
+          await loadMessages();
+          renderAllData();
+        } else {
+          showToast('error', 'Failed to Send', data.message || 'Failed to send message');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        // Demo mode - add message locally
+        const selectedDoctor = doctors.find(d => d.id == doctorId);
+        const newMessage = {
+          id: Date.now(),
+          senderName: selectedDoctor ? selectedDoctor.name : 'Dr. Selected',
+          subject: subject || 'No Subject',
+          message: content,
+          category: category,
+          appointmentId: appointmentId,
+          isRead: true,
+          createdAt: new Date().toISOString()
+        };
+        messages.unshift(newMessage);
+        showToast('success', 'Message Sent (Demo)', 'Your message has been sent');
+        closeMessageModal();
+        renderAllData();
+      }
+    }
+
+    // View appointment details
+    function viewAppointment(appointmentId) {
+      // Debug: Show alert to verify function is called
+      console.log('viewAppointment called with ID:', appointmentId);
+      console.log('All appointments:', appointments);
+      
+      // Handle potential string ID
+      const searchId = typeof appointmentId === 'string' ? parseInt(appointmentId) : appointmentId;
+      const apt = appointments.find(a => a.id === searchId);
+      
+      if (!apt) {
+        showToast('error', 'Error', 'Appointment not found. ID: ' + searchId);
+        return;
+      }
+
+      console.log('Found appointment:', apt);
+
+      // normalize fields (match createAppointmentHTML logic)
+      const doctorInfo = apt.doctor || {};
+      const doctorId = doctorInfo.id || apt.doctor_id || null;
+      const doctorName = doctorInfo.name || apt.doctorName || 'Doctor';
+      const doctorSpecialization = doctorInfo.specialization || apt.doctorSpecialization || 'General Medicine';
+      const doctorLocation = doctorInfo.location || apt.doctorLocation || 'Main Clinic';
+      const appointmentDate = apt.date || apt.appointment_date;
+      const appointmentTime = apt.time || apt.appointment_time;
+      const appointmentReason = apt.reason || apt.reasonForVisit || 'General Consultation';
+      const appointmentStatus = apt.status || 'pending';
+
+      // Get modal elements
+      const modal = document.getElementById('appointmentModal');
+      const modalBody = document.getElementById('appointmentModalBody');
+      const modalFooter = document.getElementById('appointmentModalFooter');
+      
+      if (!modal || !modalBody || !modalFooter) {
+        showToast('error', 'Error', 'Modal not found');
+        return;
+      }
+
+      // Populate modal body
+      modalBody.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; margin: 0 auto 12px;">
+            ${getInitials(doctorName)}
+          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #0f172a;">${doctorName}</h4>
+          <p style="font-size: 13px; color: #64748b;">${doctorSpecialization}</p>
+        </div>
+
+        <div style="padding: 16px; background: #f8fafc; border-radius: 10px;">
+          <p style="margin-bottom: 8px;"><strong>Date:</strong> ${formatDate(appointmentDate)}</p>
+          <p style="margin-bottom: 8px;"><strong>Time:</strong> ${formatTime(appointmentTime)}</p>
+          <p style="margin-bottom: 8px;"><strong>Department:</strong> ${doctorSpecialization}</p>
+          <p style="margin-bottom: 8px;"><strong>Location:</strong> ${doctorLocation}</p>
+          <p style="margin-bottom: 8px;"><strong>Reason:</strong> ${appointmentReason}</p>
+          <p style="margin-bottom: 8px;"><strong>Status:</strong> <span class="appointment-badge ${appointmentStatus}">${capitalizeFirst(appointmentStatus)}</span></p>
+          ${apt.notes ? `<p style="margin-bottom: 8px;"><strong>Notes:</strong> ${apt.notes}</p>` : ''}
+        </div>
+      `;
+
+      // Populate footer buttons
+      let footerButtons = `
+        <button type="button" class="action-btn secondary" onclick="closeAppointmentModal()">Close</button>
+      `;
+      
+      if (appointmentStatus !== 'completed' && appointmentStatus !== 'cancelled') {
+        footerButtons += `
+          <button type="button" class="action-btn" onclick="closeAppointmentModal(); openMessageModal(${apt.id}, ${doctorId});">Message Doctor</button>
+          <button type="button" class="action-btn danger" onclick="closeAppointmentModal(); cancelAppointment(${apt.id});">Cancel Appointment</button>
+        `;
+      }
+      
+      modalFooter.innerHTML = footerButtons;
+
+      // Show modal
+      modal.style.display = 'flex';
+    }
+    
+    // Close appointment modal
+    function closeAppointmentModal() {
+      const modal = document.getElementById('appointmentModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Cancel appointment
+    async function cancelAppointment(appointmentId) {
+      if (!confirm('Are you sure you want to cancel this appointment?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/appointments/${appointmentId}/cancel`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          showToast('success', 'Appointment Cancelled', 'Your appointment has been cancelled');
+          await loadAppointments();
+          renderAllData();
+        } else {
+          showToast('error', 'Error', 'Failed to cancel appointment');
+        }
+      } catch (error) {
+        console.error('Error cancelling appointment:', error);
+        // Demo mode - cancel locally
+        const apt = appointments.find(a => a.id === appointmentId);
+        if (apt) {
+          apt.status = 'cancelled';
+          showToast('success', 'Appointment Cancelled (Demo)', 'Your appointment has been cancelled');
+          renderAllData();
+        }
+      }
+    }
+
+    // View message
+    function viewMessage(messageId) {
+      const msg = messages.find(m => m.id === messageId);
+      if (!msg) return;
+      
+      // Mark as read
+      msg.isRead = true;
+      
+      // Show message in modal with reply option
+      showMessageModal(msg);
+      
+      renderAllData();
+    }
+
+    // Show message modal with reply option
+    function showMessageModal(msg) {
+      // Check if this message is from a doctor (received messages)
+      const isReceived = msg.direction === 'received' || msg.senderId !== undefined;
+      const senderName = msg.senderName || msg.receiverName || 'Doctor';
+      
+      // Create a new view modal (don't reuse the send message modal)
+      const existingViewModal = document.getElementById('messageViewModal');
+      if (existingViewModal) {
+        existingViewModal.remove();
+      }
+      
+      const viewModal = document.createElement('div');
+      viewModal.id = 'messageViewModal';
+      viewModal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+      viewModal.innerHTML = `
+        <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+          <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 16px;">Message from ${senderName}</span>
+            <button type="button" onclick="closeMessageViewModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">&times;</button>
+          </div>
+          <div style="padding: 20px;">
+            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 5px 0; font-size: 13px; color: #64748b;"><strong>Subject:</strong> ${msg.subject || 'No Subject'}</p>
+              <p style="margin: 0; font-size: 13px; color: #64748b;"><strong>Date:</strong> ${formatRelativeTime(msg.createdAt)}</p>
+            </div>
+            <div style="margin-bottom: 20px; max-height: 200px; overflow-y: auto; padding: 15px; background: #f8fafc; border-radius: 8px;">
+              <p style="margin: 0; white-space: pre-wrap; line-height: 1.6;">${msg.message}</p>
+            </div>
+            ${isReceived ? `
+            <div style="margin-top: 20px;">
+              <h4 style="margin: 0 0 15px 0; font-size: 14px; color: #0f172a;">Reply to ${senderName}</h4>
+              <div class="form-group">
+                <label class="form-label">Subject</label>
+                <input type="text" class="form-control" id="replySubject" value="Re: ${msg.subject || 'Message'}">
+              </div>
+              <div class="form-group">
+                <label class="form-label required">Your Reply</label>
+                <textarea class="form-control" id="replyContent" rows="4" placeholder="Type your reply here..." required></textarea>
+              </div>
+              <button type="button" class="btn btn-primary btn-block" onclick="sendPatientReply(${msg.id})">
+                <i class="fas fa-paper-plane"></i> Send Reply
+              </button>
+            </div>
+            ` : `
+            <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
+              <p style="margin: 0; font-size: 13px; color: #0369a1;"><i class="fas fa-info-circle"></i> This is a message you sent. The doctor will reply to your conversation.</p>
+            </div>
+            `}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(viewModal);
+    }
+
+    // Close message view modal
+    function closeMessageViewModal() {
+      const modal = document.getElementById('messageViewModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Expose closeMessageViewModal to global scope
+    window.closeMessageViewModal = closeMessageViewModal;
+
+    // Send patient reply
+    async function sendPatientReply(messageId) {
+      const replyContent = document.getElementById('replyContent').value.trim();
+      const replySubject = document.getElementById('replySubject').value.trim();
+      
+      if (!replyContent) {
+        showToast('error', 'Missing Information', 'Please enter a reply message');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/messages/patient/reply/${messageId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: replyContent, 
+            subject: replySubject 
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showToast('success', 'Reply Sent', 'Your reply has been sent to the doctor');
+          closeMessageViewModal();
+          // Reload messages
+          await loadMessages();
+        } else {
+          showToast('error', 'Failed to Send', data.message || 'Failed to send reply');
+        }
+      } catch (error) {
+        console.error('Error sending reply:', error);
+        showToast('error', 'Error', 'Failed to send reply. Please try again.');
+      }
+    }
+
+    // View invoice
+    function viewInvoice(invoiceId) {
+      showToast('info', 'Invoice', `Viewing invoice ${invoiceId}`);
+    }
+
+    // Logout
+    function handleLogout() {
+      fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      }).then(() => {
+        window.location.href = 'sign-in.html';
+      }).catch(() => {
+        window.location.href = 'sign-in.html';
+      });
+    }
+
+    // Toast notification
+    function showToast(type, title, message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
+      
+      toast.innerHTML = `
+        <i class="fas fa-${icon} toast-icon"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // Close modal when clicking outside (on the overlay)
+    document.addEventListener('click', function(e) {
+      // Close booking modal when clicking on overlay
+      const bookingModal = document.getElementById('bookingModal');
+      if (bookingModal && bookingModal.style.display === 'flex') {
+        if (e.target === bookingModal) {
+          closeBookingModal();
+        }
+      }
+      
+      // Close message modal when clicking on overlay
+      const messageModal = document.getElementById('messageModal');
+      if (messageModal && messageModal.style.display === 'flex') {
+        if (e.target === messageModal) {
+          closeMessageModal();
+        }
+      }
+      
+      // Close appointment modal when clicking on overlay
+      const appointmentModal = document.getElementById('appointmentModal');
+      if (appointmentModal && appointmentModal.style.display === 'flex') {
+        if (e.target === appointmentModal) {
+          closeAppointmentModal();
+        }
+      }
+    });
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const bookingModal = document.getElementById('bookingModal');
+        if (bookingModal && bookingModal.style.display === 'flex') {
+          closeBookingModal();
+        }
+        
+        const messageModal = document.getElementById('messageModal');
+        if (messageModal && messageModal.style.display === 'flex') {
+          closeMessageModal();
+        }
+        
+        const appointmentModal = document.getElementById('appointmentModal');
+        if (appointmentModal && appointmentModal.style.display === 'flex') {
+          closeAppointmentModal();
+        }
+      }
+    });
+
+    // Utility functions
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Print specific examination record
+    function printExamination(examId) {
+      // Hide all elements except the examination record to print
+      const examRecord = document.getElementById('examination-' + examId);
+      if (!examRecord) return;
+      
+      // Create print-specific styles
+      const printStyle = document.createElement('style');
+      printStyle.id = 'print-style';
+      printStyle.innerHTML = `
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #examination-${examId}, #examination-${examId} * {
+            visibility: visible;
+          }
+          #examination-${examId} {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            box-shadow: none;
+            border: 1px solid #ccc;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `;
+      
+      // Remove any existing print style
+      const existingStyle = document.getElementById('print-style');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      
+      // Add print style
+      document.head.appendChild(printStyle);
+      
+      // Print the page
+      window.print();
+      
+      // Clean up after printing
+      setTimeout(() => {
+        printStyle.remove();
+      }, 1000);
+    }
+
+    function formatTime(timeString) {
+      if (!timeString) return 'N/A';
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    }
+
+    function formatRelativeTime(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return formatDate(dateString);
+    }
+
+    function getInitials(name) {
+      if (!name) return '??';
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function capitalizeFirst(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
+  
+  <!-- Make openBookingModal available globally for onclick handlers -->
+  <script>
+    // Expose functions globally for inline onclick handlers
+    window.openBookingModal = function() {
+      try {
+        console.log('openBookingModal called');
+        
+        const modal = document.getElementById('bookingModal');
+        if (!modal) {
+          console.error('Booking modal element not found!');
+          alert('Modal element not found!');
+          return;
+        }
+        
+        // Show modal by setting display directly
+        modal.style.display = 'flex';
+        
+        console.log('Modal display set to flex, visible:', modal.style.display);
+        
+        // reset form and doctor select so previous values aren't retained
+        const form = document.getElementById('bookingForm');
+        if (form) form.reset();
+        const doctorSel = document.getElementById('doctorSelect');
+        if (doctorSel) doctorSel.value = '';
+        
+        // Set minimum date to today
+        const dateInput = document.getElementById('appointmentDate');
+        // no external info elements anymore
+        if (dateInput) {
+          const today = new Date().toISOString().split('T')[0];
+          dateInput.min = today;
+        }
+        
+        // Populate time slots
+        const timeSelect = document.getElementById('appointmentTime');
+        if (timeSelect && timeSelect.options.length <= 1) {
+          timeSelect.innerHTML = '<option value="">Select time</option>';
+          // Generate time slots from 07:00 AM to 10:00 PM (22:00)
+          const times = [];
+          for (let hour = 7; hour <= 22; hour++) {
+            times.push(`${hour.toString().padStart(2, '0')}:00`);
+            times.push(`${hour.toString().padStart(2, '0')}:30`);
+          }
+          times.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = formatTime(time);
+            timeSelect.appendChild(option);
+          });
+        }
+        
+        // Load doctors if not already loaded
+        if (typeof doctors !== 'undefined' && doctors.length === 0) {
+          loadDoctors();
+        } else if (typeof doctors !== 'undefined' && doctors.length > 0) {
+          renderDoctorList();
+        }
+        
+        console.log('Booking modal opened successfully');
+      } catch (e) {
+        console.error('Error opening booking modal:', e);
+        alert('Error: ' + e.message);
+      }
+    };
+    
+    window.closeBookingModal = function() {
+      try {
+        const modal = document.getElementById('bookingModal');
+        if (modal) {
+          // Hide modal by setting display directly
+          modal.style.display = 'none';
+        }
+        const form = document.getElementById('bookingForm');
+        if (form) {
+          form.reset();
+        }
+        const hiddenInput = document.getElementById('selectedDoctorId');
+        if (hiddenInput) {
+          hiddenInput.value = '';
+        }
+        const select = document.getElementById('doctorSelect');
+        if (select) select.value = '';
+      } catch (e) {
+        console.error('Error closing booking modal:', e);
+      }
+    };
+    
+    // Global message modal functions
+    window.openMessageModal = function() {
+      try {
+        const modal = document.getElementById('messageModal');
+        if (modal) {
+          modal.style.display = 'flex';
+        }
+        
+        // Load doctors if not already loaded
+        if (typeof doctors !== 'undefined' && doctors.length === 0) {
+          loadDoctors();
+        } else if (typeof doctors !== 'undefined' && doctors.length > 0) {
+          populateMessageDoctorSelect();
+        }
+        
+        console.log('Message modal opened');
+      } catch (e) {
+        console.error('Error opening message modal:', e);
+      }
+    };
+    
+    window.closeMessageModal = function() {
+      try {
+        // Close the message modal (both the original send form and the view/reply form)
+        const modal = document.getElementById('messageModal');
+        if (modal) {
+          modal.style.display = 'none';
+          // Also check for inline style display:flex
+          if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+          }
+        }
+        // Reset the original send message form
+        const form = document.getElementById('messageForm');
+        if (form) {
+          form.reset();
+        }
+      } catch (e) {
+        console.error('Error closing message modal:', e);
+      }
+    };
+    
+    // Expose sendPatientReply to global scope
+    window.sendPatientReply = sendPatientReply;
+    
+    // Expose doctor details function to global scope
+    window.viewDoctorDetails = function(doctorId) {
+      const doctor = doctors.find(d => d.id === doctorId);
+      
+      if (!doctor) {
+        alert('Doctor not found. Please refresh the page and try again.');
+        return;
+      }
+      
+      // Create modal container
+      const modalDiv = document.createElement('div');
+      modalDiv.id = 'doctorDetailsModal';
+      modalDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      
+      // Modal content
+      modalDiv.innerHTML = `
+        <div style="max-width: 600px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin: auto;">
+          <div style="background: #2563eb; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px;">Doctor Details</h3>
+            <button style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;" onclick="closeDoctorDetailsModalDirect()">✕</button>
+          </div>
+          <div style="text-align: center; padding: 30px;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 600; margin: 0 auto 20px;">
+              ${getInitials(doctor.name)}
+            </div>
+            <h3 style="font-size: 20px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">${doctor.name}</h3>
+            <p style="font-size: 14px; color: #64748b; margin-bottom: 4px;">${doctor.specialization || 'General Medicine'}</p>
+            ${doctor.qualification ? `<p style="font-size: 13px; color: #2563eb; margin-bottom: 16px;">${doctor.qualification}</p>` : ''}
+            
+            <div style="text-align: left; margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 10px;">
+              ${doctor.experienceYears ? `<p style="margin-bottom: 8px;"><strong>Experience:</strong> ${doctor.experienceYears} years</p>` : ''}
+              ${doctor.email ? `<p style="margin-bottom: 8px;"><strong>Email:</strong> ${doctor.email}</p>` : ''}
+              ${doctor.bio ? `<p style="margin-bottom: 8px;"><strong>About:</strong> ${doctor.bio}</p>` : ''}
+            </div>
+          </div>
+          <div style="padding: 16px 20px; display: flex; gap: 12px; justify-content: flex-end;">
+            <button style="padding: 10px 20px; border-radius: 6px; border: none; background: #e2e8f0; color: #0f172a; font-size: 14px; cursor: pointer;" onclick="closeDoctorDetailsModalDirect()">Close</button>
+            <button style="padding: 10px 20px; border-radius: 6px; border: none; background: #2563eb; color: white; font-size: 14px; cursor: pointer;" onclick="openBookingModal(); closeDoctorDetailsModalDirect();">Book Appointment</button>
+          </div>
+        </div>
+      `;
+      
+      // Add click outside to close
+      modalDiv.onclick = function(e) {
+        if (e.target === modalDiv) {
+          modalDiv.remove();
+        }
+      };
+      
+      document.body.appendChild(modalDiv);
+    };
+    
+    window.closeDoctorDetailsModal = function(event) {
+      if (event && event.target.classList.contains('modal-overlay')) {
+        event.target.remove();
+      }
+    };
+    
+    window.closeDoctorDetailsModalDirect = function() {
+      const modal = document.getElementById('doctorDetailsModal');
+      if (modal) {
+        modal.remove();
+      }
+    };
+  </script>
+</body>
+</html>

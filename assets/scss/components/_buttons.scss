@@ -1,0 +1,217 @@
+.theme-button {
+    position: relative;
+    overflow: hidden;
+    height: 52px;
+    line-height: 2;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    vertical-align: middle;
+    text-transform: capitalize;
+    @include border-radius($border-radius-one);
+    @include d-inline-flex;
+    @include justify-content-center;
+    @include align-items-center;
+    @include transition(500ms all ease);
+    gap: 10px;
+
+    span {
+        position: relative;
+        display: inline-block;
+        padding: 0;
+        @include transition(transform 0.5s);
+        @include transform-origin(50% 0);
+        transform-style: preserve-3d;
+
+        &::before {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            content: attr(data-text);
+            text-align: center;
+            @include transition(color 0.5s);
+            @include transform(rotateX(-90deg));
+            @include transform-origin(50% 0);
+        }
+    }
+
+    i {
+        @include transition(transform 0.5s);
+    }
+
+    svg {
+        @include transition(500ms all ease);
+    }
+
+    @include maxQuery(767) {
+        font-size: 14px;
+    }
+
+    &.style-1 {
+        background-color: $primary-color;
+        color: $white-color;
+
+        span {
+            &::before {
+                color: $white-color;
+            }
+        }
+
+        i {
+            @include transform(rotate(-45deg));
+        }
+
+        &:hover {
+            background-color: $black-color;
+            color: $white-color;
+
+            span {
+                @include transform(rotateX(90deg) translateY(-12px));
+            }
+
+            i {
+                @include transform(rotate(0));
+            }
+        }
+    }
+
+    &.style-2 {
+        border-color: $black-color;
+        color: $black-color;
+
+        span {
+            &::before {
+                color: $white-color;
+            }
+        }
+
+        i {
+            @include transform(rotate(-45deg));
+        }
+
+        &:hover {
+            color: $white-color;
+            background-color: $primary-color;
+            border-color: $primary-color;
+
+            span {
+                @include transform(rotateX(90deg) translateY(-12px));
+            }
+
+            i {
+                @include transform(rotate(0));
+            }
+        }
+    }
+
+    &.style-3 {
+        background-color: $primary-color;
+        color: $white-color;
+
+        i {
+            @include transform(rotate(-45deg));
+        }
+
+        &:hover {
+            span {
+                @include transform(rotateX(90deg) translateY(-12px));
+            }
+
+            i {
+                @include transform(rotate(0));
+            }
+        }
+    }
+
+    &.style-4 {
+        background-color: $white-color;
+        color: $black-color;
+
+        i {
+            @include transform(rotate(-45deg));
+        }
+
+        &:hover {
+            span {
+                @include transform(rotateX(90deg) translateY(-12px));
+            }
+
+            i {
+                @include transform(rotate(0));
+            }
+        }
+    }
+
+    &.style-5 {
+        color: $white-color;
+        border: 1px solid $white-color;
+
+        i {
+            @include transform(rotate(-45deg));
+        }
+
+        &:hover {
+            color: $black-color;
+            background-color: $white-color;
+
+            span {
+                @include transform(rotateX(90deg) translateY(-12px));
+
+                &::before {
+                    color: $black-color;
+                }
+            }
+
+            i {
+                @include transform(rotate(0));
+            }
+        }
+    }
+}
+
+.read-more-btn {
+    position: relative;
+    color: $extra-color-five;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.8em;
+    text-transform: capitalize;
+    display: inline-block;
+    padding-right: 40px;
+    @include transition(all 0.4s ease-in-out);
+
+    &::before {
+        content: '\f061';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        font-family: 'Font Awesome 6 Free';
+        font-size: 14px;
+        line-height: normal;
+        color: $white-color;
+        width: 30px;
+        height: 30px;
+        background-color: $extra-color-five;
+        background-position: center center;
+        @include border-radius(50%);
+        @include flex-justify-align;
+        @include transform(translate(-3px, -50%));
+        @include transition(all 0.3s ease-in-out);
+    }
+
+    &:hover {
+        color: $primary-color;
+
+        &::before {
+            background-color: $primary-color;
+            @include transform(translate(0, -50%));
+        }
+    }
+}
+
+button:focus {
+    text-decoration: none;
+    outline: none;
+}

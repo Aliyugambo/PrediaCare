@@ -1,0 +1,34 @@
+.shop-checkout-section {
+    .checkout-wapper {
+        margin-right: 30px;
+
+        @include maxQuery(1199) {
+            margin-right: 0;
+            margin-bottom: 40px
+        }
+
+        .checkout-single {
+            @include box;
+            border: 1px solid $border-color-one;
+            overflow: hidden;
+
+            .heading {
+                @include d-flex;
+                @include align-items-center;
+                @include justify-content-space-between;
+                gap: 30px;
+                margin-bottom: 30px;
+
+                h2 {
+                    font-size: 32px;
+                    line-height: 1.4em;
+                    font-weight: 700;
+
+                    @include maxQuery(767) {
+                        font-size: 26px;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,84 @@
+// Headings
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: $extra-color-five;
+    font-family: $title-fonts;
+    font-weight: 600;
+    margin: 0;
+}
+
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+    color: inherit;
+}
+
+h1 img,
+h2 img,
+h3 img,
+h4 img,
+h5 img,
+h6 img {
+    margin: 0;
+}
+
+h1 {
+    font-size: 68px;
+    line-height: 1.4em;
+    font-weight: 800;
+
+    @include maxQuery(1400) {
+        font-size: 52px;
+    }
+
+    @include maxQuery(991) {
+        font-size: 48px;
+        line-height: 1.2em;
+    }
+
+    @include maxQuery(767) {
+        font-size: 34px;
+    }
+}
+
+h2 {
+    font-size: 46px;
+    line-height: 1.1em;
+    font-weight: 700;
+
+    @include maxQuery(991) {
+        font-size: 36px;
+    }
+
+    @include maxQuery(767) {
+        font-size: 26px;
+    }
+}
+
+h3 {
+    font-size: 22px;
+    line-height: 1.4em;
+
+    @include maxQuery(767) {
+        font-size: 20px;
+    }
+}
+
+h4 {
+    font-size: 1.728rem;
+}
+
+h5 {
+    font-size: 1.44rem;
+}
+
+h6 {
+    font-size: 1.2rem;
+}

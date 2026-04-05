@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout Component</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <style>
+        .user-profile-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .user-profile-card h5 {
+            margin: 10px 0;
+        }
+        .user-profile-card p {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        .logout-btn {
+            width: 100%;
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<!-- User Profile Card - Add this to your dashboard -->
+<div class="user-profile-card">
+    <h5>Welcome, <span id="user-name">User</span>!</h5>
+    <p>Role: <strong id="user-role">--</strong></p>
+    <p>Email: <small id="user-email">--</small></p>
+    <button class="btn btn-danger logout-btn mt-3" id="logout-btn">Logout</button>
+</div>
+
+<script>
+// Load user info on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/user', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('user-name').textContent = data.user.name;
+                document.getElementById('user-role').textContent = data.user.role.charAt(0).toUpperCase() + data.user.role.slice(1);
+                document.getElementById('user-email').textContent = data.user.email;
+            }
+        } else {
+            // User not logged in, redirect to login
+            window.location.href = 'sign-in.html';
+        }
+    } catch (error) {
+        console.error('Error loading user:', error);
+        window.location.href = 'sign-in.html';
+    }
+});
+
+// Logout handler
+document.getElementById('logout-btn').addEventListener('click', async function() {
+    try {
+        const response = await fetch('http://localhost:5500/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+                window.location.href = 'sign-in.html';
+            }
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed');
+    }
+});
+</script>
+
+</body>
+</html>
+
+<!-- 
+USAGE INSTRUCTIONS:
+====================
+
+To add this user profile card to your dashboard pages, copy and paste this HTML/CSS/JavaScript:
+
+1. Add CSS to your <head>:
+```html
+<style>
+    .user-profile-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .user-profile-card h5 {
+        margin: 10px 0;
+    }
+    .user-profile-card p {
+        margin: 5px 0;
+        opacity: 0.9;
+    }
+    .logout-btn {
+        width: 100%;
+        background-color: #dc3545;
+    }
+    .logout-btn:hover {
+        background-color: #c82333;
+    }
+</style>
+```
+
+2. Add HTML where you want to display user info:
+```html
+<div class="user-profile-card">
+    <h5>Welcome, <span id="user-name">User</span>!</h5>
+    <p>Role: <strong id="user-role">--</strong></p>
+    <p>Email: <small id="user-email">--</small></p>
+    <button class="btn btn-danger logout-btn mt-3" id="logout-btn">Logout</button>
+</div>
+```
+
+3. Add JavaScript before closing </body>:
+```javascript
+// Load user info on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('http://localhost:5500/api/auth/user', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('user-name').textContent = data.user.name;
+                document.getElementById('user-role').textContent = data.user.role.charAt(0).toUpperCase() + data.user.role.slice(1);
+                document.getElementById('user-email').textContent = data.user.email;
+            }
+        } else {
+            window.location.href = 'sign-in.html';
+        }
+    } catch (error) {
+        console.error('Error loading user:', error);
+        window.location.href = 'sign-in.html';
+    }
+});
+
+// Logout handler
+document.getElementById('logout-btn').addEventListener('click', async function() {
+    try {
+        const response = await fetch('http://localhost:5500/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+                window.location.href = 'sign-in.html';
+            }
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed');
+    }
+});
+```
+
+That's it! The user profile card will:
+- Fetch the current user's info when page loads
+- Display user name, role, and email
+- Redirect to login if user is not authenticated
+- Logout the user when logout button is clicked
+-->

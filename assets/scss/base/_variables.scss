@@ -1,0 +1,79 @@
+@charset "UTF-8";
+// google fonts 
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Sora:wght@100..800&display=swap');
+
+// variable
+:root {
+    --primary-color: #035E58;
+    --primary-rgb-05: rgba(3, 94, 88, 0.10);
+    --white-color: #FFFFFF;
+    --black-color: #000000;
+    --text-color: #525252;
+    --body-color: #FFFFFF;
+    --footer-color: #111821;
+    --border-color-one: #F3F3F3;
+    --border-color-two: #D3D3D3;
+    --border-radius-one: 5px;
+    --border-radius-two: 10px;
+    --border-radius-three: 20px;
+    --title-fonts: "Sora", sans-serif;
+    --body-fonts: "Rubik", sans-serif;
+    --transition: all 0.5s ease-in-out;
+    --box-shadow: 0 14px 28px -20px rgba(16, 24, 40, .24);
+    --background-one: #F9F9FF;
+    --background-two: #E6F9F8;
+    --extra-color: #DDF6FA;
+    --extra-color-one: #FFF5F5;
+    --extra-color-two: #DFFAFF;
+    --extra-color-three: #FFFAEB;
+    --extra-color-four: #F2F4F5;
+    --extra-color-five: #0C193E;
+    --extra-color-six: #0e131a;
+}
+
+// Theme Color - Defualt Colors
+$primary-color: var(--primary-color);
+$primary-rgb-05: var(--primary-rgb-05);
+$white-color: var(--white-color);
+$black-color: var(--black-color);
+$text-color: var(--text-color);
+$body-color: var(--body-color);
+$footer-color: var(--footer-color);
+$border-color-one: var(--border-color-one);
+$border-color-two: var(--border-color-two);
+$border-radius-one: var(--border-radius-one);
+$border-radius-two: var(--border-radius-two);
+$border-radius-three: var(--border-radius-three);
+$title-fonts: var(--title-fonts);
+$body-fonts: var(--body-fonts);
+$transition: var(--transition);
+$box-shadow: var(--box-shadow);
+$background-one: var(--background-one);
+$background-two: var(--background-two);
+$extra-color: var(--extra-color);
+$extra-color-one: var(--extra-color-one);
+$extra-color-two: var(--extra-color-two);
+$extra-color-three: var(--extra-color-three);
+$extra-color-four: var(--extra-color-four);
+$extra-color-five: var(--extra-color-five);
+$extra-color-six: var(--extra-color-six);
+
+
+// moz selection
+::-moz-selection {
+    text-shadow: none;
+    background: $primary-color;
+    color: $white-color;
+}
+
+::-moz-selection {
+    text-shadow: none;
+    background: $primary-color;
+    color: $white-color;
+}
+
+::selection {
+    text-shadow: none;
+    background: $primary-color;
+    color: $white-color;
+}

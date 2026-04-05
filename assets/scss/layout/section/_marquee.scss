@@ -1,0 +1,66 @@
+.marquee-ticker-section {
+    position: relative;
+    padding: 50px 0;
+    background-color: $extra-color-five;
+    overflow: hidden;
+
+    .marquee-ticker-box {
+        position: relative;
+        @include d-flex;
+        @include align-items-center;
+        gap: 40px;
+
+        @include maxQuery(767) {
+            gap: 20px;
+        }
+
+        .marquee-content {
+            @include flex-justify-align;
+            gap: 40px;
+            flex-shrink: 0;
+            min-width: 100%;
+            @include animation(scroll 32s linear infinite);
+
+            @include maxQuery(767) {
+                gap: 20px;
+            }
+
+            .marquee-icon {
+                @include flex-justify-align;
+                background-color: $white-color;
+                @include border-radius(100px);
+                height: 60px;
+                width: 60px;
+
+                @include maxQuery(767) {
+                    width: 42px;
+                    height: 42px;
+                }
+
+                img {
+                    width: 30px;
+                }
+            }
+
+            p {
+                margin-bottom: 0;
+                display: inline-block;
+                font-family: $body-fonts;
+                color: $white-color;
+                font-size: 40px;
+                line-height: 1.2em;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                text-transform: capitalize;
+
+                @include maxQuery(991) {
+                    font-size: 36px;
+                }
+
+                @include maxQuery(767) {
+                    font-size: 26px;
+                }  
+            }
+        }
+    }
+}

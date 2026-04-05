@@ -1,0 +1,80 @@
+.accordion {
+    .accordion-item {
+        margin-bottom: 25px;
+        background-color: $white-color;
+        border: none;
+        overflow: hidden;
+        @include border-radius($border-radius-two);
+        @include box-shadow(0 0 20px 0 rgba(0, 0, 0, .05));
+
+        .accordion-header {
+            color: $black-color;
+
+            .accordion-button {
+                background: transparent;
+                border: none;
+                margin-bottom: 0;
+                color: $black-color;
+                padding: 20px 80px 20px 20px;
+                font-size: 18px;
+                line-height: 1.6rem;
+                @include box-shadow(none);
+
+                @include maxQuery(767) {
+                    font-size: 16px;
+                }
+
+                &::after {
+                    content: "\f070";
+                    position: absolute;
+                    height: 45px;
+                    width: 45px;
+                    right: 10px;
+                    top: 0;
+                    bottom: 0;
+                    margin: auto;
+                    background-image: none;
+                    font-family: "Font Awesome 6 Free";
+                    font-size: 18px;
+                    font-weight: 600;
+                    z-index: 2;
+                    @include flex-justify-align;
+                    color: $black-color;
+                }
+
+                &:not(.collapsed) {
+                    background: $extra-color-five;
+                    color: $white-color;
+
+                    &::after {
+                        content: "\f06e";
+                        color: $white-color;
+                    }
+                }
+            }
+        }
+
+        .accordion-collapse {
+            border-top: 1px solid $border-color-one;
+
+            .accordion-body {
+                background-color: $extra-color-five;
+
+                p {
+                    margin-bottom: 0;
+                    color: $white-color;
+                    font-weight: 300;
+
+                    @include maxQuery(767) {
+                        font-size: 14px;
+                        line-height: 1.4rem;
+                    }
+                }
+            }
+        }
+
+        &:nth-last-child(1) {
+            margin-bottom: 0;
+        }
+    }
+}

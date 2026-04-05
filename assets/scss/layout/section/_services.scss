@@ -1,0 +1,555 @@
+.services-section {
+    &-1 {
+        position: relative;
+        background-repeat: no-repeat;
+        background-position: left bottom;
+
+        .service-items {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 30px;
+            background-color: $white-color;
+            @include box;
+
+            .service-icon {
+                position: relative;
+                height: 100px;
+                width: 100px;
+                margin-bottom: 50px;
+                @include flex-justify-align;
+                color: $primary-color;
+
+                &::after {
+                    content: '';
+                    height: 60px;
+                    width: 60px;
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    background-color: $extra-color;
+                    @include border-radius(100%);
+                    @include transition($transition);
+                }
+
+                figure {
+                    position: relative;
+                    z-index: 2;
+                    @include transition($transition);
+
+                    img {
+                        width: 60px;
+                        height: 60px;
+                        object-fit: cover;
+                    }
+                }
+            }
+
+            .service-content {
+                h2 {
+                    margin-bottom: 10px;
+                    font-size: 22px;
+                    line-height: 1.4em;
+                    @include transition($transition);
+
+                    @include maxQuery(767) {
+                        font-size: 20px;
+                    }
+
+                    &:hover {
+                        color: $primary-color;
+                    }
+                }
+            }
+
+            &:hover {
+                .service-icon {
+                    color: $white-color;
+
+                    figure {
+                        @include transform(scale(-1) rotate(180deg));
+
+                        img {
+                            filter: brightness(0) invert(1);
+                        }
+                    }
+
+                    &::after {
+                        height: 100px;
+                        width: 100px;
+                        background-color: $primary-color;
+                    }
+                }
+            }
+        }
+    }
+
+    &-2 {
+        background-color: $background-one;
+
+        .service-list {
+            margin-bottom: 30px;
+
+            .service-item {
+                position: relative;
+                padding: 30px;
+                background-color: $white-color;
+                border-bottom: 1px solid $border-color-one;
+                @include d-flex;
+                @include align-items-center;
+                @include justify-content-space-between;
+                gap: 54px;
+
+                &:nth-last-child(1) {
+                    border-bottom: none;
+                }
+
+                @include maxQuery(1399) {
+                    gap: 30px;
+                }
+
+                @include maxQuery(991) {
+                    @include flex-wrap;
+                    gap: 20px;
+                    padding: 20px;
+                }
+
+                .service-title-box {
+                    @include d-flex;
+                    @include align-items-center;
+                    gap: 30px;
+
+                    @include maxQuery(991) {
+                        gap: 20px;
+                    }
+
+                    .service-icon {
+                        position: relative;
+                        min-width: 100px;
+                        min-height: 100px;
+                        height: 100px;
+                        width: 100px;
+                        background-color: $extra-color;
+                        color: $primary-color;
+                        @include border-radius(100%);
+                        @include flex-justify-align;
+                        @include transition($transition);
+
+                        @include maxQuery(991) {
+                            min-width: 80px;
+                            min-height: 80px;
+                            height: 80px;
+                            width: 80px;
+                        }
+
+                        figure {
+                            position: relative;
+                            z-index: 2;
+                            @include transition($transition);
+
+                            img {
+                                width: 60px;
+                                height: 60px;
+                                object-fit: cover;
+
+                                @include maxQuery(991) {
+                                    width: 50px;
+                                    height: 50px;
+                                }
+                            }
+                        }
+                    }
+
+                    .service-title {
+                        h3 {
+                            @include transition($transition);
+
+                            &:hover {
+                                color: $primary-color;
+                            }
+                        }
+                    }
+                }
+
+                .service-image {
+                    width: 720px;
+
+                    @include maxQuery(991) {
+                        width: 100%;
+                    }
+
+                    a {
+                        display: block;
+
+                        figure {
+                            @include border-radius(100px);
+                            @include transition($transition);
+
+                            @include maxQuery(991) {
+                                @include border-radius(20px);
+                            }
+
+                            img {
+                                height: 100%;
+                                width: 100%;
+                                object-fit: cover;
+                            }
+                        }
+                    }
+                }
+
+                .service-description {
+                    max-width: 390px;
+
+                    @include maxQuery(1199) {
+                        max-width: 320px;
+                    }
+
+                    @include maxQuery(991) {
+                        max-width: 100%;
+                    }
+
+                    p {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .service-button-wapper {
+                    width: 100px;
+                    text-align: center;
+
+                    .service-button-icon {
+                        height: 48px;
+                        width: 48px;
+                        border: 1px solid $primary-color;
+                        color: $primary-color;
+                        @include border-radius(100px);
+                        font-size: 18px;
+                        @include flex-justify-align;
+                        @include transition(500ms all ease);
+
+                        i {
+                            @include flex-justify-align;
+                            @include transition(500ms all ease);
+                            @include transform(rotate(-35deg));
+                        }
+
+                        &:hover {
+                            background-color: $primary-color;
+                            color: $white-color;
+                            border-color: $primary-color;
+                            i{
+                                @include transform(rotate(0));
+                            }
+                        }
+                    }
+                }
+
+                &:hover {
+                    background-color: $primary-rgb-05;
+
+                    .service-icon {
+                        background-color: $primary-color;
+
+                        figure {
+                            @include transform(scale(-1) rotate(180deg));
+
+                            img {
+                                filter: brightness(0) invert(1);
+                            }
+                        }
+                    }
+
+                    .service-image {
+                        figure {
+                            @include transform(rotate(-9deg) scale(1.1));
+                        }
+                    }
+                }
+            }
+        }
+
+        .more-service-content {
+            width: 100%;
+            max-width: 630px;
+            text-align: center;
+            margin: 0 auto;
+
+            p {
+                margin-bottom: 20px;
+            }
+        }
+    }
+
+    &-3 {
+        position: relative;
+        background-color: $background-one;
+        background-repeat: no-repeat;
+        background-position: left bottom;
+        margin-left: 40px;
+        margin-right: 40px;
+        @include box;
+        margin-top: -220px;
+        z-index: 1;
+
+        @include maxQuery(991) {
+            padding: 10px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .services-content {
+            position: sticky;
+            top: 120px;
+
+            @include maxQuery(991) {
+                margin-bottom: 40px;
+            }
+
+            .section-title {
+                @include maxQuery(991) {
+                    max-width: 100%;
+                }
+            }
+        }
+
+        .service-item {
+            position: relative;
+            margin-bottom: 30px;
+            background-color: $white-color;
+            height: calc(100% - 30px);
+            overflow: hidden;
+            @include box;
+
+            &::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                display: block;
+                opacity: 0;
+                visibility: hidden;
+                background-color: $extra-color-five;
+                @include border-radius-three;
+                @include transition(all 600ms ease);
+                @include transform(scale(0.8));
+                opacity: 0;
+            }
+
+            .service-image {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-repeat: no-repeat;
+                background-position: top;
+                background-size: cover;
+                @include transition(all 600ms ease);
+                @include transform(scale(0.8));
+                opacity: 0;
+
+                figure {
+                    @include border-radius(20px);
+                    overflow: hidden;
+                    height: 100%;
+
+                    img {
+                        object-fit: cover;
+                        @include border-radius(20px);
+                        transition: all 0.4s ease-in-out;
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+
+                &:hover {
+                    .service-image {
+                        img {
+                            @include transform(scale(1.1));
+                        }
+                    }
+                }
+            }
+
+            .service-icon {
+                position: relative;
+                z-index: 1;
+                height: 80px;
+                width: 80px;
+                @include flex-justify-align;
+                background-color: $extra-color;
+                color: $primary-color;
+                @include border-radius(100px);
+                margin-bottom: 50px;
+
+                &::before {
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    opacity: 0;
+                    content: '';
+                    position: absolute;
+                    background: $primary-color;
+                    @include border-radius(inherit);
+                    @include transform(scale(0.8));
+                    @include transition(all 0.5s);
+                    z-index: 1;
+                }
+
+                figure {
+                    position: relative;
+                    z-index: 2;
+                    @include transition($transition);
+
+                    img {
+                        width: 50px;
+                        height: 50px;
+                        object-fit: cover;
+                    }
+                }
+
+            }
+
+            .service-content {
+                position: relative;
+                z-index: 1;
+                @include transform(translateY(50px));
+                @include transition(all 0.4s ease-in-out);
+
+                h3 {
+                    margin-bottom: 10px;
+                }
+
+                .read-more-btn {
+                    opacity: 0;
+                    visibility: hidden;
+                    @include transition(all 0.4s ease-in-out);
+                }
+            }
+
+            &.active {
+                &::after {
+                    opacity: 0.8;
+                    visibility: visible;
+                    @include transform(scale(1.1));
+                }
+
+                .service-image {
+                    @include transform(scale(1.1));
+                    opacity: 1;
+                }
+
+                .service-icon {
+                    background-color: $white-color;
+                    color: $primary-color;
+
+                    figure {
+                        @include transform(scale(-1) rotate(180deg));
+                    }
+                }
+
+                .service-content {
+                    position: relative;
+                    z-index: 1;
+                    @include transform(translateY(0));
+
+                    h3 {
+                        color: $white-color;
+                    }
+
+                    p {
+                        color: $white-color;
+                    }
+
+                    .read-more-btn {
+                        color: $white-color;
+                        opacity: 1;
+                        visibility: visible;  
+                        &::before{
+                            background-color: $white-color;
+                            color: $text-color;
+                        }                       
+                    }
+                }
+            }
+        }
+    }
+}
+
+.services-shape{
+    &-1{
+        position: absolute;
+        bottom: 0;
+        left: -50px;
+        z-index: -1;
+        @include animation(move-left 5s linear infinite);        
+        figure{
+            img {
+                width: auto;
+                opacity: 0.5; 
+            }
+        }
+        @include maxQuery(767) {
+            display: none;
+        }
+    } 
+}
+
+.service-single-section {
+    .service-single-post {
+        @include maxQuery(1199) {
+            margin-bottom: 40px;
+        }
+
+        .service-single-media {
+            margin-bottom: 30px;
+
+            figure {
+                overflow: hidden;
+                @include border-radius-three;
+
+                img {
+                    width: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+
+        .service-single-contain {
+            .service-entry-content {
+                h2 {
+                    margin-bottom: 15px;
+                    font-size: 32px;
+                    line-height: 1.4em;
+                    font-weight: 700;
+
+                    @include maxQuery(767) {
+                        font-size: 26px;
+                    }
+                }
+
+                h3 {
+                    margin-bottom: 10px;
+                }
+
+                .service-gallery {
+                    figure {
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                        @include border-radius-three;
+
+                        img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

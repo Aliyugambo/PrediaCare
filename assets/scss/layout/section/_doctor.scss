@@ -1,0 +1,571 @@
+.doctor-section {
+    &-1 {
+        .doctor-image-wrapper {
+            position: relative;
+
+            .doctor-image-item {
+                position: relative;
+
+                &.active {
+                    z-index: 2;
+                }
+
+                @include maxQuery(991) {
+                    margin-bottom: 30px;
+                }
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 100%;
+                    width: 100%;
+                    background-color: $background-two; 
+                    @include border-radius(250px 250px 0 0);
+                    z-index: -1;
+                    max-width: 520px;
+                    margin: auto;
+                    left: 0;
+                    right: 0;
+                }
+
+                figure {
+                    text-align: center;
+
+                    img {
+                        object-fit: cover;
+                    }
+                }
+
+                .doctor-overlay {
+                    position: absolute;
+                    top: inherit;
+                    bottom: 40px;
+                    left: 40px;
+                    right: 40px;
+                    padding: 25px 30px;
+                    @include border-radius(20px);
+                    word-break: break-word;
+                    transition: all .5s;
+                    z-index: 1;
+                    max-width: 340px;
+                    margin: 0 auto;
+                    background-color: rgb(255 255 255 / 50%);
+                    border: 1px solid $border-color-one;
+                    backdrop-filter: blur(7px);
+
+                    @include maxQuery(767) {
+                        left: 20px;
+                        right: 20px;
+                        padding: 20px;
+                    }
+
+                    .doctor-overlay-content {
+                        h3 {
+                            margin-bottom: 5px;
+                            @include transition($transition);
+
+                            &:hover {
+                                color: $primary-color;
+                            }
+                        }
+
+                        p {
+                            margin-bottom: 15px;
+                            text-transform: capitalize;
+                        }
+
+                        .doctor-overlay-meta {
+                            @include d-flex;
+                            @include align-items-center;
+                            @include justify-content-space-between;
+                            @include flex-wrap;
+                            gap: 10px;
+
+                            .doctor-social-media {
+                                ul {
+                                    @include d-flex;
+                                    gap: 20px;
+
+                                    li {
+                                        a {
+                                            width: 24px;
+                                            height: 24px;
+                                            font-size: 16px;
+                                            color: $black-color;
+                                            @include flex-justify-align;
+
+                                            &:hover {
+                                                color: $primary-color;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            .doctor-review {
+                                .doctor-review-content {
+                                    background-color: $background-two;
+                                    @include border-radius(100px);
+                                    @include d-flex;
+                                    @include align-items-center;
+                                    gap: 10px;
+                                    padding: 4px 10px;
+                                    font-weight: 600;
+                                    color: $black-color;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .doctor-list {
+            @include d-flex;
+            @include flex-wrap;
+            gap: 30px;
+            margin-left: 30px;
+
+            @include maxQuery(991) {
+                margin-left: 0;
+            }
+
+            .doctor-item {
+                @include box;
+                width: calc(50% - 15px);
+                background-color: $white-color;
+                border: 1px solid $border-color-one;
+
+                @include maxQuery(576) {
+                    width: 100%;
+                }
+
+                &.active {
+                    background-color: $background-two;
+                }
+
+                .doctor-item-image {
+                    margin-bottom: 15px;
+
+                    figure {
+                        img {
+                            width: 100px;
+                            height: 100px;
+                            @include border-radius(100px);
+                            object-fit: cover;
+                        }
+                    }
+                }
+
+                .doctor-item-content {
+                    h3 {
+                        margin-bottom: 5px;
+                        @include transition($transition);
+
+                        &:hover {
+                            color: $primary-color;
+                        }
+                    }
+
+                    p {
+                        margin-bottom: 0;
+                        text-transform: capitalize;
+                    }
+                }
+            }
+        }
+    }
+
+    &-2 {
+        background-color: $background-one;
+
+        .doctor-item {
+            margin-bottom: 30px;
+
+            .doctor-image {
+                position: relative;
+                @include border-radius(500px);
+                max-width: calc(100% - 20px * 2);
+                margin: 0 auto 20px auto;
+
+                figure {
+                    @include border-radius(500px);
+                    overflow: hidden;
+
+                    img {
+                        object-fit: cover;
+                    }
+                }
+
+                .doctor-overlay {
+                    position: absolute;
+                    bottom: 80px;
+                    left: 0;
+                    right: 0;
+                    z-index: 1;
+                    margin: 0 auto;
+                    @include transition(all .5s);
+                    @include transform(translateY(100%) scale(0.7));
+                    opacity: 0;
+
+                    .doctor-social-media {
+                        text-align: center;
+
+                        ul {
+                            @include d-inline-flex;
+                            gap: 20px;
+                            background-color: rgb(255 255 255 / 50%);
+                            border: 1px solid $border-color-one;
+                            backdrop-filter: blur(7px);
+                            @include border-radius(100px);
+
+                            li {
+                                a {
+                                    width: 45px;
+                                    height: 45px;
+                                    font-size: 16px;
+                                    color: $black-color;
+                                    @include flex-justify-align;
+                                    @include border-radius(100px);
+                                    @include transition($transition);
+
+                                    &:hover {
+                                        background-color: $primary-color;
+                                        color: $white-color;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .doctor-content {
+                background-color: $white-color;
+                margin-top: -100px;
+                text-align: center;
+                @include border-radius-three;
+                padding: 100px 20px 20px 20px;
+
+                h3 {
+                    margin-bottom: 5px;
+                    @include transition($transition);
+
+                    &:hover {
+                        color: $primary-color;
+                    }
+                }
+
+                p {
+                    margin-bottom: 0;
+                }
+            }
+
+            &:hover {
+                .doctor-image {
+                    .doctor-overlay {
+                        @include transition(all .5s);
+                        @include transform(translateY(0));
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    &-3 {
+        background-color: $background-one;
+
+        .doctor-items {
+            margin-bottom: 30px;
+
+            .doctor-image {
+                position: relative;
+                margin-bottom: 15px;
+
+                a {
+                    display: block;
+
+                    figure {
+                        @include border-radius-three;
+                        overflow: hidden;
+
+                        img {
+                            width: 100%;
+                            object-fit: cover;
+                            @include transition($transition);
+                        }
+                    }
+                }
+
+                .doctor-share {
+                    position: absolute;
+                    bottom: 20px;
+                    z-index: 1;
+                    right: 20px;
+
+                    .social-icon {
+                        @include transition($transition);
+                        @include transform(translate(0, 65px));
+                        opacity: 0;
+                        visibility: hidden;
+
+                        li {
+                            a {
+                                background: $white-color;
+                                color: $primary-color;
+                                text-align: center;
+
+                                &:hover {
+                                    color: $white-color;
+                                }
+                            }
+                        }
+                    }
+
+                    .doctor-share-icon {
+                        cursor: pointer;
+                        height: 50px;
+                        width: 50px;
+                        background-color: $primary-color;
+                        color: $white-color;
+                        @include border-radius(100px);
+                        margin-top: 15px;
+                        @include flex-justify-align;
+
+                        svg {
+                            width: 20px;
+                            height: 20px;
+                        }
+                    }
+                }
+
+                .doctor-review {
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    z-index: 1;
+                    background-color: rgb(255 255 255 / 80%);
+                    padding: 5px 15px;
+                    @include border-radius(100px);
+
+                    p {
+                        margin-bottom: 0;
+                    }
+                }
+            }
+
+            .doctor-content {
+                h3 {
+                    margin-bottom: 5px;
+                    color: $black-color;
+                    text-transform: capitalize;
+                    @include transition($transition);
+
+                    &:hover {
+                        color: $primary-color;
+                    }
+                }
+
+                p {
+                    margin: 0;
+                    text-transform: capitalize;
+
+                    @include maxQuery(767) {
+                        font-size: 14px;
+                        line-height: 1.4em;
+                    }
+                }
+            }
+
+            &:hover {
+                .doctor-share {
+                    .social-icon {
+                        @include transform(translate(0, 0));
+                        opacity: 1;
+                        visibility: visible;
+                    }
+                }
+
+                .doctor-image {
+                    img {
+                        @include transform(scale(1.1));
+                    }
+                }
+            }
+        }
+    }
+}
+
+.doctor-single-section {
+    .doctor-single-left {
+        position: sticky;
+        top: 120px;
+
+        @include maxQuery(991) {
+            margin-bottom: 30px;
+        }
+
+        .image-1 {
+            figure {
+                overflow: hidden;
+                @include border-radius-three;
+
+                img {
+                    width: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+
+        .section-title {
+            h2 {
+                font-size: 32px;
+                line-height: 1.4em;
+                font-weight: 700;
+
+                @include maxQuery(767) {
+                    font-size: 26px;
+                }
+            }
+        }
+    }
+
+    .doctor-single-right {
+        margin-left: 50px;
+
+        @include maxQuery(991) {
+            margin-left: 0;
+        }
+
+        h3 {
+            margin-bottom: 10px;
+        }
+
+        .doctor-biography {
+            margin-bottom: 40px;
+
+            .doctor-info-list {
+                li {
+                    margin-bottom: 15px;
+                    @include d-flex;
+                    @include align-items-center;
+
+                    span {
+                        &:first-child {
+                            width: 200px;
+
+                            @include maxQuery(767) {
+                                width: 120px;
+                            }
+                        }
+
+                        &:last-child {
+                            -webkit-box-flex: 1;
+                            -ms-flex: 1;
+                            flex: 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        .doctor-awards {
+            margin-bottom: 40px;
+
+            .doctor-awards-wappper {
+                margin-bottom: 30px;
+                @include d-flex;
+                gap: 30px;
+
+                @include maxQuery(767) {
+                    @include flex-column;
+                }
+
+                .doctor-awards-item {
+                    -webkit-box-flex: 1;
+                    -ms-flex: 1;
+                    flex: 1;
+                    @include d-flex;
+                    @include align-items-center;
+
+                    .doctor-awards-icon {
+                        position: relative;
+                        background-color: $extra-color;
+                        color: $primary-color;
+                        height: 80px;
+                        width: 80px;
+                        margin-right: 20px;
+                        @include flex-justify-align;
+                        @include border-radius(100%);
+
+                        &::before {
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            opacity: 0;
+                            content: '';
+                            position: absolute;
+                            background: $primary-color;
+                            @include border-radius(inherit);
+                            @include transform(scale(0.8));
+                            @include transition(all 0.5s);
+                            z-index: 1;
+                        }
+
+                        figure {
+                            position: relative;
+                            z-index: 2;
+                            @include transition($transition);
+
+                            img {
+                                width: 50px;
+                                height: 50px;
+                                object-fit: cover;
+                            }
+                        } 
+                    }
+
+                    .doctor-awards-title {
+                        width: calc(100% - 100px);
+
+                        h3 {
+                            margin-bottom: 5px;
+                            color: $black-color;
+                        }
+
+                        p {
+                            margin: 0;
+
+                            @include maxQuery(767) {
+                                font-size: 14px;
+                                line-height: 1.6em;
+                            }
+                        }
+                    }
+
+                    &:hover {
+                        .doctor-awards-icon { 
+
+                            &::before {
+                                opacity: 1;
+                                @include transform(scale(1));
+                            }
+
+                            figure {
+                                @include transform(scale(-1) rotate(180deg));
+
+                                img {
+                                    filter: brightness(0) invert(1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

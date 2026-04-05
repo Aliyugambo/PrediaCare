@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Staff | PrediaCare</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="assets/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif;background:#f8fafc;margin:0}
+    .sidebar-slim{position:fixed;left:0;top:0;bottom:0;width:260px;background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;height:100vh}
+    .main{margin-left:260px}
+    .container{max-width:1200px;margin:88px auto;padding:24px}
+    .header-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .header-row i{font-size:20px;cursor:pointer}
+    .page-title{font-size:24px;font-weight:600;margin:0}
+    .subtitle{color:#64748b;margin:0 0 16px 0}
+    .tabs{display:flex;gap:12px;margin-bottom:24px}
+    .tab{padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;color:#475569;background:#f1f5f9}
+    .tab.active{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
+    .form-section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px}
+    .personal-grid{display:grid;grid-template-columns:120px 1fr 120px 1fr;gap:16px;align-items:center}
+    .photo-upload{border:2px dashed #e2e8f0;border-radius:12px;width:120px;height:120px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;position:relative;}
+    .photo-upload input{position:absolute;opacity:0;cursor:pointer;width:100%;height:100%}
+    .personal-grid label{font-size:13px;color:#475569}
+    .personal-grid input, .personal-grid select{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px}
+    .full{grid-column:1/-1}
+    .form-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+    .btn-primary{background:#0f172a;color:#fff;border:none;padding:10px 20px;border-radius:8px}
+    .btn-secondary{background:#f1f5f9;color:#0f172a;border:none;padding:10px 20px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="sidebar-slim">
+    <div style="padding:18px;font-weight:700;color:#0f172a">PrediaCare</div>
+    <nav style="padding:8px 12px">
+      <a href="staff-dashboard.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">All Staff</a>
+      <a href="staff-add.html" style="display:block;padding:8px 6px;color:#0f172a;font-weight:600;text-decoration:none">Add Staff</a>
+      <a href="staff-roles.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">Roles & Permissions</a>
+      <a href="staff-attendance.html" style="display:block;padding:8px 6px;color:#475569;text-decoration:none">Attendance</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="container">
+      <div class="header-row">
+        <i class="fas fa-arrow-left" onclick="window.location='staff-dashboard.html'"></i>
+        <h1 class="page-title">Add New Staff</h1>
+      </div>
+      <p class="subtitle">Create a new staff member profile</p>
+
+      <div class="tabs">
+        <div class="tab active">Personal Info</div>
+        <div class="tab">Professional</div>
+        <div class="tab">Employment</div>
+        <div class="tab">Access & Roles</div>
+      </div>
+
+      <div class="form-section">
+        <form id="addStaffForm">
+          <div class="personal-grid">
+            <div class="photo-upload">
+              <span>Upload photo</span>
+              <input type="file" accept="image/*" />
+            </div>
+            <div>
+              <label>First Name</label>
+              <input id="firstName" placeholder="Enter first name" />
+            </div>
+            <div>
+              <label>Last Name</label>
+              <input id="lastName" placeholder="Enter last name" />
+            </div>
+            <div>
+              <label>Date of Birth</label>
+              <input type="date" id="dob" />
+            </div>
+            <div>
+              <label>Gender</label>
+              <select id="gender"><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select>
+            </div>
+            <div>
+              <label>Email Address</label>
+              <input id="email" placeholder="Enter email address" />
+            </div>
+            <div>
+              <label>Phone Number</label>
+              <input id="phone" placeholder="Enter phone number" />
+            </div>
+            <div class="full">
+              <label>Address</label>
+              <input id="address" placeholder="Enter address" />
+            </div>
+            <div>
+              <label>City</label>
+              <input id="city" placeholder="Enter city" />
+            </div>
+            <div>
+              <label>State / Province</label>
+              <input id="state" placeholder="Enter state or province" />
+            </div>
+            <div>
+              <label>Postal Code</label>
+              <input id="postal" placeholder="Enter postal code" />
+            </div>
+            <div>
+              <label>Country</label>
+              <select id="country"><option value="">Select country</option><option>USA</option><option>Canada</option></select>
+            </div>
+            <div>
+              <label>Emergency Contact</label>
+              <input id="emContact" placeholder="Contact name" />
+            </div>
+            <div>
+              <label>Emergency Phone</label>
+              <input id="emPhone" placeholder="Contact phone" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="window.location='staff-dashboard.html'">Cancel</button>
+            <button class="btn-primary" type="submit">Save & Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('addStaffForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const name = (document.getElementById('firstName').value||'') + ' ' + (document.getElementById('lastName').value||'');
+      const email = document.getElementById('email').value;
+      const password = Math.random().toString(36).slice(-8);
+      const role = 'staff';
+      if(!name.trim()||!email) return alert('Name and email required');
+      try{
+        const res = await fetch('/admin/create-user', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password, role }) });
+        const data = await res.json();
+        alert(data.message || 'Staff created');
+        if(data.success) window.location = 'staff-dashboard.html';
+      }catch(err){console.error(err);alert('Failed to create user')}
+    });
+  </script>
+</body>
+</html>

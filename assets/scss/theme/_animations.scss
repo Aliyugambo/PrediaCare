@@ -1,0 +1,139 @@
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        @include transform(translate3d(0, -100%, 0));
+    }
+
+    to {
+        opacity: 1;
+        @include transform(translateZ(0));
+    }
+} 
+
+@keyframes move-bottom {
+    0% {
+        @include transform(translateY(-25px));
+    }
+
+    50% {
+        @include transform(translateY(0));
+    }
+
+    100% {
+        @include transform(translateY(-25px));
+    }
+}
+
+@keyframes move-left {
+    0% {
+        @include transform(translateX(-25px));
+    }
+
+    50% {
+        @include transform(translateX(0));
+    }
+
+    100% {
+        @include transform(translateX(-25px));
+    }
+}
+
+@keyframes move-right {
+    0% {
+        @include transform(translateX(-25px));
+    }
+
+    50% {
+        @include transform(translateX(0));
+    }
+
+    100% {
+        @include transform(translateX(-25px));
+    }
+} 
+
+@keyframes scroll {
+    from {
+        @include transform(translateX(0));
+    }
+
+    to {
+        @include transform(translateX(calc(-100% - 40px)));
+    }
+} 
+
+@keyframes infiniterotate {
+    from {
+        @include transform(rotate(0));
+    }
+
+    to {
+        @include transform(rotate(360deg));
+    }
+}
+
+@keyframes imageanime {
+    100% {
+        left: 125%;
+    }
+}
+
+@keyframes spinner {
+    to {
+        @include transform(rotateZ(360deg));
+    }
+}
+
+@keyframes spineer2 {
+    from {
+        @include box-shadow(0 0 0 0 rgba(255, 255, 255, 0.99));
+    }
+
+    to {
+        @include box-shadow(0 0 0 45px rgba(255, 255, 255, 0.01)); 
+    }
+}
+
+@keyframes spineer3 {
+    from {
+        @include box-shadow(0 0 0 0 rgba(3, 94, 88, 0.90)); 
+    }
+
+    to {
+        @include box-shadow(0 0 0 15px rgba(3, 94, 88, 0.01)); 
+    }
+}
+
+@keyframes zoom {
+    0% {
+        @include transform(scale(1));
+    }
+
+    to {
+        @include transform(scale(1.25));
+    }
+}
+
+@keyframes rotate {
+    0% {
+        @include transform(translate(-50%, -50%) rotate(0));
+    }
+
+    100% {
+        @include transform(translate(-50%, -50%) rotate(360deg));
+    }
+}
+
+@keyframes fadeinone {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

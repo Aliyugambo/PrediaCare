@@ -1,0 +1,1596 @@
+it<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Dashboard - Carenix Clinic</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #64748b;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: white;
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    
+    .sidebar-logo {
+      width: 40px;
+      height: 40px;
+      /* background: linear-gradient(135deg, #9333ea, #7c3aed); */
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .sidebar-menu {
+      flex: 1;
+    }
+    
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .menu-item:hover {
+      background: var(--background);
+      color: var(--text-primary);
+    }
+    
+    .menu-item.active {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+    
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .header-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9333ea, #7c3aed);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+    
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    /* Test Cards */
+    .test-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .test-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .test-info p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .test-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* Form Styles */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .form-row.single {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #9333ea;
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #9333ea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #7c3aed;
+    }
+    
+    .btn-secondary {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--background);
+    }
+    
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge-pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .badge-completed {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .badge-urgent {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .badge-routine {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+    
+    /* Tabs */
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn:hover {
+      background: var(--background);
+    }
+    
+    .tab-btn.active {
+      background: #9333ea;
+      color: white;
+    }
+    
+    .tab-pane {
+      display: none;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-overlay.active {
+      display: flex !important;
+    }
+    
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    
+    .modal-close:hover {
+      color: var(--danger);
+      background: rgba(220, 38, 38, 0.1);
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    /* Search */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .search-bar input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    
+    .search-bar select {
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    
+    /* Patient Summary */
+    .patient-summary {
+      display: grid;
+      grid-template-columns: 50px 1fr;
+      gap: 16px;
+      align-items: center;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    
+    .patient-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #9333ea, #7c3aed);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    
+    /* Template Preview */
+    .template-preview {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    
+    .template-preview:hover {
+      opacity: 1;
+    }
+    
+    /* Result Template - Optimized Field Arrangement */
+    .result-field {
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: fadeInUp 0.4s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .result-field-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .result-field-main {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 120px;
+      gap: 12px;
+      align-items: end;
+    }
+    
+    .result-field label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    
+    .result-field input:not([readonly]) {
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    
+    .result-field input:not([readonly]):focus {
+      border-color: #9333ea;
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+    }
+    
+    .result-field input[readonly] {
+      background: #f8fafc;
+      color: var(--text-secondary);
+      cursor: help;
+    }
+    
+    /* Status Chip */
+    .status-chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+      min-width: 80px;
+    }
+    
+    .status-chip.normal {
+      background: #dcfce7;
+      color: #16a34a;
+      border-color: #22c55e;
+    }
+    
+    .status-chip.low {
+      background: #fef3c7;
+      color: #d97706;
+      border-color: #f59e0b;
+    }
+    
+    .status-chip.high {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #ef4444;
+    }
+    
+    .status-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Autosave Status */
+    .autosave-status {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    
+    .autosave-saving {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .autosave-saved {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    /* Optimistic Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: #9333ea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+@keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Doctor Dashboard Styles - for content-grid, file-upload etc. */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 4fr 3fr;
+      gap: 24px;
+    }
+    
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .content-card-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .content-card-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 4px 0;
+    }
+    
+    .content-card-header p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    
+    .content-card-body {
+      padding: 20px;
+    }
+    
+    .form-section {
+      margin-bottom: 24px;
+    }
+    
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-upload-container {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #9333ea;
+    }
+    
+    .file-upload-container input[type="file"] {
+      display: none;
+    }
+    
+    .file-upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    
+    .file-upload-label i {
+      font-size: 32px;
+      color: #94a3b8;
+    }
+    
+    .file-upload-label span {
+      font-size: 14px;
+    }
+    
+    .file-upload-label small {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #9333ea;
+    }
+    
+    .test-referral-options {
+      margin-top: 12px;
+      padding: 12px;
+      background: #fef3c7;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .test-referral-options.show {
+      display: block;
+    }
+
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"> <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></div>
+        <div class="sidebar-title">Diagnostic Lab</div>
+      </div>
+      <div class="sidebar-menu">
+        <a class="menu-item active" data-tab="pending">
+          <i class="fas fa-hourglass-half"></i>
+          Pending Tests
+        </a>
+    <a class="menu-item" data-tab="completed">
+      <i class="fas fa-check-circle"></i>
+      Completed
+    </a>
+    <a class="menu-item" data-tab="results">
+      <i class="fas fa-file-medical-alt"></i>
+      Test Results
+    </a>
+  </div>
+      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+        <a class="menu-item" href="sign-in.html" onclick="handleLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1 class="header-title">Diagnostic Lab Dashboard</h1>
+        <div class="header-user">
+          <span id="userName">Loading...</span>
+          <div class="user-avatar" id="userAvatar">DL</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Pending Tests</div>
+          <div class="stat-value" id="pendingCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed Today</div>
+          <div class="stat-value" id="completedCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Urgent</div>
+          <div class="stat-value" id="urgentCount">0</div>
+        </div>
+      </div>
+
+      <!-- Tab: Pending Tests -->
+      <div class="tab-pane active" id="pending">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Pending Tests</h3>
+          </div>
+          <div class="search-bar">
+            <input type="text" id="pendingSearch" placeholder="Search by patient name or test...">
+            <select id="testTypeFilter">
+              <option value="">All Test Types</option>
+              <option value="blood">Blood Test</option>
+              <option value="urine">Urine Test</option>
+              <option value="xray">X-Ray</option>
+              <option value="ecg">ECG</option>
+              <option value="other">Other</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadPendingTests()">Filter</button>
+          </div>
+          <div id="pendingTestsList">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+  <!-- Tab: Completed -->
+  <div class="tab-pane" id="completed">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Completed Tests</h3>
+      </div>
+      <div id="completedTestsList">
+        <p style="color: #64748b; text-align: center; padding: 40px;">No completed tests to display</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Test Results -->
+  <div class="tab-pane" id="results">
+    <div class="content-grid">
+      <!-- Upload Form Card - Step 3 pending -->
+      <div class="content-card">
+        <div class="content-card-header">
+          <h3>Upload Test Result</h3>
+          <p>Upload lab results and diagnostic reports</p>
+        </div>
+        <div class="content-card-body">
+          <form id="testResultUploadForm">
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Patient *</label>
+                          <select id="testResultPatientSelect" required>
+                            <option value="">Select Patient</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label>Test Result Type</label>
+                          <select id="testResultTypeSelect">
+                            <option value="">Select Type</option>
+                            <option value="blood">Blood Test</option>
+                            <option value="urine">Urine Analysis</option>
+                            <option value="imaging">Imaging (X-Ray, CT, MRI)</option>
+                            <option value="cardiac">Cardiac (ECG, Echo)</option>
+                            <option value="pathology">Pathology</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>Test Result Title *</label>
+                          <input type="text" id="testResultTitleInput" placeholder="e.g., Complete Blood Count (CBC)" required />
+                        </div>
+                      </div>
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Description</label>
+                          <textarea id="testResultDescription" placeholder="Brief description of the test result"></textarea>
+                        </div>
+                      </div>
+                      <div class="form-row single">
+                        <div class="form-group">
+                          <label>Visibility</label>
+                          <select id="testResultVisibility">
+                            <option value="patient">Visible to Patient</option>
+                            <option value="all">Visible to All (Patient, Staff, Admin)</option>
+                            <option value="staff">Visible to Staff Only</option>
+                            <option value="admin">Visible to Admin Only</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-cloud-upload-alt"></i> File Upload</div>
+                        <div class="file-upload-container" id="testResultFileUpload">
+                          <input type="file" id="testResultFileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                          <label for="testResultFileInput" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload or drag and drop</span>
+                            <small>PDF, PNG, JPG or DOC (max. 10MB)</small>
+                          </label>
+                        </div>
+                        <div id="selectedTestResultFile"></div>
+                      </div>
+                      <div class="form-section">
+                        <div class="form-section-title"><i class="fas fa-flask"></i> Referral Options</div>
+                        <div class="form-row single">
+                          <div class="form-group">
+                            <div class="checkbox-group">
+                              <input type="checkbox" id="isTestResultReferral" />
+                              <label for="isTestResultReferral">Forward to Referring Doctor</label>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="test-referral-options" id="testResultReferralOptions">
+                          <div class="form-row">
+                            <div class="form-group">
+                              <label>Refer To</label>
+                              <select id="testResultReferTo">
+                                <option value="general">General Physician</option>
+                                <option value="cardiology">Cardiology</option>
+                                <option value="neurology">Neurology</option>
+                                <option value="orthopedics">Orthopedics</option>
+                                <option value="other">Other Specialist</option>
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label>Urgency</label>
+                              <select id="testResultUrgency">
+                                <option value="routine">Routine Review</option>
+                                <option value="urgent">Urgent Review</option>
+                                <option value="immediate">Immediate Attention</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="form-row single">
+                            <div class="form-group">
+                              <label>Referral Notes</label>
+                              <textarea id="testResultReferralNotes" placeholder="Additional notes for referring doctor"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" onclick="uploadTestResult()" style="padding: 12px 24px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; width: 100%;">Upload Test Result</button>
+                    </form>
+        </div>
+      </div>
+      <!-- Uploaded List Card -->
+      <div class="content-card">
+        <div class="content-card-header">
+          <h3>Uploaded Test Results</h3>
+          <p>View and manage uploaded results</p>
+        </div>
+        <div class="content-card-body">
+          <div style="margin-bottom: 16px;">
+            <input type="text" id="uploadedTestResultsSearch" placeholder="Search results..." style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+          </div>
+          <div class="appointment-list" id="uploadedTestResultsList">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- Upload Result Modal -->
+<div class="modal-overlay" id="resultModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Upload Test Result</h3>
+          <button onclick="closeModal()" class="modal-close">✕</button>
+        </div>
+      <div class="modal-body">
+        <div id="patientInfo" class="patient-summary">
+          <!-- Patient summary will be populated here with avatar -->
+        </div>
+        
+        <form id="resultForm">
+          <input type="hidden" id="resultSourceType" value="">
+          <input type="hidden" id="resultSourceId" value="">
+          
+          <div id="templatePreview" class="template-preview" style="display: none;">
+            Select a template to preview fields...
+          </div>
+          
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Test Result Template</label>
+              <select id="templateSelect" onchange="loadTemplate()">
+                <option value="">Select Template</option>
+                <option value="blood">Complete Blood Count (CBC)</option>
+                <option value="urine">Urinalysis</option>
+                <option value="xray">X-Ray Report</option>
+                <option value="ecg">ECG Report</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="resultFields">
+            <!-- Dynamic result fields -->
+          </div>
+          
+          <div id="autosaveStatus" class="autosave-status autosave-saved" style="display: none;">
+            Saved 2 mins ago
+          </div>
+          
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="resultNotes" rows="3" placeholder="Additional clinical notes or observations..."></textarea>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Result Date</label>
+              <input type="date" id="resultDate" value="">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitResult()">Submit Result</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Base URL
+    const API_BASE = 'http://localhost:5000/api';
+    
+    // Current user data
+    let currentUser = null;
+    let currentTemplate = null;
+    
+    // Check authentication
+    document.addEventListener('DOMContentLoaded', async function() {
+      await checkAuthentication();
+      document.getElementById('resultDate').value = new Date().toISOString().split('T')[0];
+    });
+    
+    async function checkAuthentication() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        currentUser = data.user;
+        
+        // Check role
+        if (currentUser.role !== 'diagnostic' && currentUser.role !== 'staff' && currentUser.role !== 'admin') {
+          alert('Access denied. This dashboard is for Diagnostic staff only.');
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        // Update UI
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userAvatar').textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'DL';
+        
+        // Load initial data
+        loadPendingTests();
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = 'sign-in.html';
+      }
+    }
+    
+    // Tab navigation
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const tabId = this.getAttribute('data-tab');
+        if (!tabId) return;
+        
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        this.classList.add('active');
+        
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+    
+    // Load pending tests
+    async function loadPendingTests() {
+      const container = document.getElementById('pendingTestsList');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      const search = document.getElementById('pendingSearch').value;
+      const testType = document.getElementById('testTypeFilter').value;
+      
+      try {
+        const response = await fetch(`${API_BASE}/diagnostic/pending-tests?search=${search}&test_type=${testType}`, {
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        console.log('Pending tests response:', data);
+        
+        if (data.success) {
+          const doctorReferrals = data.doctorReferrals || [];
+          const walkinPatients = data.walkinPatients || [];
+          
+          const allTests = [
+            ...doctorReferrals.map(r => ({...r, source: 'doctor'})),
+            ...walkinPatients.map(w => ({...w, source: 'walkin'}))
+          ];
+          
+          document.getElementById('pendingCount').textContent = allTests.length;
+          document.getElementById('urgentCount').textContent = allTests.filter(t => t.urgency === 'urgent').length;
+          
+          if (allTests.length === 0) {
+            container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 40px;">No pending tests</p>';
+            console.log('No tests to display');
+            return;
+          }
+          
+          container.innerHTML = allTests.map(test => {
+            const patientName = test.source === 'walkin' 
+              ? `${test.first_name} ${test.last_name}` 
+              : test.patient_name;
+            const patientId = test.patient_id || test.walkin_id || test.id;
+            const urgency = test.urgency || 'routine';
+            
+            return `
+              <div class="test-card">
+                <div class="test-info">
+                  <h4>${test.test_name || 'Test'}</h4>
+                  <p>${patientName} • ${test.test_type || 'Lab'} • ${test.source === 'walkin' ? 'Walk-in' : 'Doctor Referral'}</p>
+                  <span class="badge badge-${urgency === 'urgent' ? 'urgent' : 'routine'}">${urgency}</span>
+                </div>
+                <div class="test-actions">
+                  <button class="btn btn-primary" onclick="openResultModal('${test.source}', ${test.id}, '${test.test_type || 'other'}', '${patientName}', '${test.test_name || ''}', ${patientId})">
+                    Upload Result
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading pending tests:', error);
+        container.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 40px;">Error loading tests: ' + error.message + '</p>';
+      }
+    }
+    
+    // Open result form on results tab for pending test
+    function openResultModal(source, id, testType, patientName, testName, patientId) {
+      // Switch to results tab
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      const menuItem = [...document.querySelectorAll('.menu-item')].find(item => item.dataset.tab === 'results');
+      if (menuItem) menuItem.classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.getElementById('results').classList.add('active');
+
+      // Store context FIRST with all needed data including patientId
+      sessionStorage.setItem('pendingTestContext', JSON.stringify({ source, id, patientName, testType, testName, patientId }));
+      
+      // Ensure patients are loaded before trying to select
+      const patientSelect = document.getElementById('testResultPatientSelect');
+      
+      // If patients not loaded yet, load them first then set value
+      if (patientSelect && patientSelect.options.length <= 1) {
+        loadPatientsForTestResult().then(() => {
+          if (patientId) {
+            patientSelect.value = patientId;
+          }
+        });
+      } else if (patientSelect && patientId) {
+        // Patients already loaded, just set the value
+        patientSelect.value = patientId;
+      }
+      
+      // Set test type and title
+      document.getElementById('testResultTypeSelect').value = testType || '';
+      document.getElementById('testResultTitleInput').value = testName || `Result for ${testType}`;
+      
+      // Scroll to form
+      document.querySelector('#testResultUploadForm')?.scrollIntoView({ behavior: 'smooth' });
+      document.querySelector('#testResultTitleInput')?.focus();
+    }
+    
+    // Load result template - Refined for chips
+    async function loadTemplate() {
+      const template = document.getElementById('templateSelect').value;
+      const container = document.getElementById('resultFields');
+      const preview = document.getElementById('templatePreview');
+      
+      if (!template) {
+        container.innerHTML = '';
+        preview.style.display = 'none';
+        return;
+      }
+      
+      preview.innerHTML = `Preview: Loading ${template.toUpperCase()} template...`;
+      preview.style.display = 'block';
+      
+      try {
+        const response = await fetch(`${API_BASE}/diagnostic/result-template/${template}`, {
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          currentTemplate = data.template;
+          preview.innerHTML = `${data.template.title} - ${data.template.fields.length} fields`;
+          
+          container.innerHTML = `
+            <div style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: var(--text-primary); padding-bottom: 12px; border-bottom: 1px solid var(--border);">${data.template.title}</div>
+            ${data.template.fields.map(field => `
+              <div class="result-field">
+                <div class="result-field-header">
+                  <i class="fas fa-vial" style="color: #9333ea;"></i>
+                  <span style="font-weight: 600; font-size: 15px;">${field.label}</span>
+                  ${field.unit ? `<span style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">${field.unit}</span>` : ''}
+                </div>
+                <div class="result-field-main">
+                  <div>
+                    <label>Value</label>
+                    <input type="text" class="result-input" data-field="${field.name}" data-range="${field.normal || ''}" placeholder="Enter value">
+                  </div>
+                  <div>
+                    <label>Reference</label>
+                    <input type="text" value="${field.normal || ''}" readonly title="Normal range">
+                  </div>
+                  <div style="margin-top: auto;">
+                    <label>Status</label>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                      <div class="status-chip normal active" onclick="setStatus(this, 'normal')" data-field="${field.name}">Normal</div>
+                      <div class="status-chip low" onclick="setStatus(this, 'low')" data-field="${field.name}">Low</div>
+                      <div class="status-chip high" onclick="setStatus(this, 'high')" data-field="${field.name}">High</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          `;
+          
+          // Add event listeners for real-time validation
+          document.querySelectorAll('.result-input').forEach(input => {
+            input.addEventListener('input', validateField);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading template:', error);
+        container.innerHTML = '<p style="color: var(--danger);">Error loading template. Please try again.</p>';
+        preview.style.display = 'none';
+      }
+    }
+    
+    // Set status chip
+    function setStatus(chip, status) {
+      chip.parentElement.querySelectorAll('.status-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      chip.setAttribute('data-status', status);
+      const fieldName = chip.getAttribute('data-field');
+      document.querySelector(`[data-field="${fieldName}"].result-input`)?.setAttribute('data-status', status);
+    }
+    
+    // Real-time field validation
+    function validateField(e) {
+      const input = e.target;
+      const range = input.getAttribute('data-range');
+      const value = parseFloat(input.value);
+      const statusChip = document.querySelector(`[data-field="${input.getAttribute('data-field')}"].status-chip.active`);
+      
+      if (range && value) {
+        const [low, high] = range.split('-').map(parseFloat);
+        if (value < low) {
+          input.style.borderColor = '#f59e0b';
+          if (statusChip) statusChip.classList.remove('active');
+          document.querySelector(`[data-field="${input.getAttribute('data-field')}"].status-chip.low`).classList.add('active');
+        } else if (value > high) {
+          input.style.borderColor = '#dc2626';
+          if (statusChip) statusChip.classList.remove('active');
+          document.querySelector(`[data-field="${input.getAttribute('data-field')}"].status-chip.high`).classList.add('active');
+        } else {
+          input.style.borderColor = '#22c55e';
+          if (statusChip) statusChip.classList.remove('active');
+          document.querySelector(`[data-field="${input.getAttribute('data-field')}"].status-chip.normal`).classList.add('active');
+        }
+      }
+      
+      autosaveDraft();
+    }
+    
+    // Autosave draft
+    let autosaveTimeout;
+    function startAutosave() {
+      autosaveTimeout = setInterval(autosaveDraft, 30000); // 30s
+    }
+    
+    function autosaveDraft() {
+      const statusEl = document.getElementById('autosaveStatus');
+      statusEl.textContent = 'Saving draft...';
+      statusEl.className = 'autosave-status autosave-saving';
+      statusEl.style.display = 'block';
+      
+      const draft = {
+        sourceType: document.getElementById('resultSourceType').value,
+        sourceId: document.getElementById('resultSourceId').value,
+        template: document.getElementById('templateSelect').value,
+        notes: document.getElementById('resultNotes').value,
+        date: document.getElementById('resultDate').value,
+        fields: Array.from(document.querySelectorAll('.result-input')).map(input => ({
+          field: input.getAttribute('data-field'),
+          value: input.value,
+          status: document.querySelector(`[data-field="${input.getAttribute('data-field')}"].status-chip.active`)?.getAttribute('data-status') || 'normal'
+        }))
+      };
+      
+      localStorage.setItem('diagnosticDraft', JSON.stringify(draft));
+      
+      setTimeout(() => {
+        statusEl.textContent = 'Draft saved';
+        statusEl.className = 'autosave-status autosave-saved';
+        setTimeout(() => statusEl.style.display = 'none', 2000);
+      }, 500);
+    }
+    
+    // Close modal
+    function closeModal() {
+      document.getElementById('resultModal').classList.remove('active');
+    }
+    
+    // Submit result
+    async function submitResult() {
+      const sourceType = document.getElementById('resultSourceType').value;
+      const sourceId = document.getElementById('resultSourceId').value;
+      const resultDate = document.getElementById('resultDate').value;
+      const notes = document.getElementById('resultNotes').value;
+      
+      // Build result data from inputs
+      const resultInputs = document.querySelectorAll('.result-input');
+      const resultStatuses = document.querySelectorAll('.result-status');
+      
+      let resultData = '';
+      resultInputs.forEach((input, index) => {
+        if (input.value) {
+          const fieldName = input.getAttribute('data-field');
+          const status = resultStatuses[index]?.value || 'normal';
+          resultData += `${fieldName}: ${input.value} (${status})\n`;
+        }
+      });
+      
+      if (!resultData.trim()) {
+        alert('Please enter at least one test result');
+        return;
+      }
+      
+      const endpoint = sourceType === 'walkin' 
+        ? `${API_BASE}/diagnostic/results/walkin`
+        : `${API_BASE}/diagnostic/results/doctor-referral`;
+      
+      const body = sourceType === 'walkin'
+        ? { walkin_id: sourceId, result_data: resultData, result_date: resultDate, notes }
+        : { referral_id: sourceId, result_data: resultData, result_date: resultDate, notes };
+      
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Result uploaded successfully! Patient will be notified via email.');
+          closeModal();
+          loadPendingTests();
+        } else {
+          alert(result.message || 'Failed to upload result');
+        }
+      } catch (error) {
+        console.error('Error submitting result:', error);
+        alert('Failed to upload result');
+      }
+    }
+    
+    // Logout
+    async function handleLogout() {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      window.location.href = 'sign-in.html';
+    }
+    
+    window.handleLogout = handleLogout;
+
+    // Test Results Tab Functions - Step 3
+    let uploadedTestResults = [];
+
+    // Load patients for upload form
+async function loadPatientsForTestResult() {
+      try {
+        const response = await fetch(`${API_BASE}/diagnostic/patients`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const select = document.getElementById('testResultPatientSelect');
+          if (select && data.success) {
+            select.innerHTML = '<option value="">Select Patient</option>';
+            data.patients.forEach(p => {
+              const option = new Option(p.display_name, p.id);
+              select.add(option);
+            });
+          }
+        } else {
+          console.error('Patients API failed:', response.status);
+        }
+      } catch (e) { 
+        console.error('Load patients error:', e); 
+      }
+    }
+
+    // File handling
+    document.getElementById('testResultFileInput')?.addEventListener('change', handleTestResultFileSelect);
+    function handleTestResultFileSelect(e) {
+      const file = e.target.files[0];
+      const container = document.getElementById('selectedTestResultFile');
+      if (file && container) {
+        container.innerHTML = `
+          <div class="selected-file">
+            <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
+            <div class="file-info">
+              <div class="file-name">${file.name}</div>
+              <div class="file-size">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+            </div>
+            <button class="remove-file" onclick="removeTestResultFile()">✕</button>
+          </div>
+        `;
+      }
+    }
+
+    function removeTestResultFile() {
+      document.getElementById('testResultFileInput').value = '';
+      document.getElementById('selectedTestResultFile').innerHTML = '';
+    }
+
+    // Test referral toggle
+    document.getElementById('isTestResultReferral')?.addEventListener('change', function() {
+      const options = document.getElementById('testResultReferralOptions');
+      if (options) options.style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Load uploaded test results
+async function loadUploadedTestResults(search = '') {
+      const container = document.getElementById('uploadedTestResultsList');
+      if (!container) return;
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        const url = `${API_BASE}/diagnostic/results?search=${encodeURIComponent(search)}`;
+        const response = await fetch(url, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          uploadedTestResults = data.results || [];
+          container.innerHTML = uploadedTestResults.map(r => `
+            <div class="test-card">
+              <div class="test-info">
+                <h4>${r.test_name || 'Test Result'}</h4>
+                <p>${r.patient_name || 'Patient'} • ${r.type || r.source || 'Lab'} • ${formatDate(r.created_at)}</p>
+              </div>
+              <div class="test-actions">
+                <span class="badge badge-completed">${r.visibility || 'Patient'}</span>
+                <button class="btn btn-secondary" onclick="viewTestResult(${r.id})">View</button>
+              </div>
+            </div>
+          `).join('') || '<p style="color: var(--text-secondary); text-align: center; padding: 40px;">No uploaded results</p>';
+        }
+      } catch (e) {
+        console.error('Load results error:', e);
+        container.innerHTML = '<p style="color: var(--danger); text-align: center;">Error loading results</p>';
+      }
+    }
+
+    // Search uploaded results
+    document.getElementById('uploadedTestResultsSearch')?.addEventListener('input', function() {
+      loadUploadedTestResults(this.value);
+    });
+
+    // Upload test result
+    async function uploadTestResult() {
+      const patientId = document.getElementById('testResultPatientSelect').value;
+      const type = document.getElementById('testResultTypeSelect').value;
+      const title = document.getElementById('testResultTitleInput').value.trim();
+      const desc = document.getElementById('testResultDescription').value.trim();
+      const visibility = document.getElementById('testResultVisibility').value;
+      const fileInput = document.getElementById('testResultFileInput');
+      const isReferral = document.getElementById('isTestResultReferral')?.checked || false;
+
+      if (!patientId || !title) {
+        alert('Patient and Title required');
+        return;
+      }
+
+      try {
+        let filePath = null;
+        if (fileInput?.files[0]) {
+          const formData = new FormData();
+          formData.append('file', fileInput.files[0]);
+          const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData, credentials: 'include' });
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            filePath = uploadData.filePath || uploadData.path;
+          }
+        }
+
+        const body = {
+          patient_id: parseInt(patientId),
+          type: type || 'lab',
+          title,
+          description: desc || (sessionStorage.getItem('pendingTestContext') ? 'Test result for pending ' + JSON.parse(sessionStorage.getItem('pendingTestContext')).testName : ''),
+          file_path: filePath,
+          visibility,
+          pending_source: sessionStorage.getItem('pendingTestContext') ? JSON.parse(sessionStorage.getItem('pendingTestContext')).source : null,
+          pending_id: sessionStorage.getItem('pendingTestContext') ? JSON.parse(sessionStorage.getItem('pendingTestContext')).id : null,
+          is_referral: isReferral,
+          ...(isReferral && {
+            referred_to: document.getElementById('testResultReferTo').value,
+            urgency: document.getElementById('testResultUrgency').value,
+            notes: document.getElementById('testResultReferralNotes').value
+          })
+        };
+
+        const res = await fetch(`${API_BASE}/diagnostic/results`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('Test result uploaded successfully!');
+          document.getElementById('testResultUploadForm').reset();
+          removeTestResultFile();
+          document.getElementById('testResultReferralOptions').style.display = 'none';
+          loadUploadedTestResults();
+          loadPendingTests(); // Refresh pending
+        } else {
+          alert(data.message || 'Upload failed');
+        }
+      } catch (e) {
+        console.error('Upload error:', e);
+        alert('Upload error: ' + e.message);
+      }
+    }
+
+    function viewTestResult(id) {
+      // Open in new tab or modal
+      window.open(`${API_BASE}/diagnostic/results/${id}`, '_blank');
+    }
+
+    // Init on load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Existing + new
+      loadPatientsForTestResult();
+      loadUploadedTestResults();
+    });
+
+    function formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+  </script>
+</body>
+</html>

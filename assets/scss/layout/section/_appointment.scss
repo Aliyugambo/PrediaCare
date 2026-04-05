@@ -1,0 +1,338 @@
+.appointment-section {
+    &-1 {
+        background-color: $extra-color-five;
+        margin-top: 100px;
+
+        @include maxQuery(991) {
+            margin-top: 0;
+            padding-top: 80px;
+        }
+
+        .appointment-wapper {
+            @include maxQuery(991) {
+                margin-bottom: 30px;
+            }
+
+            .section-title {
+                .sub-title {
+                    background-color: $white-color;
+                }
+
+                h2 {
+                    color: $white-color;
+                }
+            }
+
+            .appointment-form {
+                form {
+                    .appointment-btn-wapper {
+                        button {
+                            background-color: $primary-color;
+                            height: 58px;
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+
+        .appointment-image {
+            position: relative;
+            margin-top: -100px;
+            margin-left: 50px;
+            padding: 0 57px;
+
+            @include maxQuery(1199) {
+                margin-left: 0;
+                padding: 0;
+            }
+
+            @include maxQuery(991) {
+                max-width: 80%;
+                margin: 0 auto;
+            }
+
+            @include maxQuery(576) {
+                max-width: 100%;
+            }
+
+            figure {
+                display: block;
+
+                img {
+                    width: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+
+    &-2 {
+        background-color: $extra-color-five;
+        margin-top: 70px;
+
+        @include maxQuery(991) {
+            margin-top: 0;
+        }
+
+        .appointment-box {
+            @include d-flex;
+            @include justify-content-space-between;
+            @include flex-wrap;
+            gap: 40px 60px;
+
+            .appointment-process-content {
+                width: calc(50% - 100px);
+
+                @include maxQuery(991) {
+                    width: 100%;
+                }
+
+                .section-title {
+                    .sub-title {
+                        background-color: $white-color;
+                    }
+
+                    h2 {
+                        color: $white-color;
+                    }
+
+                    p {
+                        color: $white-color;
+                    }
+                }
+
+                .appointment-process-list {
+                    .appointment-process-item {
+                        @include d-flex;
+                        margin-bottom: 40px;
+
+                        @include maxQuery(991) {
+                            margin-bottom: 30px;
+                        }
+
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+
+                        .appointment-process-icon {
+                            position: relative;
+                            background-color: $background-one;
+                            color: $primary-color;
+                            height: 80px;
+                            width: 80px;
+                            margin-right: 20px;
+                            @include flex-justify-align;
+                            @include border-radius(100%);
+
+                            &::before {
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                opacity: 0;
+                                content: '';
+                                position: absolute;
+                                background: $primary-color;
+                                @include border-radius(inherit);
+                                @include transform(scale(0.8));
+                                @include transition(all 0.5s);
+                                z-index: 1;
+                            }
+
+                            figure {
+                                position: relative;
+                                z-index: 2;
+                                @include transition($transition);
+
+                                img {
+                                    width: 50px;
+                                    height: 50px;
+                                    object-fit: cover;
+                                }
+                            }
+
+                        }
+
+                        .appointment-process-title {
+                            width: calc(100% - 100px);
+
+                            h3 {
+                                margin-bottom: 5px;
+                                color: $white-color;
+                            }
+
+                            p {
+                                color: $white-color;
+                                margin: 0;
+
+                                @include maxQuery(767) {
+                                    font-size: 14px;
+                                    line-height: 1.6em;
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            .appointment-process-icon {
+                                color: $white-color;
+
+                                &::before {
+                                    opacity: 1;
+                                    @include transform(scale(1));
+                                }
+
+                                figure {
+                                    @include transform(scale(-1) rotate(180deg));
+
+                                    img {
+                                        filter: brightness(0) invert(1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .request-quote-box {
+                background-color: $white-color;
+                width: calc(50% - 30px);
+                margin-top: -170px;
+                @include box;
+                @include box-shadow(0 0 20px 0 rgba(0, 0, 0, 0.05));
+
+                @include maxQuery(991) {
+                    margin-top: 0;
+                    width: 100%;
+                }
+
+                h3 {
+                    margin-bottom: 40px;
+                    font-size: 40px;
+                    line-height: 1.2em;
+                    font-weight: 700;
+
+                    @include maxQuery(991) {
+                        font-size: 36px;
+                    }
+
+                    @include maxQuery(767) {
+                        font-size: 26px;
+                    }
+                }
+            }
+        }
+    }
+
+    &-3 {
+        position: relative;
+        margin-top: -160px;
+        z-index: 1;
+
+        .appointment-box {
+            @include box;
+            @include d-flex;
+            @include align-items-center;
+            @include flex-wrap;
+            @include box-shadow(0 0 2px 0 rgba(0, 0, 0, .05));
+            gap: 40px 60px;
+            background-color: $white-color;
+
+            .appointment-content {
+                width: calc(48% - 30px);
+
+                @include maxQuery(991) {
+                    width: 100%;
+                }
+
+                .appointment-image {
+                    figure {
+                        display: block;
+                        @include border-radius-three;
+                        overflow: hidden;
+
+                        img {
+                            width: 100%;
+                            object-fit: cover;
+                        }
+                    }
+                }
+            }
+
+            .appointment-form-box {
+                width: calc(52% - 30px);
+
+                @include maxQuery(991) {
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    &-4 {
+        .appointment-content {
+            @include maxQuery(991) {
+                margin-bottom: 40px;
+            }
+        }
+
+        .appointment-image {
+            position: relative;
+            margin-right: 50px;
+
+            @include maxQuery(991) {
+                margin-right: auto;
+                max-width: 620px;
+                margin-left: auto;
+            }
+
+            .shape-1 {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                @include animation(move-bottom 5s linear infinite);
+            }
+
+            .img1 {
+                padding-bottom: 120px;
+
+                @include maxQuery(991) {
+                    margin-right: 50px;
+                }
+
+                figure {
+                    img {
+                        @include border-radius-three;
+                        overflow: hidden;
+                        object-fit: cover;
+                    }
+                }
+            }
+
+            .img2 {
+                position: absolute;
+                display: inline-block;
+                bottom: 0;
+                right: 0;
+
+                figure {
+                    .appointment-small {
+                        border: 10px solid $white-color;
+                        @include box-shadow(0 4px 25px 0 rgba(0, 0, 0, 0.08));
+                        object-fit: cover;
+
+                        @include maxQuery(767) {
+                            border: 5px solid $white-color;
+                            right: 0;
+                        }
+
+                        @include maxQuery(567) {
+                            max-width: 190px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

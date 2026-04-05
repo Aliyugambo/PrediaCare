@@ -1,0 +1,48 @@
+.micon-section {
+    .micon-items {
+        margin-bottom: 30px;
+        @include box;
+        @include transition($transition);
+
+        @include maxQuery(991) {
+            padding: 20px;
+        }
+
+        &.micon-items {
+            &-one {
+                background-color: $extra-color-one;
+            }
+
+            &-two {
+                background-color: $extra-color-two;
+            }
+
+            &-three {
+                background-color: $extra-color-three;
+            }
+        }
+
+        .micon-icon {
+            height: 80px;
+            width: 80px;
+            margin-bottom: 50px;
+        }
+
+        .micon-content {
+            h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+
+                @include maxQuery(767) {
+                    font-size: 20px;
+                }
+            }
+        }
+        &:hover{
+            .micon-icon{
+                @include transform(scale(-1) rotate(180deg));
+                @include transition($transition);
+            }
+        }
+    }
+}

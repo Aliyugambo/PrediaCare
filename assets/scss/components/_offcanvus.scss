@@ -1,0 +1,101 @@
+.offcanvas {
+    border: none;
+
+    .offcanvas-header {
+        .offcanvas-close {
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            text-align: center;
+            color: $black-color;
+            z-index: 10;
+            cursor: pointer;
+            @include transition(all 0.5s ease);
+            @include transform(translateY(-50px));
+        }
+    }
+
+    .offcanvas-body {
+        .widget {
+            background: transparent;
+            padding: 0;
+            border: none;
+        }
+
+        .offcanvas-about {
+            margin-bottom: 50px;
+            p{
+                color: $text-color; 
+                font-weight: normal;
+                margin-bottom: 0;
+            }
+        }
+
+        .offcanvas-contact {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 50px;
+
+            .widget-contact {
+                .offcanvas-cta-item {
+                    .offcanvas-cta-list {
+                        margin-bottom: 20px;
+                        @include d-flex;
+                        gap: 20px;
+
+                        &:last-of-type {
+                            margin-bottom: 0;
+                        }
+
+                        .offcanvas-cta-icon {
+                            position: relative; 
+                            color: $primary-color;
+                            height: 24px;
+                            width: 24px;
+                            @include border-radius(100%);
+                            @include flex-justify-align;
+                        }
+
+                        .offcanvas-cta-content {
+                            flex: 1; 
+                            a,
+                            p {
+                                color: $text-color;
+                                font-size: 16px;
+                                font-weight: normal;
+                                margin-bottom: 0;
+
+                                &:hover {
+                                    color: $primary-color;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .offcanvas-button-wapper {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 50px;
+            a{
+                width: 100%;
+            }
+        }
+
+        .offcanvas-social {
+            margin-bottom: 30px;
+        }
+    }
+
+    &.show {
+        .offcanvas-close {
+            @include transform(translateY(0));
+            @include transition-delay(200ms);
+        }
+    }
+}

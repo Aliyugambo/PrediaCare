@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Dashboard | Carenix Medical Clinic</title>
+  <link rel="stylesheet" href="assets/css/patient.css" />
+  <link rel="stylesheet" href="assets/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Responsive styles specific to patient dashboard */
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar-close {
+        display: block;
+      }
+      
+      .main {
+        margin-left: 0;
+        padding-top: 60px;
+      }
+      
+      .mobile-toggle {
+        display: block;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tabs-header {
+        flex-wrap: wrap;
+      }
+      
+      .tab-btn {
+        flex: 1;
+        min-width: calc(50% - 4px);
+        text-align: center;
+      }
+      
+      .welcome-section h1 {
+        font-size: 22px;
+      }
+      
+      .welcome-cta {
+        flex-direction: column;
+      }
+      
+      .health-metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+  
+  
+  <div class="layout">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-left">
+        <a href="patient-dashboard.html" class="header-logo">
+          <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo">
+          <span class="header-brand">PrediaCare</span>
+        </a>
+        <div class="header-search">
+          <i class="fas fa-search search-icon"></i>
+          <input type="search" placeholder="Search appointments, records..." class="search-input" />
+        </div>
+      
+      <div class="header-right">
+        <button class="header-icon-btn" title="Calendar">
+          <i class="far fa-calendar"></i>
+        </button>
+        <button class="header-icon-btn" title="Messages">
+          <i class="far fa-comment"></i>
+        </button>
+        <button class="header-icon-btn" title="Notifications">
+          <i class="far fa-bell"></i>
+        </button>
+        <button class="header-icon-btn" title="Theme">
+          <i class="far fa-moon"></i>
+        </button>
+        <div class="user-dropdown">
+          <button class="user-btn">
+            <div class="user-avatar">JD</div>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <p class="user-name">John Doe</p>
+              <p class="user-email">john.doe@example.com</p>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-comment"></i> Chat</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-question-circle"></i> Support</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <div class="dropdown-divider"></div>
+            <a href="sign-in.html" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Log out</a>
+          </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index-3.html" class="sidebar-logo">
+          <img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" />
+          <span>Prediacare</span>
+        </a>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Dashboard Section -->
+        <div class="nav-section">
+          <p class="nav-section-title">Dashboard</p>
+          
+          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+            <div class="nav-item-left">
+              <i class="fas fa-th-large"></i>
+              <span>Dashboard</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="submenu">
+            <a href="index-3.html" class="submenu-item">Admin Dashboard</a>
+            <a href="doctor-dashboard.html" class="submenu-item">Doctor Dashboard</a>
+            <a href="patient-dashboard.html" class="submenu-item active">Patient Dashboard</a>
+          </div>
+
+        <!-- Medical -->
+        <div class="nav-section">
+          <p class="nav-section-title">Medical</p>
+          
+          <a href="appointment.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Appointments</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-user-md"></i>
+              <span>Doctors</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-file-medical-alt"></i>
+              <span>Medical Records</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-prescription"></i>
+              <span>Prescriptions</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-vials"></i>
+              <span>Lab Results</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-heartbeat"></i>
+              <span>Vitals</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Billing -->
+        <div class="nav-section">
+          <p class="nav-section-title">Billing</p>
+          
+          <a href="cart.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Cart</span>
+            </div>
+          </a>
+          
+          <a href="checkout.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-credit-card"></i>
+              <span>Payments</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <span>Invoices</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Support -->
+        <div class="nav-section">
+          <p class="nav-section-title">Support</p>
+          
+          <a href="contact.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-phone-alt"></i>
+              <span>Contact Us</span>
+            </div>
+          </a>
+          
+          <a href="faq.html" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-question-circle"></i>
+              <span>FAQs</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comment-dots"></i>
+              <span>Feedback</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Extra -->
+        <div class="nav-section">
+          <p class="nav-section-title">Extra</p>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-calendar-week"></i>
+              <span>Calendar</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-envelope"></i>
+              <span>Email</span>
+            </div>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <div class="nav-item-left">
+              <i class="fas fa-comments"></i>
+              <span>Chat</span>
+            </div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sidebar-profile">
+          <div class="sidebar-avatar">JD</div>
+          <div class="sidebar-profile-info">
+            <p class="sidebar-profile-name">John Doe</p>
+            <p class="sidebar-profile-role">Patient</p>
+          </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+          <h1>Welcome back, John</h1>
+          <p>Here's your health overview and upcoming appointments.</p>
+          <div class="welcome-cta">
+            <a href="appointment.html" class="primary">Book Appointment</a>
+            <a href="#" class="outline">View History</a>
+          </div>
+        </section>
+
+        <!-- Stats Grid - 5 cards for patient -->
+        <section class="stats-grid">
+          <!-- Appointments Card - Blue -->
+          <div class="stat-card blue">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="far fa-calendar-check"></i>
+              </div>
+              <span class="stat-badge">1 upcoming</span>
+            </div>
+            <div class="stat-label">Appointments</div>
+            <div class="stat-number">3</div>
+            <p class="stat-desc">Total appointments this month</p>
+            <a class="stat-link">
+              <span>View All</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Medications Card - Emerald -->
+          <div class="stat-card emerald">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-pills"></i>
+              </div>
+              <span class="stat-badge">2 active</span>
+            </div>
+            <div class="stat-label">Medications</div>
+            <div class="stat-number">4</div>
+            <p class="stat-desc">Active prescriptions</p>
+            <a class="stat-link">
+              <span>View Medications</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Lab Results Card - Amber -->
+          <div class="stat-card amber">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-vials"></i>
+              </div>
+              <span class="stat-badge">1 new</span>
+            </div>
+            <div class="stat-label">Lab Results</div>
+            <div class="stat-number">2</div>
+            <p class="stat-desc">Results awaiting review</p>
+            <a class="stat-link">
+              <span>View Results</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Billing Card - Rose -->
+          <div class="stat-card rose">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <span class="stat-badge">Due in 5 days</span>
+            </div>
+            <div class="stat-label">Pending Bills</div>
+            <div class="stat-number">$150</div>
+            <p class="stat-desc">Outstanding balance</p>
+            <a class="stat-link">
+              <span>Pay Now</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Vitals Card - Purple (Patient specific) -->
+          <div class="stat-card purple">
+            <div class="stat-header">
+              <div class="stat-icon-wrap">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <span class="stat-badge">Normal</span>
+            </div>
+            <div class="stat-label">Vitals</div>
+            <div class="stat-number">Good</div>
+            <p class="stat-desc">Last checked: Today</p>
+            <a class="stat-link">
+              <span>View Vitals</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </section>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+          <!-- Tabs Header -->
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="appointments">Appointments</button>
+            <button class="tab-btn" data-tab="medications">Medications</button>
+            <button class="tab-btn" data-tab="results">Results</button>
+            <button class="tab-btn" data-tab="vitals">Vitals</button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Appointments Tab -->
+            <div class="tab-pane active" id="appointments">
+              <div class="content-grid">
+                <!-- Upcoming Appointments -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Upcoming Appointments</h3>
+                    <p>Your scheduled appointments</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Dr. Sarah Johnson</p>
+                          <span class="appointment-time">Sat, Apr 26 at 09:00 AM • General Check-up</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge confirmed">Confirmed</span>
+                          <button class="view-btn">View</button>
+                        </div>
+
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Dr. Michael Chen</p>
+                          <span class="appointment-time">Mon, Apr 28 at 02:30 PM • Follow-up</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge pending">Pending</span>
+                          <button class="view-btn">View</button>
+                        </div>
+
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Dr. Emily Williams</p>
+                          <span class="appointment-time">Fri, May 2 at 11:00 AM • Lab Consultation</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge confirmed">Confirmed</span>
+                          <button class="view-btn">View</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Past Appointments -->
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Past Appointments</h3>
+                    <p>Your appointment history</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Dr. Sarah Johnson</p>
+                          <span class="appointment-time">Apr 15, 2025 • Check-up</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge completed">Completed</span>
+                          <button class="view-btn light">Details</button>
+                        </div>
+
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Dr. Michael Chen</p>
+                          <span class="appointment-time">Apr 10, 2025 • Consultation</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge completed">Completed</span>
+                          <button class="view-btn light">Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications Tab -->
+            <div class="tab-pane" id="medications">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Current Medications</h3>
+                    <p>Your active prescriptions</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="medication-list">
+                      <div class="medication-item">
+                        <div class="medication-info">
+                          <p class="medication-name">Metformin 500mg</p>
+                          <span class="medication-details">For: Diabetes Management • Twice daily with meals</span>
+                        </div>
+                        <div class="medication-dosage">Active</div>
+                      <div class="medication-item">
+                        <div class="medication-info">
+                          <p class="medication-name">Lisinopril 10mg</p>
+                          <span class="medication-details">For: Blood Pressure • Once daily in morning</span>
+                        </div>
+                        <div class="medication-dosage">Active</div>
+                      <div class="medication-item">
+                        <div class="medication-info">
+                          <p class="medication-name">Vitamin D3 2000IU</p>
+                          <span class="medication-details">For: Vitamin Deficiency • Once daily</span>
+                        </div>
+                        <div class="medication-dosage">Active</div>
+                    </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Medication Reminders</h3>
+                    <p>Your upcoming doses</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Metformin 500mg</p>
+                          <span class="appointment-time">Next dose: Today at 6:00 PM</span>
+                        </div>
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Lisinopril 10mg</p>
+                          <span class="appointment-time">Next dose: Tomorrow at 8:00 AM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div class="tab-pane" id="results">
+              <div class="content-grid">
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Lab Results</h3>
+                    <p>Your recent test results</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Blood Panel</p>
+                          <span class="appointment-time">Completed: Apr 20, 2025 • All results normal</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <button class="view-btn">View Report</button>
+                        </div>
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Lipid Profile</p>
+                          <span class="appointment-time">Completed: Apr 15, 2025 • Review recommended</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <button class="view-btn">View Report</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-card">
+                  <div class="content-card-header">
+                    <h3>Pending Results</h3>
+                    <p>Results awaiting</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div class="appointment-list">
+                      <div class="appointment-item">
+                        <div class="appointment-info">
+                          <p class="doctor-name">Thyroid Panel</p>
+                          <span class="appointment-time">Expected: Apr 28, 2025</span>
+                        </div>
+                        <div class="appointment-actions">
+                          <span class="appointment-badge pending">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vitals Tab -->
+            <div class="tab-pane" id="vitals">
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Health Metrics</h3>
+                  <p>Your latest vital readings</p>
+                </div>
+                <div class="content-card-body">
+                  <div class="health-metrics">
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-heart" style="color: #e11d48;"></i>
+                        Blood Pressure
+                      </span>
+                      <span class="metric-value">120/80 mmHg</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-heartbeat" style="color: #2563eb;"></i>
+                        Heart Rate
+                      </span>
+                      <span class="metric-value">72 bpm</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-thermometer-half" style="color: #d97706;"></i>
+                        Temperature
+                      </span>
+                      <span class="metric-value">98.6°F</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-lungs" style="color: #059669;"></i>
+                        Oxygen Level
+                      </span>
+                      <span class="metric-value">98%</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-weight" style="color: #9333ea;"></i>
+                        Weight
+                      </span>
+                      <span class="metric-value">165 lbs</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">
+                        <i class="fas fa-ruler-vertical" style="color: #64748b;"></i>
+                        Height
+                      </span>
+                      <span class="metric-value">5'10"</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    // API Base URL
+    const API_BASE = 'http://localhost:5500/api';
+    
+    // Current user data
+    let currentUser = null;
+    
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+      await checkAuthentication();
+    });
+    
+    // Check if user is authenticated and authorized
+    async function checkAuthentication() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+        
+        currentUser = data.user;
+        
+        // Check if user is a patient
+        if (currentUser.role !== 'patient') {
+          window.location.href = 'doctor-dashboard.html';
+          return;
+        }
+        
+        // Update UI with user info
+        updateUserInfo();
+        
+        // Load dashboard data
+        loadDashboardData();
+        
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        // For demo purposes, continue without authentication
+        loadDemoData();
+      }
+    }
+    
+    // Update user information in the UI
+    function updateUserInfo() {
+      if (!currentUser) return;
+      
+      const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
+      const initials = currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'US';
+      
+      // Update welcome message
+      document.querySelector('.welcome-section h1').textContent = `Welcome back, ${firstName}`;
+      
+      // Update header avatar
+      const headerAvatar = document.querySelector('.user-avatar');
+      if (headerAvatar) headerAvatar.textContent = initials;
+      
+      // Update header dropdown
+      const headerName = document.querySelector('.dropdown-header .user-name');
+      const headerEmail = document.querySelector('.dropdown-header .user-email');
+      if (headerName) headerName.textContent = currentUser.name || 'Patient';
+      if (headerEmail) headerEmail.textContent = currentUser.email || '';
+      
+      // Update sidebar profile
+      const sidebarName = document.querySelector('.sidebar-profile-name');
+      const sidebarAvatar = document.querySelector('.sidebar-avatar');
+      const sidebarRole = document.querySelector('.sidebar-profile-role');
+      if (sidebarName) sidebarName.textContent = currentUser.name || 'Patient';
+      if (sidebarAvatar) sidebarAvatar.textContent = initials;
+      if (sidebarRole) sidebarRole.textContent = 'Patient';
+    }
+    
+    // Load demo data for testing without backend
+    function loadDemoData() {
+      console.log('Loading demo data...');
+    }
+    
+    // Load all dashboard data from API
+    async function loadDashboardData() {
+      try {
+        loadAppointments();
+        loadMedications();
+        loadResults();
+        loadVitals();
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+    
+    // Load appointments
+    async function loadAppointments() {
+      try {
+        const response = await fetch(`${API_BASE}/appointments/patient`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderAppointments(data.appointments);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+      }
+    }
+    
+    // Render appointments
+    function renderAppointments(appointments) {
+      console.log('Rendering appointments:', appointments);
+    }
+    
+    // Load medications
+    async function loadMedications() {
+      try {
+        const response = await fetch(`${API_BASE}/medications/patient`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderMedications(data.medications);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading medications:', error);
+      }
+    }
+    
+    // Render medications
+    function renderMedications(medications) {
+      console.log('Rendering medications:', medications);
+    }
+    
+    // Load results
+    async function loadResults() {
+      try {
+        const response = await fetch(`${API_BASE}/results/patient`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderResults(data.results);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading results:', error);
+      }
+    }
+    
+    // Render results
+    function renderResults(results) {
+      console.log('Rendering results:', results);
+    }
+    
+    // Load vitals
+    async function loadVitals() {
+      try {
+        const response = await fetch(`${API_BASE}/health-summary/vitals`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            renderVitals(data.vitals);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading vitals:', error);
+      }
+    }
+    
+    // Render vitals
+    function renderVitals(vitals) {
+      console.log('Rendering vitals:', vitals);
+    }
+    
+    // Handle logout
+    async function handleLogout() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          window.location.href = 'sign-in.html';
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout error: ' + error.message);
+      }
+    }
+    
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+    
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+    
+    function toggleSubmenu(element) {
+      element.classList.toggle('expanded');
+      const submenu = element.nextElementSibling;
+      if (submenu && submenu.classList.contains('submenu')) {
+        submenu.classList.toggle('show');
+      }
+    }
+    
+    window.handleLogout = handleLogout;
+  </script>
+</body>
+</html>

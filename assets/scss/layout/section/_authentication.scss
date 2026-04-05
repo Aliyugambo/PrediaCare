@@ -1,0 +1,45 @@
+.authentication-section {
+    &-1 {
+        .authentication-title {
+            margin-bottom: 40px;
+
+            h2 {
+                margin-bottom: 10px;
+            }
+        }
+
+        .default-form {
+            @include box;
+            background-color: $background-one;
+
+            form {
+                .form-group {
+                    .eye-icon {
+                        position: absolute;
+                        right: 20px;
+                        top: 17px;
+                        color: $black-color;
+                    }
+                }
+
+                .forgot-box {
+                    @include d-flex;
+                    @include justify-content-space-between;
+                    @include flex-wrap;
+                    gap: 15px;
+                }
+
+                .sign-up-box {
+                    @include d-flex;
+                    @include justify-content-center;
+                    @include flex-wrap;
+                    gap: 5px;
+
+                    p {
+                        margin-bottom: 0;
+                    }
+                }
+            }
+        }
+    }
+}

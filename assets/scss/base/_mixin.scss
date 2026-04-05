@@ -1,0 +1,200 @@
+@mixin maxQuery($max-width) {
+    @media (max-width: #{$max-width}px) {
+        @content;
+    }
+}
+
+@mixin minQuery($min-width) {
+    @media (min-width: #{$min-width}px) {
+        @content;
+    }
+}
+
+@mixin minMaxQuery($min-width, $max-width) {
+    @media (min-width: #{$min-width}px) and (max-width: #{$max-width}px) {
+        @content;
+    }
+}
+
+
+@mixin flex-justify-align {
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    -moz-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+@mixin d-flex {
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+}
+
+@mixin d-inline-flex {
+    display: -webkit-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+}
+
+@mixin align-items-start {
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+}
+
+@mixin align-items-center {
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+@mixin align-items-end {
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+}
+
+@mixin justify-content-start {
+    -webkit-justify-content: flex-start;
+    -moz-justify-content: flex-start;
+    justify-content: flex-start;
+}
+
+@mixin justify-content-center {
+    -webkit-justify-content: center;
+    -moz-justify-content: center;
+    justify-content: center;
+}
+
+@mixin justify-content-end {
+    -webkit-justify-content: flex-end;
+    -moz-justify-content: flex-end;
+    justify-content: flex-end;
+}
+
+@mixin justify-content-space-between {
+    -webkit-justify-content: space-between;
+    -moz-justify-content: space-between;
+    justify-content: space-between;
+}
+
+@mixin justify-content-space-around {
+    -webkit-justify-content: space-around;
+    -moz-justify-content: space-around;
+    justify-content: space-around;
+}
+
+@mixin flex-wrap {
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+@mixin flex-column {
+    -webkit-flex-direction: column;
+    -moz-flex-direction: column;
+    flex-direction: column;
+}
+
+@mixin flex-column-reverse {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: reverse;
+    -webkit-flex-direction: column-reverse;
+    -moz-box-orient: vertical;
+    -moz-box-direction: reverse;
+    -ms-flex-direction: column-reverse;
+    flex-direction: column-reverse;
+}
+
+@mixin flex-row {
+    -webkit-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+}
+
+@mixin flex-row-reverse {
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: reverse;
+    -ms-flex-direction: row-reverse;
+    flex-direction: row-reverse;
+}
+
+@mixin transform($property) {
+    -webkit-transform: $property;
+    -moz-transform: $property;
+    -ms-transform: $property;
+    -o-transform: $property;
+    transform: $property; 
+}
+
+@mixin transition($property) {
+    -webkit-transition: $property;
+    -moz-transition: $property;
+    -ms-transition: $property;
+    -o-transition: $property;
+    transition: $property;
+}
+
+@mixin transition-delay($property) {
+    -webkit-transition-delay: $property;
+    -moz-transition-delay: $property;
+    -ms-transition-delay: $property;
+    -o-transition-delay: $property;
+    transition-delay: $property;
+}
+
+@mixin box-shadow($property) {
+    -webkit-box-shadow: $property;
+    -moz-box-shadow: $property;
+    -ms-box-shadow: $property;
+    -o-box-shadow: $property;
+    box-shadow: $property;
+}
+
+@mixin transform-origin($property) {
+    -webkit-transform-origin: $property;
+    -moz-transform-origin: $property;
+    -ms-transform-origin: $property;
+    -o-transform-origin: $property;
+    transform-origin: $property;
+}
+
+@mixin animation($property) {
+    -webkit-animation: $property;
+    -moz-animation: $property;
+    -o-animation: $property;
+    animation: $property;
+}
+
+@mixin animation-delay($property) {
+    -webkit-animation-delay: $property;
+    -moz-animation-delay: $property;
+    -o-animation-delay: $property;
+    animation-delay: $property;
+}
+
+@mixin border-radius($property) { 
+    border-radius: $property;
+}
+
+@mixin clip-path($property) {
+    -webkit-clip-path: $property;
+    clip-path: $property;
+}
+
+@mixin box { 
+    padding: 30px;
+    border-radius: $border-radius-three;
+    @include maxQuery(1199) {
+        border-radius: 20px;
+        padding: 20px;
+    }
+} 
+
+@mixin border-radius-three {
+    border-radius: $border-radius-three;
+    @include maxQuery(1199) {
+        border-radius: 20px;
+    }
+}

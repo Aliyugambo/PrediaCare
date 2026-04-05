@@ -1,0 +1,133 @@
+.counter-section {
+    &-1 {
+        .counter-list {
+            @include d-flex;
+            gap: 60px 30px;
+
+            @include maxQuery(991) {
+                @include flex-wrap;
+            }
+        }
+
+        .counter-item {
+            width: calc(33.33% - 15px);
+            text-align: center;
+
+            @include maxQuery(991) {
+                width: calc(50% - 15px);
+            }
+
+            @include maxQuery(360) {
+                width: 100%;
+            }
+
+            .counter-content {
+                .counter-text {
+                    color: $extra-color-five;
+                    font-family: $title-fonts;
+                    text-transform: capitalize;
+                    margin-bottom: 5px;
+                    font-size: 62px;
+                    line-height: 1.1em;
+                    font-weight: 600;
+
+                    @include maxQuery(991) {
+                        font-size: 52px;
+                    }
+
+                    @include maxQuery(767) {
+                        font-size: 34px;
+                    }
+                }
+
+                .counter-title {
+                    color: $black-color;
+                    margin-bottom: 0;
+                    font-weight: 400;
+                    font-size: 1.2rem;
+                    line-height: 1.5;
+
+                    @include maxQuery(767) {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+
+    &-2 {
+        &::after {
+            content: '';
+            position: absolute;
+            height: 40%;
+            width: 100%;
+            background-color: $background-one;
+            top: 0;
+            z-index: -1;
+        }
+
+        .counter-list {
+            background-color: $extra-color-five;
+            padding: 80px 20px;
+            @include d-flex;
+            gap: 60px 30px;
+            @include border-radius-three;
+
+            @include maxQuery(991) {
+                padding: 30px;
+                @include flex-wrap;
+            }
+        }
+
+        .counter-item {
+            width: calc(33.33% - 15px);
+            text-align: center;
+
+            @include maxQuery(991) {
+                width: calc(50% - 15px);
+            }
+
+            @include maxQuery(360) {
+                width: 100%;
+            }
+
+            .counter-icon {
+                color: $white-color;
+                font-size: 65px;
+                margin-bottom: 20px;
+            }
+
+            .counter-content {
+                .counter-text {
+                    color: $white-color;
+                    font-family: $title-fonts;
+                    text-transform: capitalize;
+                    margin-bottom: 5px;
+                    font-size: 62px;
+                    line-height: 1.1em;
+                    font-weight: 600;
+
+                    @include maxQuery(991) {
+                        font-size: 52px;
+                    }
+
+                    @include maxQuery(767) {
+                        font-size: 34px;
+                    }
+                }
+
+                .counter-title {
+                    color: $white-color;
+                    margin-bottom: 0;
+                    font-weight: 400;
+                    font-size: 1.2rem;
+                    line-height: 1.5;
+
+                    @include maxQuery(767) {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+}

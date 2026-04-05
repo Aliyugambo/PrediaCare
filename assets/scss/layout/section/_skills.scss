@@ -1,0 +1,68 @@
+.skill-progress-wapper {
+    padding-right: 10px;
+
+    .single-progressbar {
+        margin-bottom: 30px;
+        @include d-flex;
+        @include flex-column;
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .progress-title {
+            font-family: $title-fonts;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: normal;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+            color: $black-color;
+        }
+
+        .progressbar {
+            position: relative;
+            width: 100%;
+            height: 6px;
+            background-color: $extra-color;
+            @include border-radius(25px);
+
+            .progress-bar-count {
+                position: absolute;
+                height: 100%;
+                top: 0;
+                left: 0;
+                width: 0;
+                background-color: $primary-color;
+                @include transition(all 800ms linear);
+                @include border-radius(25px);
+
+                &::before {
+                    content: attr(data-percent);
+                    position: absolute;
+                    padding: 2px 6px;
+                    background-color: $black-color;
+                    color: $white-color;
+                    font-size: 12px;
+                    font-weight: 600;
+                    line-height: 15px;
+                    top: -29px;
+                    right: 0;
+                    @include border-radius(5px);
+                    @include transform(translateX(50%));
+                }
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    width: 8px;
+                    height: 8px;
+                    background-color: $black-color;
+                    top: -14px;
+                    right: 0;
+                    @include transform(translateX(50%) rotate(45deg));
+                }
+            }
+        }
+    }
+}

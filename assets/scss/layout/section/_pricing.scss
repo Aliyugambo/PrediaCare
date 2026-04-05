@@ -1,0 +1,369 @@
+.pricing-tabs {
+    text-align: center;
+    margin-bottom: 30px;
+
+    .nav-tabs {
+        border: 1px solid $border-color-one;
+        background-color: transparent;
+        @include d-inline-flex;
+        gap: 10px;
+        @include border-radius(10px);
+        overflow: hidden;
+        padding: 10px;
+
+        button {
+            background-color: $background-one !important;
+            border: none;
+            padding: 10px 25px;
+            text-transform: capitalize;
+            color: $black-color !important;
+            @include border-radius(5px);
+
+            &.active {
+                background-color: $primary-color !important;
+                color: $white-color !important;
+            }
+        }
+    }
+}
+
+.pricing-section {
+    &-1 {
+        .pricing-image-item {
+            position: relative;
+            margin-bottom: 30px;
+            background-color: $extra-color-five;
+            height: calc(100% - 30px);
+            @include box;
+
+            .pricing-image-content {
+                position: relative;
+                z-index: 1;
+
+                span {
+                    color: $white-color;
+                    margin-bottom: 10px;
+                    text-transform: uppercase;
+                    display: block;
+                }
+
+                h3 {
+                    margin-bottom: 10px;
+                    color: $white-color;
+                }
+
+                p {
+                    color: $white-color;
+                }
+
+                a {
+                    margin-top: 20px;
+                    background-color: $white-color;
+                    color: $black-color;
+                    @include border-radius(50%);
+                    overflow: hidden;
+                    width: 45px;
+                    height: 45px;
+                    @include transition(0.3s);
+                    @include flex-justify-align;
+                    @include transform(rotate(-45deg));
+
+                    &:hover {
+                        @include transform(rotate(0));
+                        background-color: $primary-color;
+                        color: $white-color;
+                    }
+                }
+            }
+
+            .pricing-image {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                @include maxQuery(991) {
+                    position: relative;
+                }
+
+                img {
+                    max-width: 320px;
+                    width: 100%;
+                }
+            }
+        }
+
+        .pricing-item {
+            position: relative;
+            margin-bottom: 30px;
+            border: 1px solid $border-color-one;
+            @include box;
+            @include transition($transition);
+
+            @include maxQuery(991) {
+                padding: 20px;
+            }
+
+            .pricing-content {
+                .pricing-text {
+                    position: relative;
+                    margin-bottom: 25px;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid $border-color-one;
+
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        bottom: -1px;
+                        left: 0;
+                        width: 0;
+                        height: 1px;
+                        background-color: $primary-color;
+                        @include transition(all 0.4s ease-in);
+                    }
+
+                    .pricing-plan-title {
+                        font-weight: 600;
+                        font-size: 18px;
+                        margin-bottom: 20px;
+                        color: $black-color;
+                        @include d-flex;
+                        @include align-items-center;
+                        gap: 10px;
+
+                        span {
+                            background-color: $primary-color;
+                            color: $white-color;
+                            padding: 2px 10px;
+                            @include border-radius(100px);
+                            display: inline-block;
+                            margin-left: 5px;
+                            font-size: 14px;
+                            font-weight: 400;
+                        }
+                    }
+
+                    .pricing-plan-price {
+                        color: $black-color;
+                        font-size: 40px;
+                        line-height: 1.2em;
+                        font-weight: 700;
+                        margin-bottom: 5px;
+
+                        @include maxQuery(991) {
+                            font-size: 36px;
+                        }
+
+                        @include maxQuery(767) {
+                            font-size: 32px;
+                        }
+
+                        span {
+                            font-size: 16px;
+                            font-weight: 500;
+                            color: $black-color;
+                        }
+                    }
+                }
+
+                .pricing-list {
+                    p {
+                        font-weight: 600;
+                    }
+
+                    .pricing-button-wapper {
+                        text-align: center;
+                    }
+                }
+            }
+
+            &.tagged {
+                background-color: $primary-color;
+
+                .pricing-content {
+                    .pricing-text {
+                        border-color: $white-color;
+
+                        &::before {
+                            background-color: $white-color;
+                        }
+
+                        .pricing-plan-title {
+                            color: $white-color;
+
+                            span {
+                                background-color: $white-color;
+                                color: $black-color;
+                                font-weight: 500;
+                            }
+                        }
+
+                        .pricing-plan-price {
+                            color: $white-color;
+
+                            span {
+                                font-size: 16px;
+                                font-weight: 500;
+                                color: $white-color;
+                            }
+                        }
+                    }
+
+                    .pricing-list {
+                        color: $white-color;
+
+                        ul {
+                            li {
+                                &::before {
+                                    color: $white-color;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                &:hover {
+                    background-color: $primary-color;
+                }
+            }
+
+            &:hover {
+                background-color: $background-one;
+
+                .pricing-content {
+                    .pricing-text {
+                        &::before {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &-2 {
+        .pricing-title-box {
+            position: sticky;
+            top: 120px;
+
+            @include maxQuery(991) {
+                margin-bottom: 10px;
+            }
+        }
+
+        .pricing-question {
+            p {
+                a {
+                    color: $black-color;
+                }
+            }
+        }
+
+        .pricing-list-box {
+            @include d-flex;
+            @include flex-column;
+            gap: 30px;
+
+            @include maxQuery(991) {
+                margin-top: 20px;
+            }
+
+            .pricing-item {
+                @include box;
+
+                &.pricing-one {
+                    background-color: $extra-color-one;
+                }
+
+                &.pricing-two {
+                    background-color: $extra-color-two;
+                }
+
+                &.pricing-three {
+                    background-color: $extra-color-three;
+                }
+
+                .pricing-content {
+                    @include d-flex;
+                    @include justify-content-space-between;
+
+                    @include maxQuery(576) {
+                        @include flex-column;
+                        gap: 20px;
+                    }
+
+                    .pricing-text {
+                        width: calc(50% - 15px);
+
+                        @include maxQuery(576) {
+                            width: 100%;
+                        }
+
+                        .pricing-plan-title {
+                            font-weight: 600;
+                            font-size: 18px;
+                            margin-bottom: 20px;
+                            color: $black-color;
+                            @include d-flex;
+                            @include align-items-center;
+                            gap: 10px;
+
+                            span {
+                                background-color: $primary-color;
+                                color: $white-color;
+                                padding: 2px 10px;
+                                @include border-radius(100px);
+                                display: inline-block;
+                                margin-left: 5px;
+                                font-size: 14px;
+                                font-weight: 300;
+                            }
+                        }
+
+                        .pricing-plan-price {
+                            color: $black-color;
+                            font-size: 40px;
+                            line-height: 1.2em;
+                            font-weight: 700;
+                            margin-bottom: 5px;
+
+                            @include maxQuery(991) {
+                                font-size: 36px;
+                            }
+
+                            @include maxQuery(767) {
+                                font-size: 32px;
+                            }
+
+                            span {
+                                font-size: 16px;
+                                font-weight: 500;
+                                color: $black-color;
+                            }
+                        }
+                    }
+
+                    .pricing-list {
+                        width: calc(50% - 15px);
+
+                        @include maxQuery(576) {
+                            width: 100%;
+                        }
+                    }
+                }
+
+                &.tagged {
+                    .pricing-content {
+                        .pricing-text {
+                            border-color: $text-color;
+
+                            .pricing-plan-price {
+                                color: $primary-color;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
