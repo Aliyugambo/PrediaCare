@@ -1678,9 +1678,9 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <a href="index-3.html" class="sidebar-logo">
+        <a href="index.html" class="sidebar-logo">
           <img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" />
-          <span>Prediacare</span>
+          <span>rediacare Clinics</span>
         </a>
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
@@ -4272,7 +4272,7 @@
 
     // View invoice
     function viewInvoice(invoiceId) {
-      showToast('info', 'Invoice', `Viewing invoice ${invoiceId}`);
+      window.open(`${API_BASE}/billing/invoices/${invoiceId}/pdf`, '_blank');
     }
 
     // Logout

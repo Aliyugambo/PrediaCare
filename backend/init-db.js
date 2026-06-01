@@ -9,7 +9,8 @@ async function initializeDatabase() {
       user: process.env.MYSQL_USER || 'carenix_user',
       password: process.env.MYSQL_PASSWORD || 'StrongPassword123!',
       database: process.env.MYSQL_DATABASE || 'carenix_clinic',
-      port: process.env.MYSQL_PORT || 3306
+      port: process.env.MYSQL_PORT || 3306,
+      multipleStatements: true
     });
 
     console.log('Connected to MySQL');
@@ -63,6 +64,17 @@ async function initializeDatabase() {
       if (!cols || cols.length === 0) {
         await connection.execute("ALTER TABLE users ADD COLUMN phone VARCHAR(20) AFTER email");
         console.log('Added phone column to users table');
+      }
+    } catch (e) {
+      // Column might already exist
+    }
+
+    // Ensure address column exists (for older installations)
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM users LIKE 'address'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE users ADD COLUMN address TEXT AFTER phone");
+        console.log('Added address column to users table');
       }
     } catch (e) {
       // Column might already exist
@@ -371,6 +383,16 @@ async function initializeDatabase() {
     `);
     console.log('Pharmacy medicines table created or already exists');
 
+    // Ensure pharmacy_medicines has status column
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM pharmacy_medicines LIKE 'status'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE pharmacy_medicines ADD COLUMN status ENUM('active', 'inactive', 'discontinued') DEFAULT 'active'");
+      }
+    } catch (e) {
+      console.log('Error checking status column:', e.message);
+    }
+
     // Create pharmacy_sales table (medicine dispensing records)
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS pharmacy_sales (
@@ -432,6 +454,120 @@ async function initializeDatabase() {
       )
     `);
     console.log('Walk-in patients table created or already exists');
+
+    // Create billing_services table (services that can be billed)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS billing_services (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        service_name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100),
+        unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Billing services table created or already exists');
+
+    // Create billing_invoices table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS billing_invoices (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        invoice_number VARCHAR(50) NOT NULL UNIQUE,
+        patient_id INT NOT NULL,
+        invoice_date DATE NOT NULL,
+        due_date DATE NOT NULL,
+        subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        tax_amount DECIMAL(10, 2) DEFAULT 0.00,
+        total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        amount_paid DECIMAL(10, 2) DEFAULT 0.00,
+        status ENUM('pending', 'paid', 'overdue', 'cancelled', 'partially_paid') DEFAULT 'pending',
+        payment_method VARCHAR(50),
+        notes TEXT,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Billing invoices table created or already exists');
+
+    // Ensure doctor_id column exists in billing_invoices
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM billing_invoices LIKE 'doctor_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE billing_invoices ADD COLUMN doctor_id INT DEFAULT NULL AFTER patient_id");
+        await connection.execute("ALTER TABLE billing_invoices ADD CONSTRAINT fk_billing_invoices_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE SET NULL");
+        console.log('Added doctor_id column to billing_invoices table');
+      }
+    } catch (e) {
+      // Column might already exist
+    }
+
+    // Create billing_invoice_items table (line items)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS billing_invoice_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        invoice_id INT NOT NULL,
+        service_id INT,
+        service_name VARCHAR(255) NOT NULL,
+        description TEXT,
+        quantity INT NOT NULL DEFAULT 1,
+        unit_price DECIMAL(10, 2) NOT NULL,
+        total_price DECIMAL(10, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (invoice_id) REFERENCES billing_invoices(id) ON DELETE CASCADE,
+        FOREIGN KEY (service_id) REFERENCES billing_services(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Billing invoice items table created or already exists');
+
+    // Create billing_payments table (payment history)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS billing_payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        invoice_id INT NOT NULL,
+        payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        amount DECIMAL(10, 2) NOT NULL,
+        payment_method VARCHAR(50),
+        transaction_reference VARCHAR(100),
+        notes TEXT,
+        received_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (invoice_id) REFERENCES billing_invoices(id) ON DELETE CASCADE,
+        FOREIGN KEY (received_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Billing payments table created or already exists');
+
+// SEED REAL HOSPITAL SERVICES (NGN)
+// Truncate related tables first (FK safe order)
+await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
+await connection.execute('TRUNCATE TABLE billing_invoice_items');
+await connection.execute('TRUNCATE TABLE billing_invoices');
+await connection.execute('TRUNCATE TABLE billing_payments');
+await connection.execute('TRUNCATE TABLE billing_services');
+await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
+
+// Load fs/path requires at top for seeding (FIX: Hoist requires before use)
+const fs = require('fs');
+const path = require('path');
+const seedSqlPath = path.join(__dirname, 'seeds', 'billing-services.sql');
+
+if (fs.existsSync(seedSqlPath)) {
+  const seedSql = fs.readFileSync(seedSqlPath, 'utf8');
+  await connection.query(seedSql);
+  console.log('✅ Hospital billing services seeded (NGN - ~80 services: Beds, Theater, Labs, etc.)');
+  
+  // Verify
+  const [count] = await connection.execute('SELECT COUNT(*) as count FROM billing_services');
+  console.log(`📊 Total services: ${count[0].count}`);
+} else {
+  console.warn(`⚠️  Seed file not found at ${seedSqlPath}`);
+  console.warn(`Run manually: mysql ${process.env.MYSQL_DATABASE || 'defaultdb'} -h ${process.env.MYSQL_HOST || 'localhost'} -P ${process.env.MYSQL_PORT || 3306} -u ${process.env.MYSQL_USER || 'avnadmin'} -p < ${seedSqlPath}`);
+}
 
     // Create sample users and data (optional - for testing)
     const [userCount] = await connection.execute('SELECT COUNT(*) as count FROM users');

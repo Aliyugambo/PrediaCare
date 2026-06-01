@@ -19,27 +19,27 @@ router.get('/stats', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res
     const connection = await pool.getConnection();
 
     const [totalMedicines] = await connection.execute(
-      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE status != "discontinued"'
+      'SELECT COUNT(*) as count FROM pharmacy_medicines'
     );
 
     const [activeMedicines] = await connection.execute(
-      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE status = "active"'
+      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE status = \'active\' OR status IS NULL'
     );
 
     const [lowStock] = await connection.execute(
-      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE stock_quantity <= reorder_level AND status = "active"'
+      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE (status = \'active\' OR status IS NULL) AND stock_quantity <= reorder_level'
     );
 
     const [expiredMedicines] = await connection.execute(
-      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE expiry_date < CURDATE() AND status = "active"'
+      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE (status = \'active\' OR status IS NULL) AND expiry_date < CURDATE()'
     );
 
     const [expiringSoon] = await connection.execute(
-      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND status = "active"'
+      'SELECT COUNT(*) as count FROM pharmacy_medicines WHERE (status = \'active\' OR status IS NULL) AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)'
     );
 
     const [totalStockValue] = await connection.execute(
-      'SELECT COALESCE(SUM(unit_price * stock_quantity), 0) as total FROM pharmacy_medicines WHERE status = "active"'
+      'SELECT COALESCE(SUM(unit_price * stock_quantity), 0) as total FROM pharmacy_medicines WHERE status = \'active\' OR status IS NULL'
     );
 
     const [categories] = await connection.execute(

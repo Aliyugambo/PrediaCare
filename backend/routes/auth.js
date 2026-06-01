@@ -219,9 +219,11 @@ router.get('/user', (req, res) => {
   console.log('\n=== /user endpoint called ===');
   console.log('Session ID:', req.sessionID);
   console.log('Session cookie:', req.headers.cookie);
-  console.log('Session:', req.session);
+  console.log('Session exists:', !!req.session);
+  console.log('Session keys:', req.session ? Object.keys(req.session) : 'no session');
   console.log('Session userId:', req.session?.userId);
   console.log('Session userRole:', req.session?.userRole);
+  console.log('Session store type:', typeof req.sessionStore);
   
   // Prevent caching
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

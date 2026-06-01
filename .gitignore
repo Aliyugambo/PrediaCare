@@ -145,3 +145,8 @@ dist
 
 #vscode
 .vscode/
+.vscode-test/
+.history/
+.vscodeignore
+.vscode/
+.vscode-test/

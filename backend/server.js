@@ -1,7 +1,9 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
+// Temporarily use MemoryStore to debug session persistence
+// const MySQLStore = require('express-mysql-session')(session);
+const MemoryStore = require('memorystore')(session);
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
@@ -23,6 +25,7 @@ const customerCareRoutes = require('./routes/customer-care');
 const diagnosticRoutes = require('./routes/diagnostic');
 const healthTipsRoutes = require('./routes/health-tips');
 const pharmacyRoutes = require('./routes/pharmacy');
+const billingRoutes = require('./routes/billing');
 
 const app = express();
 
@@ -46,10 +49,14 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-const sessionStore = new MySQLStore({}, pool);
+// const sessionStore = new MySQLStore({}, pool);
+const sessionStore = new MemoryStore({
+  checkPeriod: 86400000 // prune expired entries every 24h
+});
 
 // Determine secure cookie usage in production
-const cookieSecure = (process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production');
+  const cookieSecure = process.env.NODE_ENV === 'production' ? true : false;
+  console.log('🚀 Session config - NODE_ENV:', process.env.NODE_ENV, 'COOKIE_SECURE:', process.env.COOKIE_SECURE, 'Final secure:', cookieSecure);
 
 app.use(session({
   key: 'carenix_session',
@@ -96,7 +103,8 @@ app.use((req, res, next) => {
     '/api/staff',
     '/api/customer-care',
     '/api/diagnostic',
-    '/api/pharmacy'
+    '/api/pharmacy',
+    '/api/billing'
   ];
   if (csrfExemptPaths.some(path => req.path.startsWith(path))) {
     return next();
@@ -229,6 +237,9 @@ app.use('/api/admin', adminRoutes);
 
 // Pharmacy routes
 app.use('/api/pharmacy', pharmacyRoutes);
+
+// Billing routes
+app.use('/api/billing', billingRoutes);
 
 // Middleware to check authentication
 const checkAuth = (req, res, next) => {
