@@ -255,10 +255,10 @@ body {
 }
 
 .sidebar-logo span {
-  font-weight: 700;
-  font-size: 18px;
-  color: #0f172a;
-}
+       font-weight: 700;
+       font-size: 20px;
+       color: black;
+     }
 
 .sidebar-close {
   display: none;

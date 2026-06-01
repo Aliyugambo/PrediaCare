@@ -25,11 +25,12 @@ body {
   flex-direction: column;
   justify-content: space-between;
 
-  .logo {
-    font-weight: 700;
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
+.logo {
+     font-weight: 700;
+     font-size: 20px;
+     margin-bottom: 20px;
+     color: black;
+   }
 
   nav {
     display: flex;
