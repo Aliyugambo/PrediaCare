@@ -48,32 +48,9 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-const sessionPool = mysql2.createPool({
-  host: process.env.MYSQL_HOST,
-  port: parseInt(process.env.MYSQL_PORT || '3306'),
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-}).promise();
-
-const sessionStore = new MySQLStore({
-  sessionIdField: 'session_id',
-  expiration: 24 * 60 * 60 * 1000,
-  clearExpired: true,
-  checkExpirationInterval: 900000
-}, sessionPool);
-
-// Determine secure cookie usage in production
-  const cookieSecure = process.env.NODE_ENV === 'production' ? true : false;
-  console.log('🚀 Session config - NODE_ENV:', process.env.NODE_ENV, 'COOKIE_SECURE:', process.env.COOKIE_SECURE, 'Final secure:', cookieSecure);
-
 app.use(session({
   key: 'carenix_session',
   secret: process.env.SESSION_SECRET,
-  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
