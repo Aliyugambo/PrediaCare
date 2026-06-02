@@ -480,4 +480,216 @@ router.get('/reports/:id/file', checkPermission(PERMISSIONS.VIEW_REPORTS), async
   }
 });
 
+/**
+ * GET /api/staff/round-checks
+ * Get round-check records for nursing staff
+ * Permission: VIEW_ROUND_CHECKS (staff)
+ */
+router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), async (req, res) => {
+  try {
+    const staffId = req.session.userId;
+    const { patient_id, admission_id, status = 'ongoing' } = req.query;
+
+    let query = `
+      SELECT rc.*, u.name as patient_name, u.email as patient_email,
+        d.doctor_name, rc.checked_by as staff_id, su.name as staff_name
+      FROM round_checks rc
+      JOIN users u ON rc.patient_id = u.id
+      JOIN doctors d ON rc.checked_by = d.id
+      JOIN users su ON rc.checked_by = su.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (patient_id) {
+      query += ' AND rc.patient_id = ?';
+      params.push(patient_id);
+    }
+    if (admission_id) {
+      query += ' AND rc.admission_id = ?';
+      params.push(admission_id);
+    }
+    if (status !== 'all') {
+      query += ' AND rc.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY rc.check_date DESC LIMIT 100';
+
+    const connection = await pool.getConnection();
+    const [checks] = await connection.execute(query, params);
+    connection.release();
+
+    const parsedChecks = checks.map(c => {
+      let vitalSigns = null;
+      if (c.vital_signs) {
+        try {
+          vitalSigns = typeof c.vital_signs === 'string' ? JSON.parse(c.vital_signs) : c.vital_signs;
+        } catch (e) {}
+      }
+      return {
+        id: c.id,
+        patientId: c.patient_id,
+        patientName: c.patient_name,
+        patientEmail: c.patient_email,
+        admissionId: c.admission_id,
+        examinationId: c.examination_id,
+        doctorName: c.doctor_name,
+        staffId: c.staff_id,
+        staffName: c.staff_name,
+        checkType: c.check_type,
+        notes: c.notes,
+        vitalSigns: vitalSigns,
+        nextPlan: c.next_plan,
+        status: c.status,
+        checkDate: c.check_date,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at
+      };
+    });
+
+    res.json({ success: true, roundChecks: parsedChecks });
+  } catch (error) {
+    console.error('Error fetching round checks:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch round checks' });
+  }
+});
+
+/**
+ * POST /api/staff/round-checks
+ * Create a new round-check record (nurse)
+ * Permission: MANAGE_ROUND_CHECKS (staff)
+ */
+router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const staffId = req.session.userId;
+    const {
+      patient_id,
+      admission_id,
+      examination_id,
+      check_type = 'nurse',
+      notes,
+      vital_signs,
+      next_plan,
+      status = 'ongoing'
+    } = req.body;
+
+    if (!patient_id) {
+      return res.status(400).json({ success: false, message: 'Patient ID is required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      INSERT INTO round_checks
+      (patient_id, admission_id, examination_id, checked_by, check_type, notes, vital_signs, next_plan, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      patient_id,
+      admission_id || null,
+      examination_id || null,
+      staffId,
+      check_type,
+      notes || null,
+      vital_signs ? JSON.stringify(vital_signs) : null,
+      next_plan || null,
+      status
+    ]);
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Nurse round check recorded successfully',
+      roundCheckId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error creating nurse round check:', error);
+    res.status(500).json({ success: false, message: 'Failed to create round check' });
+  }
+});
+
+/**
+ * PUT /api/staff/round-checks/:id
+ * Nurse can append follow-up notes and change status, but CANNOT edit vital_signs or original notes
+ * Permission: MANAGE_ROUND_CHECKS (staff)
+ */
+router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const staffId = req.session.userId;
+    const { status, next_plan, follow_up_note } = req.body;
+
+    const connection = await pool.getConnection();
+
+    const [existing] = await connection.execute(
+      'SELECT id, checked_by, check_type, follow_up_notes FROM round_checks WHERE id = ?',
+      [id]
+    );
+
+    if (!existing || existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Round check not found' });
+    }
+
+    const record = existing[0];
+    const updates = [];
+    const values = [];
+
+    if (status !== undefined) {
+      updates.push('status = ?');
+      values.push(status);
+    }
+    if (next_plan !== undefined) {
+      updates.push('next_plan = ?');
+      values.push(next_plan);
+    }
+
+    // Append follow-up note to JSON array
+    if (follow_up_note !== undefined && follow_up_note.trim() !== '') {
+      let currentNotes = [];
+      try {
+        currentNotes = typeof record.follow_up_notes === 'string' ? JSON.parse(record.follow_up_notes) : (record.follow_up_notes || []);
+      } catch (e) {
+        currentNotes = [];
+      }
+      currentNotes.push({
+        userId: staffId,
+        checkType: 'nurse',
+        text: follow_up_note.trim(),
+        createdAt: new Date().toISOString()
+      });
+      updates.push('follow_up_notes = ?');
+      values.push(JSON.stringify(currentNotes));
+    }
+
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'No allowed fields to update' });
+    }
+
+    const forbidden = [];
+    if (req.body.notes !== undefined) forbidden.push('notes');
+    if (req.body.vital_signs !== undefined) forbidden.push('vital_signs');
+    if (forbidden.length > 0) {
+      connection.release();
+      return res.status(403).json({ success: false, message: `Forbidden: cannot update ${forbidden.join(', ')} after creation` });
+    }
+
+    updates.push('updated_at = NOW()');
+    values.push(id);
+
+    await connection.execute(`
+      UPDATE round_checks SET ${updates.join(', ')} WHERE id = ?
+    `, values);
+
+    connection.release();
+
+    res.json({ success: true, message: 'Nurse follow-up note added successfully' });
+  } catch (error) {
+    console.error('Error updating nurse round check:', error);
+    res.status(500).json({ success: false, message: 'Failed to update round check' });
+  }
+});
+
 module.exports = router;

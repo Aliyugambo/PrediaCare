@@ -811,7 +811,8 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asyn
       }
       return {
         ...exam,
-        vital_signs: vitalSigns
+        vital_signs: vitalSigns,
+        follow_up_notes: (() => { try { return typeof exam.follow_up_notes === 'string' ? JSON.parse(exam.follow_up_notes) : (exam.follow_up_notes || []); } catch (e) { return []; } })()
       };
     });
     
@@ -1479,6 +1480,350 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (re
       success: false, 
       message: 'Failed to fetch reports' 
     });
+  }
+});
+
+/**
+ * POST /api/doctor/admissions
+ * Create a patient admission when doctor chooses "Admit Patient" after examination
+ * Permission: MANAGE_ADMISSIONS (doctor)
+ */
+router.post('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const {
+      patient_id,
+      examination_id,
+      room_number,
+      bed_number,
+      admission_type = 'scheduled',
+      reason_for_admission,
+      admitting_diagnosis,
+      notes
+    } = req.body;
+
+    if (!patient_id || !doctorId) {
+      return res.status(400).json({ success: false, message: 'Patient ID and doctor ID are required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      INSERT INTO admissions
+      (patient_id, examination_id, doctor_id, room_number, bed_number, admission_type, reason_for_admission, admitting_diagnosis, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      patient_id,
+      examination_id || null,
+      doctorId,
+      room_number || null,
+      bed_number || null,
+      admission_type,
+      reason_for_admission || null,
+      admitting_diagnosis || null,
+      notes || null
+    ]);
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Patient admitted successfully',
+      admissionId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error creating admission:', error);
+    res.status(500).json({ success: false, message: 'Failed to create admission' });
+  }
+});
+
+/**
+ * GET /api/doctor/admissions
+ * List admissions for the doctor's patients
+ * Permission: MANAGE_ADMISSIONS (doctor)
+ */
+router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { status = 'admitted' } = req.query;
+
+    const connection = await pool.getConnection();
+
+    const [admissions] = await connection.execute(`
+      SELECT 
+        a.id,
+        a.patient_id,
+        a.examination_id,
+        a.room_number,
+        a.bed_number,
+        a.admission_type,
+        a.reason_for_admission,
+        a.admitting_diagnosis,
+        a.status,
+        a.admission_date,
+        a.discharge_date,
+        a.notes,
+        a.created_at,
+        a.updated_at,
+        u.name as patient_name,
+        u.email as patient_email,
+        d.doctor_name
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.doctor_id = ? ${status !== 'all' ? 'AND a.status = ?' : ''}
+      ORDER BY a.admission_date DESC
+    `, status !== 'all' ? [doctorId, status] : [doctorId]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      admissions: admissions.map(a => ({
+        id: a.id,
+        patientId: a.patient_id,
+        patientName: a.patient_name,
+        patientEmail: a.patient_email,
+        examinationId: a.examination_id,
+        doctorName: a.doctor_name,
+        roomNumber: a.room_number,
+        bedNumber: a.bed_number,
+        admissionType: a.admission_type,
+        reasonForAdmission: a.reason_for_admission,
+        admittingDiagnosis: a.admitting_diagnosis,
+        status: a.status,
+        admissionDate: a.admission_date,
+        dischargeDate: a.discharge_date,
+        notes: a.notes,
+        createdAt: a.created_at,
+        updatedAt: a.updated_at
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching admissions:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch admissions' });
+  }
+});
+
+/**
+ * PUT /api/doctor/admissions/:id/discharge
+ * Mark an admission as discharged
+ * Permission: MANAGE_ADMISSIONS (doctor)
+ */
+router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    await connection.execute(`
+      UPDATE admissions SET status = 'discharged', discharge_date = NOW(), updated_at = NOW() WHERE id = ?
+    `, [id]);
+
+    connection.release();
+
+    res.json({ success: true, message: 'Patient discharged successfully' });
+  } catch (error) {
+    console.error('Error discharging patient:', error);
+    res.status(500).json({ success: false, message: 'Failed to discharge patient' });
+  }
+});
+
+/**
+ * GET /api/doctor/round-checks
+ * Get round-check records for the doctor
+ * Permission: MANAGE_ROUND_CHECKS (doctor)
+ */
+router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { patient_id, admission_id, check_type } = req.query;
+
+    let query = `
+      SELECT rc.*, u.name as patient_name
+      FROM round_checks rc
+      JOIN users u ON rc.patient_id = u.id
+      WHERE rc.checked_by = ?
+    `;
+    const params = [doctorId];
+
+    if (patient_id) {
+      query += ' AND rc.patient_id = ?';
+      params.push(patient_id);
+    }
+    if (admission_id) {
+      query += ' AND rc.admission_id = ?';
+      params.push(admission_id);
+    }
+    if (check_type) {
+      query += ' AND rc.check_type = ?';
+      params.push(check_type);
+    }
+
+    query += ' ORDER BY rc.check_date DESC LIMIT 100';
+
+    const connection = await pool.getConnection();
+    const [checks] = await connection.execute(query, params);
+    connection.release();
+
+    const parsedChecks = checks.map(c => {
+      let vitalSigns = null;
+      if (c.vital_signs) {
+        try {
+          vitalSigns = typeof c.vital_signs === 'string' ? JSON.parse(c.vital_signs) : c.vital_signs;
+        } catch (e) {}
+      }
+      return {
+        ...c,
+        vital_signs: vitalSigns
+      };
+    });
+
+    res.json({ success: true, roundChecks: parsedChecks });
+  } catch (error) {
+    console.error('Error fetching round checks:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch round checks' });
+  }
+});
+
+/**
+ * POST /api/doctor/round-checks
+ * Create a new round-check record (doctor or nurse)
+ * Permission: MANAGE_ROUND_CHECKS (doctor)
+ */
+router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const userId = req.session.userId || req.session.doctorId;
+    const {
+      patient_id,
+      admission_id,
+      examination_id,
+      check_type = 'doctor',
+      notes,
+      vital_signs,
+      next_plan,
+      status = 'ongoing'
+    } = req.body;
+
+    if (!patient_id) {
+      return res.status(400).json({ success: false, message: 'Patient ID is required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      INSERT INTO round_checks
+      (patient_id, admission_id, examination_id, checked_by, check_type, notes, vital_signs, next_plan, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      patient_id,
+      admission_id || null,
+      examination_id || null,
+      userId,
+      check_type,
+      notes || null,
+      vital_signs ? JSON.stringify(vital_signs) : null,
+      next_plan || null,
+      status
+    ]);
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Round check recorded successfully',
+      roundCheckId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error creating round check:', error);
+    res.status(500).json({ success: false, message: 'Failed to create round check' });
+  }
+});
+
+/**
+ * PUT /api/doctor/round-checks/:id
+ * Doctor can append follow-up notes and change status, but CANNOT edit vital_signs or original notes
+ * Permission: MANAGE_ROUND_CHECKS (doctor)
+ */
+router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctorId = req.session.doctorId;
+    const { status, next_plan, follow_up_note } = req.body;
+
+    const connection = await pool.getConnection();
+
+    // Fetch the current record to verify it exists and check check_type
+    const [existing] = await connection.execute(
+      'SELECT id, checked_by, check_type, follow_up_notes FROM round_checks WHERE id = ?',
+      [id]
+    );
+
+    if (!existing || existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Round check not found' });
+    }
+
+    const record = existing[0];
+
+    // Build allowed updates only
+    const updates = [];
+    const values = [];
+
+    // Doctors CANNOT edit vital_signs or original notes - only append follow_up_note or change status/next_plan
+    if (status !== undefined) {
+      updates.push('status = ?');
+      values.push(status);
+    }
+    if (next_plan !== undefined) {
+      updates.push('next_plan = ?');
+      values.push(next_plan);
+    }
+
+    // Append follow-up note to JSON array
+    if (follow_up_note !== undefined && follow_up_note.trim() !== '') {
+      let currentNotes = [];
+      try {
+        currentNotes = typeof record.follow_up_notes === 'string' ? JSON.parse(record.follow_up_notes) : (record.follow_up_notes || []);
+      } catch (e) {
+        currentNotes = [];
+      }
+      currentNotes.push({
+        userId: doctorId,
+        checkType: 'doctor',
+        text: follow_up_note.trim(),
+        createdAt: new Date().toISOString()
+      });
+      updates.push('follow_up_notes = ?');
+      values.push(JSON.stringify(currentNotes));
+    }
+
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'No allowed fields to update' });
+    }
+
+    // Prevent updating vital_signs or original notes
+    const forbidden = [];
+    if (req.body.notes !== undefined) forbidden.push('notes');
+    if (req.body.vital_signs !== undefined) forbidden.push('vital_signs');
+    if (forbidden.length > 0) {
+      connection.release();
+      return res.status(403).json({ success: false, message: `Forbidden: cannot update ${forbidden.join(', ')} after creation` });
+    }
+
+    updates.push('updated_at = NOW()');
+    values.push(id);
+
+    await connection.execute(`
+      UPDATE round_checks SET ${updates.join(', ')} WHERE id = ?
+    `, values);
+
+    connection.release();
+
+    res.json({ success: true, message: 'Doctor follow-up note added successfully' });
+  } catch (error) {
+    console.error('Error updating round check by doctor:', error);
+    res.status(500).json({ success: false, message: 'Failed to update round check' });
   }
 });
 

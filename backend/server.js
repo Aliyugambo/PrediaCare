@@ -1,9 +1,7 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-// Temporarily use MemoryStore to debug session persistence
-// const MySQLStore = require('express-mysql-session')(session);
-const MemoryStore = require('memorystore')(session);
+const MySQLStore = require('express-mysql-session')(session);
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
@@ -49,9 +47,16 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-// const sessionStore = new MySQLStore({}, pool);
-const sessionStore = new MemoryStore({
-  checkPeriod: 86400000 // prune expired entries every 24h
+// Use MySQL-backed session store so sessions survive backend restarts and work across processes
+const sessionStore = new MySQLStore({
+  host: process.env.MYSQL_HOST || '127.0.0.1',
+  port: parseInt(process.env.MYSQL_PORT || '3306'),
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  clearExpired: true,
+  checkExpirationInterval: 900000, // 15 minutes
+  expiration: 24 * 60 * 60 * 1000 // 24 hours
 });
 
 // Determine secure cookie usage in production

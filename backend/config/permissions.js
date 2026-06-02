@@ -31,6 +31,8 @@ const PERMISSIONS = {
   ADD_HEALTH_SUMMARY: 'add_health_summary',
   CREATE_EXAMINATIONS: 'create_examinations',
   UPLOAD_REPORTS: 'upload_reports',
+  MANAGE_ADMISSIONS: 'manage_admissions',
+  MANAGE_ROUND_CHECKS: 'manage_round_checks',
   
   // Staff permissions
   VIEW_ALL_USERS: 'view_all_users',
@@ -44,6 +46,9 @@ const PERMISSIONS = {
   VIEW_TEST_REFERRALS: 'view_test_referrals',
   VIEW_REPORTS: 'view_reports',
   MANAGE_TEST_REFERRALS: 'manage_test_referrals',
+  VIEW_ADMISSIONS: 'view_admissions',
+  VIEW_ROUND_CHECKS: 'view_round_checks',
+  MANAGE_ROUND_CHECKS: 'manage_round_checks',
   
   // Customer Care Staff permissions
   REGISTER_WALKIN_PATIENTS: 'register_walkin_patients',
@@ -154,6 +159,8 @@ PERMISSIONS.VIEW_TEST_REFERRALS,
     PERMISSIONS.ADD_HEALTH_SUMMARY,
     PERMISSIONS.CREATE_EXAMINATIONS,
     PERMISSIONS.UPLOAD_REPORTS,
+    PERMISSIONS.MANAGE_ADMISSIONS,
+    PERMISSIONS.MANAGE_ROUND_CHECKS,
     // Doctors can also view their own appointments
     PERMISSIONS.VIEW_OWN_APPOINTMENTS,
   ],

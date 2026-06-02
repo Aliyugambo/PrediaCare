@@ -301,6 +301,81 @@ async function initializeDatabase() {
     `);
     console.log('Examinations table created or already exists');
 
+    // Create admissions table (patient admitted after examination)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS admissions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        patient_id INT NOT NULL,
+        examination_id INT,
+        doctor_id INT NOT NULL,
+        room_number VARCHAR(50),
+        bed_number VARCHAR(50),
+        admission_type ENUM('emergency', 'scheduled', 'transfer') DEFAULT 'scheduled',
+        reason_for_admission TEXT,
+        admitting_diagnosis TEXT,
+        status ENUM('admitted', 'discharged', 'transferred') DEFAULT 'admitted',
+        admission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        discharge_date DATETIME NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (examination_id) REFERENCES examinations(id) ON DELETE SET NULL,
+        FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Admissions table created or already exists');
+
+    // Create round_checks table (doctor continuous round-check notes)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS round_checks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        patient_id INT NOT NULL,
+        admission_id INT,
+        examination_id INT,
+        checked_by INT NOT NULL,
+        check_type ENUM('doctor', 'nurse', 'consultant') DEFAULT 'doctor',
+        notes TEXT,
+        vital_signs JSON,
+        follow_up_notes JSON,
+        next_plan TEXT,
+        status ENUM('ongoing', 'resolved', 'escalated') DEFAULT 'ongoing',
+        check_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (admission_id) REFERENCES admissions(id) ON DELETE SET NULL,
+        FOREIGN KEY (examination_id) REFERENCES examinations(id) ON DELETE SET NULL,
+        FOREIGN KEY (checked_by) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Round checks table created or already exists');
+
+    // Ensure follow_up_notes column exists on older installs
+    try {
+      const [colsF] = await connection.execute("SHOW COLUMNS FROM round_checks LIKE 'follow_up_notes'");
+      if (!colsF || colsF.length === 0) {
+        await connection.execute("ALTER TABLE round_checks ADD COLUMN follow_up_notes JSON DEFAULT NULL AFTER vital_signs");
+        console.log('Added follow_up_notes column to round_checks');
+      }
+    } catch (e) {
+      console.log('follow_up_notes column check:', e.message);
+    }
+
+    // Ensure sessions table exists for express-mysql-session
+    try {
+      await connection.execute(`
+        CREATE TABLE IF NOT EXISTS sessions (
+          session_id VARCHAR(128) PRIMARY KEY,
+          expires DATETIME NOT NULL,
+          data TEXT
+        )
+      `);
+      console.log('Sessions table created or already exists');
+    } catch (e) {
+      console.log('Sessions table setup:', e.message);
+    }
+
     // Create reports table (doctor-uploaded medical reports/documents)
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS reports (

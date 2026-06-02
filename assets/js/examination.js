@@ -12,7 +12,20 @@ document.addEventListener('DOMContentLoaded', function() {
   initTestReferralCheckbox();
   initVitalSignsCalculations();
   initFileUpload();
+  initRoundChecks();
 });
+
+function initRoundChecks() {
+  var checkbox = document.getElementById('roundCheckEnable');
+  if (!checkbox) return;
+  
+  checkbox.addEventListener('change', function() {
+    var section = document.getElementById('roundCheckSection');
+    if (section) {
+      section.classList.toggle('show', this.checked);
+    }
+  });
+}
 
 // Initialize date picker in Schedule tab
 function initDatePicker() {
@@ -250,7 +263,7 @@ function closeExaminationModal() {
   selectedAppointment = null;
 }
 
-// Save examination
+// Save examination (saves as pending first, shows disposition modal)
 async function saveExamination() {
   if (!selectedAppointment) {
     alert('No patient selected');
@@ -285,8 +298,29 @@ async function saveExamination() {
     findings: document.getElementById('findings').value,
     diagnosis: diagnosis,
     treatment_plan: document.getElementById('treatmentPlan').value,
-    status: 'completed'
+    status: 'pending'
   };
+
+  // Store examination data for later submission
+  window._pendingExaminationData = examinationData;
+  
+  // Show disposition modal
+  var modal = document.getElementById('dispositionModal');
+  if (modal) {
+    modal.classList.add('active');
+  } else {
+    // Fallback if modal not yet added - save directly
+    await submitExamination();
+  }
+}
+
+// Submit saved examination to backend
+async function submitExamination() {
+  if (!window._pendingExaminationData) return;
+  
+  var examinationData = window._pendingExaminationData;
+  var prescriptions = window._pendingPrescriptions || [];
+  var testReferrals = window._pendingTestReferrals || [];
   
   try {
     var response = await fetch(API_BASE + '/doctor/examinations', {
@@ -299,6 +333,8 @@ async function saveExamination() {
     var result = await response.json();
     
     if (result.success) {
+      var examinationId = result.examinationId;
+      
       // Save prescriptions if any
       if (prescriptions && prescriptions.length > 0) {
         for (var i = 0; i < prescriptions.length; i++) {
@@ -307,12 +343,12 @@ async function saveExamination() {
         }
       }
       
-      // Create a medical report entry so patient can see it in their dashboard
+      // Create medical report entry
       var reportData = {
         patient_id: selectedAppointment.patientId,
         report_type: 'medical',
         report_title: 'Examination Report - ' + new Date().toLocaleDateString(),
-        report_description: 'Chief Complaint: ' + (document.getElementById('chiefComplaint').value || 'N/A') + '\nDiagnosis: ' + diagnosis + '\nTreatment Plan: ' + (document.getElementById('treatmentPlan').value || 'N/A'),
+        report_description: 'Chief Complaint: ' + (document.getElementById('chiefComplaint').value || 'N/A') + '\nDiagnosis: ' + examinationData.diagnosis + '\nTreatment Plan: ' + (document.getElementById('treatmentPlan').value || 'N/A'),
         visibility: 'patient',
         status: 'submitted'
       };
@@ -329,10 +365,10 @@ async function saveExamination() {
         console.log('Medical report created for patient');
       }
       
-      // Save multiple test referrals if any were added
+      // Save test referrals
       if (testReferrals && testReferrals.length > 0) {
-        for (var i = 0; i < testReferrals.length; i++) {
-          var ref = testReferrals[i];
+        for (var j = 0; j < testReferrals.length; j++) {
+          var ref = testReferrals[j];
           var referralData = {
             patient_id: selectedAppointment.patientId,
             appointment_id: selectedAppointment.id,
@@ -362,8 +398,13 @@ async function saveExamination() {
       
       alert('Examination saved successfully!');
       closeExaminationModal();
+      closeDispositionModal();
+      window._pendingExaminationData = null;
       if (typeof loadTodayAppointments === 'function') {
         loadTodayAppointments();
+      }
+      if (typeof loadAppointmentsForDate === 'function' && document.getElementById('scheduleDatePicker')?.value) {
+        loadAppointmentsForDate(document.getElementById('scheduleDatePicker').value);
       }
     } else {
       alert('Failed to save examination: ' + result.message);
@@ -371,6 +412,97 @@ async function saveExamination() {
   } catch (error) {
     console.error('Error saving examination:', error);
     alert('Error saving examination. Please try again.');
+  }
+}
+
+// Disposition Modal functions
+function closeDispositionModal() {
+  var modal = document.getElementById('dispositionModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+  window._pendingExaminationData = null;
+  window._pendingPrescriptions = [];
+  window._pendingTestReferrals = [];
+  prescriptions = [];
+  testReferrals = [];
+  renderPrescriptions();
+  renderTestReferrals();
+  currentExamination = null;
+}
+
+function chooseOutpatient() {
+  // Save examination as outpatient (status: completed)
+  if (window._pendingExaminationData) {
+    window._pendingExaminationData.status = 'completed';
+  }
+  submitExamination();
+}
+
+async function chooseAdmitPatient() {
+  closeDispositionModal();
+  
+  // Open admission modal, passing saved examination data
+  window._pendingExaminationData.status = 'completed';
+  
+  var modal = document.getElementById('admissionModal');
+  if (modal) {
+    document.getElementById('admissionPatientName').textContent = selectedAppointment.patientName;
+    document.getElementById('admissionPatientId').value = selectedAppointment.patientId;
+    document.getElementById('admissionAppointmentId').value = selectedAppointment.id;
+    
+    if (window._pendingExaminationData) {
+      document.getElementById('admissionDiagnosis').value = window._pendingExaminationData.diagnosis || '';
+    }
+    
+    document.getElementById('admissionForm').reset();
+    document.getElementById('admissionDate').value = new Date().toISOString().split('T')[0];
+    
+    modal.style.display = 'flex';
+  } else {
+    alert('Admission form not available');
+  }
+}
+
+// Finalize admission and examination
+async function finalizeAdmission() {
+  var admissionData = {
+    patient_id: parseInt(document.getElementById('admissionPatientId').value),
+    appointment_id: parseInt(document.getElementById('admissionAppointmentId').value),
+    room_number: document.getElementById('admissionRoom').value,
+    bed_number: document.getElementById('admissionBed').value,
+    admission_type: document.getElementById('admissionType').value,
+    reason_for_admission: document.getElementById('admissionReason').value,
+    admitting_diagnosis: document.getElementById('admissionDiagnosis').value,
+    notes: document.getElementById('admissionNotes').value
+  };
+  
+  try {
+    var response = await fetch(API_BASE + '/doctor/admissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(admissionData)
+    });
+    
+    var result = await response.json();
+    
+    if (result.success) {
+      alert('Patient admitted successfully!');
+      document.getElementById('admissionModal').style.display = 'none';
+      
+      // Now save the examination too
+      await submitExamination();
+      
+      if (typeof loadTodayAppointments === 'function') {
+        loadTodayAppointments();
+      }
+    } else {
+      alert('Failed to admit patient: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Error admitting patient:', error);
+    alert('Error admitting patient. Please try again.');
   }
 }
 
