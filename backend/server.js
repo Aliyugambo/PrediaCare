@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+const mysql2 = require('mysql2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
@@ -47,17 +48,24 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1);
 }
 
-// Use MySQL-backed session store so sessions survive backend restarts and work across processes
-const sessionStore = new MySQLStore({
-  host: process.env.MYSQL_HOST || '127.0.0.1',
+const sessionPool = mysql2.createPool({
+  host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || '3306'),
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
-  clearExpired: true,
-  checkExpirationInterval: 900000, // 15 minutes
-  expiration: 24 * 60 * 60 * 1000 // 24 hours
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
+
+const sessionStore = new MySQLStore({
+  sessionIdField: 'session_id',
+async: true,
+  expiration: 24 * 60 * 60 * 1000,
+  clearExpired: true,
+  checkExpirationInterval: 900000
+}, sessionPool);
 
 // Determine secure cookie usage in production
   const cookieSecure = process.env.NODE_ENV === 'production' ? true : false;
