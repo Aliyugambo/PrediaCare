@@ -57,11 +57,10 @@ const sessionPool = mysql2.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-});
+}).promise();
 
 const sessionStore = new MySQLStore({
   sessionIdField: 'session_id',
-async: true,
   expiration: 24 * 60 * 60 * 1000,
   clearExpired: true,
   checkExpirationInterval: 900000
