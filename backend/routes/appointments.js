@@ -316,7 +316,15 @@ router.post('/', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), async (req, res)
     const patient = patients[0];
     
     // Send email notification to doctor (async, don't wait)
+    console.log('📧 Doctor notification check:', { 
+      hasDoctorEmail: !!doctor.doctor_email, 
+      doctorEmail: doctor.doctor_email,
+      hasPatient: !!patient,
+      patientName: patient?.patient_name 
+    });
+    
     if (doctor.doctor_email && patient) {
+      console.log('📧 Sending appointment notification to doctor:', doctor.doctor_email);
       sendAppointmentNotificationToDoctor(
         { email: doctor.doctor_email, name: doctor.doctor_name },
         { name: patient.patient_name, email: patient.patient_email },
@@ -324,6 +332,8 @@ router.post('/', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), async (req, res)
         appointment_time,
         reason
       ).catch(err => console.error('Email notification error:', err.message));
+    } else {
+      console.log('⚠️ Skipping email notification - missing doctor email or patient info');
     }
     
     connection.release();

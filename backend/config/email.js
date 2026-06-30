@@ -1,12 +1,12 @@
 /**
  * Email Service Utility
- * Handles sending emails using nodemailer with Gmail SMTP
+ * Handles sending emails using nodemailer with SMTP (Gmail/MailerSend)
  */
 
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Create reusable transporter object using Gmail SMTP
+// Create reusable transporter object using SMTP
 const createTransporter = () => {
   // Check if email configuration exists
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || 
@@ -16,12 +16,16 @@ const createTransporter = () => {
     return null;
   }
 
-  console.log('📧 Email configured:', { host: process.env.EMAIL_HOST, port: process.env.EMAIL_PORT, user: process.env.EMAIL_USER });
+  const port = parseInt(process.env.EMAIL_PORT) || 587;
+  // MailerSend uses secure=true for port 2525/465, STARTTLS for port 587
+  const isSecurePort = port === 2525 || port === 465;
+  
+  console.log('📧 Email configured:', { host: process.env.EMAIL_HOST, port, user: process.env.EMAIL_USER });
 
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false, // true for 465, false for other ports
+    port,
+    secure: isSecurePort,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
@@ -48,17 +52,23 @@ const sendEmail = async (to, subject, html) => {
   }
 
   try {
+    const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+    console.log('📧 Sending email via MailerSend:', { from: fromAddress, to, subject });
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: fromAddress,
       to: to,
       subject: subject,
       html: html
     });
 
     console.log('📧 Email sent successfully:', info.messageId);
+    console.log('📧 MailerSend response:', JSON.stringify(info, null, 2));
     return true;
   } catch (error) {
-    console.error('📧 Error sending email:', error.message);
+    console.error('📧 Error sending email:', error);
+    if (error.response) {
+      console.error('📧 MailerSend error response:', JSON.stringify(error.response, null, 2));
+    }
     return false;
   }
 };
@@ -133,8 +143,8 @@ const sendAppointmentNotificationToDoctor = async (doctor, patient, appointmentD
           <p><strong>Note:</strong> If you need to reschedule or have any concerns, please contact the patient or the clinic administration.</p>
         </div>
         <div class="footer">
-          <p>This is an automated notification from Carenix Clinic Management System.</p>
-          <p>© 2024 Carenix Clinic. All rights reserved.</p>
+          <p>This is an automated notification from PrediaCare Clinic Management System.</p>
+          <p>© 2026 PrediaCare Clinic. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -155,7 +165,7 @@ const sendAppointmentNotificationToDoctor = async (doctor, patient, appointmentD
  * @returns {Promise<boolean>}
  */
 const sendTestResultNotificationToPatient = async (patient, testName, resultData, notes) => {
-  const subject = `🧪 Test Results Available - ${testName} - Carenix Clinic`;
+  const subject = `🧪 Test Results Available - ${testName} - PrediaCare Clinic`;
   
   const html = `
     <!DOCTYPE html>
@@ -224,8 +234,8 @@ const sendTestResultNotificationToPatient = async (patient, testName, resultData
           <p><strong>Important:</strong> Please consult with your doctor to discuss these results. If you have any questions, please don't hesitate to contact us.</p>
         </div>
         <div class="footer">
-          <p>This is an automated notification from Carenix Clinic.</p>
-          <p>© 2024 Carenix Clinic. All rights reserved.</p>
+          <p>This is an automated notification from PrediaCare Clinic.</p>
+          <p>© 2026 PrediaCare Clinic. All rights reserved.</p>
         </div>
       </div>
     </body>

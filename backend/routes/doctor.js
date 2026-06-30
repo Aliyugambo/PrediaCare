@@ -102,6 +102,7 @@ router.get('/appointments/today', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
         a.status,
         a.reason,
         a.notes,
+        a.vitals_data,
         a.created_at,
         u.name as patient_name,
         u.email as patient_email
@@ -119,24 +120,35 @@ router.get('/appointments/today', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
       count: appointments.length,
       // return the date used by the query for debugging / UI
       date: new Date().toISOString().split('T')[0],
-      appointments: appointments.map(apt => ({
-        id: apt.id,
-        patientId: apt.patient_id,
-        patient_id: apt.patient_id,
-        patientName: apt.patient_name,
-        patient_name: apt.patient_name,
-        patientEmail: apt.patient_email,
-        patient_email: apt.patient_email,
-        // alias fields for backward compatibility
-        appointment_date: apt.appointment_date,
-        appointment_time: apt.appointment_time,
-        date: apt.appointment_date,
-        time: apt.appointment_time,
-        status: apt.status,
-        reason: apt.reason,
-        notes: apt.notes,
-        createdAt: apt.created_at
-      }))
+      appointments: appointments.map(apt => {
+        let vitalsData = null;
+        if (apt.vitals_data) {
+          try {
+            vitalsData = typeof apt.vitals_data === 'string' ? JSON.parse(apt.vitals_data) : apt.vitals_data;
+          } catch (e) {
+            vitalsData = null;
+          }
+        }
+        return {
+          id: apt.id,
+          patientId: apt.patient_id,
+          patient_id: apt.patient_id,
+          patientName: apt.patient_name,
+          patient_name: apt.patient_name,
+          patientEmail: apt.patient_email,
+          patient_email: apt.patient_email,
+          appointment_date: apt.appointment_date,
+          appointment_time: apt.appointment_time,
+          date: apt.appointment_date,
+          time: apt.appointment_time,
+          status: apt.status,
+          reason: apt.reason,
+          notes: apt.notes,
+          vitalsData: vitalsData,
+          hasVitals: !!vitalsData,
+          createdAt: apt.created_at
+        };
+      })
     });
   } catch (error) {
     console.error('Error fetching today appointments:', error);
@@ -176,6 +188,7 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOINTMENT
         a.status,
         a.reason,
         a.notes,
+        a.vitals_data,
         a.duration,
         a.created_at,
         u.name as patient_name,
@@ -186,31 +199,43 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOINTMENT
         AND a.appointment_date = ?
       ORDER BY a.appointment_time ASC
     `, [doctorId, date]);
-    
+
     connection.release();
-    
+
     res.json({
       success: true,
       count: appointments.length,
       date: date,
-      appointments: appointments.map(apt => ({
-        id: apt.id,
-        patientId: apt.patient_id,
-        patient_id: apt.patient_id,
-        patientName: apt.patient_name,
-        patient_name: apt.patient_name,
-        patientEmail: apt.patient_email,
-        patient_email: apt.patient_email,
-        appointment_date: apt.appointment_date,
-        appointment_time: apt.appointment_time,
-        date: apt.appointment_date,
-        time: apt.appointment_time,
-        duration: apt.duration || 30,
-        status: apt.status,
-        reason: apt.reason,
-        notes: apt.notes,
-        createdAt: apt.created_at
-      }))
+      appointments: appointments.map(apt => {
+        let vitalsData = null;
+        if (apt.vitals_data) {
+          try {
+            vitalsData = typeof apt.vitals_data === 'string' ? JSON.parse(apt.vitals_data) : apt.vitals_data;
+          } catch (e) {
+            vitalsData = null;
+          }
+        }
+        return {
+          id: apt.id,
+          patientId: apt.patient_id,
+          patient_id: apt.patient_id,
+          patientName: apt.patient_name,
+          patient_name: apt.patient_name,
+          patientEmail: apt.patient_email,
+          patient_email: apt.patient_email,
+          appointment_date: apt.appointment_date,
+          appointment_time: apt.appointment_time,
+          date: apt.appointment_date,
+          time: apt.appointment_time,
+          duration: apt.duration || 30,
+          status: apt.status,
+          reason: apt.reason,
+          notes: apt.notes,
+          vitalsData: vitalsData,
+          hasVitals: !!vitalsData,
+          createdAt: apt.created_at
+        };
+      })
     });
   } catch (error) {
     console.error('Error fetching appointments:', error);
@@ -673,7 +698,92 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
       ORDER BY hs.created_at DESC
       LIMIT 10
     `, [id]);
-    
+
+    const [examinations] = await connection.execute(`
+      SELECT 
+        e.id,
+        e.examination_date,
+        e.vital_signs,
+        e.chief_complaint,
+        e.examination_notes,
+        e.findings,
+        e.diagnosis,
+        e.treatment_plan,
+        e.recommendations,
+        e.next_visit_date,
+        e.follow_up_required,
+        e.prescriptions,
+        e.test_referrals,
+        e.follow_up_notes,
+        e.status,
+        u.name as doctor_name
+      FROM examinations e
+      JOIN doctors d ON e.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE e.patient_id = ?
+      ORDER BY e.examination_date DESC, e.id DESC
+      LIMIT 20
+    `, [id]);
+
+    const [admissions] = await connection.execute(`
+      SELECT 
+        a.id,
+        a.admission_type,
+        a.admission_date,
+        a.room_number,
+        a.bed_number,
+        a.reason_for_admission,
+        a.admitting_diagnosis,
+        a.notes,
+        a.discharge_date,
+        a.discharge_notes,
+        a.status,
+        u.name as doctor_name
+      FROM admissions a
+      JOIN doctors d ON a.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE a.patient_id = ?
+      ORDER BY a.admission_date DESC
+      LIMIT 10
+    `, [id]);
+
+    const [roundChecks] = await connection.execute(`
+      SELECT 
+        rc.id,
+        rc.check_type,
+        rc.status,
+        rc.check_date,
+        rc.vital_signs,
+        rc.fluid_balance,
+        rc.drug_chat,
+        rc.notes,
+        rc.follow_up_notes,
+        rc.next_plan,
+        u.name as checked_by_name
+      FROM round_checks rc
+      JOIN users u ON rc.checked_by = u.id
+      WHERE rc.patient_id = ?
+      ORDER BY rc.check_date DESC
+      LIMIT 10
+    `, [id]);
+
+    const [testReferrals] = await connection.execute(`
+      SELECT 
+        tr.id,
+        tr.test_type,
+        tr.test_name,
+        tr.urgency,
+        tr.status,
+        tr.created_at,
+        u.name as doctor_name
+      FROM test_referrals tr
+      JOIN doctors d ON tr.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE tr.patient_id = ?
+      ORDER BY tr.created_at DESC
+      LIMIT 10
+    `, [id]);
+
     connection.release();
     
     res.json({
@@ -725,6 +835,96 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         nextVisitDate: hs.next_visit_date,
         createdAt: hs.created_at,
         doctorName: hs.doctor_name
+      })),
+      examinations: examinations.map(e => {
+        let vitalSigns = null;
+        if (e.vital_signs) {
+          try {
+            vitalSigns = typeof e.vital_signs === 'string' ? JSON.parse(e.vital_signs) : e.vital_signs;
+          } catch (err) {
+            console.warn('Failed to parse vital_signs for patient profile examination:', e.id);
+          }
+        }
+        let followUpNotes = [];
+        if (e.follow_up_notes) {
+          try {
+            followUpNotes = typeof e.follow_up_notes === 'string' ? JSON.parse(e.follow_up_notes) : e.follow_up_notes;
+          } catch (err) {
+            console.warn('Failed to parse follow_up_notes:', e.id);
+          }
+        }
+        return {
+          id: e.id,
+          examinationDate: e.examination_date,
+          vitalSigns,
+          chiefComplaint: e.chief_complaint,
+          examinationNotes: e.examination_notes,
+          findings: e.findings,
+          diagnosis: e.diagnosis,
+          treatmentPlan: e.treatment_plan,
+          recommendations: e.recommendations,
+          nextVisitDate: e.next_visit_date,
+          followUpRequired: e.follow_up_required,
+          prescriptions: e.prescriptions,
+          testReferrals: e.test_referrals,
+          followUpNotes,
+          status: e.status,
+          doctorName: e.doctor_name
+        };
+      }),
+      admissions: admissions.map(a => ({
+        id: a.id,
+        admissionType: a.admission_type,
+        admissionDate: a.admission_date,
+        roomNumber: a.room_number,
+        bedNumber: a.bed_number,
+        reason: a.reason_for_admission,
+        admittingDiagnosis: a.admitting_diagnosis,
+        notes: a.notes,
+        dischargeDate: a.discharge_date,
+        dischargeNotes: a.discharge_notes,
+        status: a.status,
+        doctorName: a.doctor_name
+      })),
+      roundChecks: roundChecks.map(rc => {
+        let vitalSigns = null;
+        if (rc.vital_signs) {
+          try {
+            vitalSigns = typeof rc.vital_signs === 'string' ? JSON.parse(rc.vital_signs) : rc.vital_signs;
+          } catch (err) {
+            console.warn('Failed to parse round check vital_signs:', rc.id);
+          }
+        }
+        let followUpNotes = [];
+        if (rc.follow_up_notes) {
+          try {
+            followUpNotes = typeof rc.follow_up_notes === 'string' ? JSON.parse(rc.follow_up_notes) : rc.follow_up_notes;
+          } catch (err) {
+            console.warn('Failed to parse round check follow_up_notes:', rc.id);
+          }
+        }
+        return {
+          id: rc.id,
+          checkType: rc.check_type,
+          status: rc.status,
+          checkDate: rc.check_date,
+          vitalSigns,
+          fluidBalance: rc.fluid_balance,
+          drugChat: rc.drug_chat,
+          notes: rc.notes,
+          followUpNotes,
+          nextPlan: rc.next_plan,
+          checkedByName: rc.checked_by_name
+        };
+      }),
+      testReferrals: testReferrals.map(tr => ({
+        id: tr.id,
+        testType: tr.test_type,
+        testName: tr.test_name,
+        urgency: tr.urgency,
+        status: tr.status,
+        createdAt: tr.created_at,
+        doctorName: tr.doctor_name
       }))
     });
   } catch (error) {
@@ -1219,7 +1419,7 @@ router.get('/appointments/:appointmentId/examination', checkPermission(PERMISSIO
     // get appointment details
     const [appointments] = await connection.execute(`
       SELECT a.id, a.patient_id, a.appointment_date, a.appointment_time,
-             u.name as patient_name
+             u.name as patient_name, a.vitals_data
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
       WHERE a.id = ? AND a.doctor_id = ?
@@ -1243,48 +1443,71 @@ router.get('/appointments/:appointmentId/examination', checkPermission(PERMISSIO
 
     connection.release();
 
-    if (exams.length > 0) {
-      const exam = exams[0];
-      // Handle vital_signs which can be a string or object depending on MySQL version
-      let vitalSigns = exam.vital_signs;
-      if (vitalSigns) {
-        try {
-          vitalSigns = typeof vitalSigns === 'string' ? JSON.parse(vitalSigns) : vitalSigns;
-        } catch (e) {
-          vitalSigns = null;
-        }
-      }
-      res.json({
-        success: true,
-        examination: {
-          id: exam.id,
-          patientId: exam.patient_id,
-          appointmentId: exam.appointment_id,
-          examinationDate: exam.examination_date,
-          vitalSigns: vitalSigns,
-          chiefComplaint: exam.chief_complaint,
-          examinationNotes: exam.examination_notes,
-          findings: exam.findings,
-          diagnosis: exam.diagnosis,
-          treatmentPlan: exam.treatment_plan,
-          status: exam.status,
-          createdAt: exam.created_at
-        }
-      });
-    } else {
-      // return appointment info so doctor can create new examination
-      res.json({
-        success: true,
-        examination: null,
-        appointmentInfo: {
-          id: appointmentId,
-          patientId: appointment.patient_id,
-          patientName: appointment.patient_name,
-          appointmentDate: appointment.appointment_date,
-          appointmentTime: appointment.appointment_time
-        }
-      });
-    }
+if (exams.length > 0) {
+       const exam = exams[0];
+       // Handle vital_signs which can be a string or object depending on MySQL version
+       let vitalSigns = exam.vital_signs;
+       if (vitalSigns) {
+         try {
+           vitalSigns = typeof vitalSigns === 'string' ? JSON.parse(vitalSigns) : vitalSigns;
+         } catch (e) {
+           vitalSigns = null;
+         }
+       }
+       
+       // Get staff vitals from appointment if available
+       let staffVitals = null;
+       if (appointments[0].vitals_data) {
+         try {
+           staffVitals = typeof appointments[0].vitals_data === 'string' ? JSON.parse(appointments[0].vitals_data) : appointments[0].vitals_data;
+         } catch (e) {
+           staffVitals = null;
+         }
+       }
+       
+       res.json({
+         success: true,
+         examination: {
+           id: exam.id,
+           patientId: exam.patient_id,
+           appointmentId: exam.appointment_id,
+           examinationDate: exam.examination_date,
+           vitalSigns: vitalSigns,
+           chiefComplaint: exam.chief_complaint,
+           examinationNotes: exam.examination_notes,
+           findings: exam.findings,
+           diagnosis: exam.diagnosis,
+           treatmentPlan: exam.treatment_plan,
+           status: exam.status,
+           createdAt: exam.created_at
+         },
+         staffVitals: staffVitals
+       });
+} else {
+       // return appointment info so doctor can create new examination
+       // Get staff vitals from appointment if available
+       let staffVitals = null;
+       if (appointments[0].vitals_data) {
+         try {
+           staffVitals = typeof appointments[0].vitals_data === 'string' ? JSON.parse(appointments[0].vitals_data) : appointments[0].vitals_data;
+         } catch (e) {
+           staffVitals = null;
+         }
+       }
+       
+       res.json({
+         success: true,
+         examination: null,
+         appointmentInfo: {
+           id: appointmentId,
+           patientId: appointment.patient_id,
+           patientName: appointment.patient_name,
+           appointmentDate: appointment.appointment_date,
+           appointmentTime: appointment.appointment_time
+         },
+         staffVitals: staffVitals
+       });
+     }
   } catch (error) {
     console.error('Error fetching examination:', error);
     res.status(500).json({
@@ -1643,8 +1866,11 @@ router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), as
       FROM round_checks rc
       JOIN users u ON rc.patient_id = u.id
       WHERE rc.checked_by = ?
+         OR rc.admission_id IN (
+           SELECT id FROM admissions WHERE doctor_id = ? AND status = 'admitted'
+         )
     `;
-    const params = [doctorId];
+    const params = [doctorId, doctorId];
 
     if (patient_id) {
       query += ' AND rc.patient_id = ?';
@@ -1672,9 +1898,30 @@ router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), as
           vitalSigns = typeof c.vital_signs === 'string' ? JSON.parse(c.vital_signs) : c.vital_signs;
         } catch (e) {}
       }
+      let fluidBalance = null;
+      if (c.fluid_balance) {
+        try {
+          fluidBalance = typeof c.fluid_balance === 'string' ? JSON.parse(c.fluid_balance) : c.fluid_balance;
+        } catch (e) {}
+      }
+      let drugChat = null;
+      if (c.drug_chat) {
+        try {
+          drugChat = typeof c.drug_chat === 'string' ? JSON.parse(c.drug_chat) : c.drug_chat;
+        } catch (e) {}
+      }
+      let followUpNotes = null;
+      if (c.follow_up_notes) {
+        try {
+          followUpNotes = typeof c.follow_up_notes === 'string' ? JSON.parse(c.follow_up_notes) : c.follow_up_notes;
+        } catch (e) {}
+      }
       return {
         ...c,
-        vital_signs: vitalSigns
+        vital_signs: vitalSigns,
+        fluid_balance: fluidBalance,
+        drug_chat: drugChat,
+        follow_up_notes: followUpNotes
       };
     });
 
@@ -1748,7 +1995,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
   try {
     const { id } = req.params;
     const doctorId = req.session.doctorId;
-    const { status, next_plan, follow_up_note } = req.body;
+    const { status, next_plan, follow_up_note, notes, fluid_chat, drug_chat } = req.body;
 
     const connection = await pool.getConnection();
 
@@ -1824,6 +2071,42 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
   } catch (error) {
     console.error('Error updating round check by doctor:', error);
     res.status(500).json({ success: false, message: 'Failed to update round check' });
+  }
+});
+
+/**
+ * GET /api/doctor/admitted-patients
+ * Get admitted patients for doctor round checks
+ * Permission: MANAGE_ROUND_CHECKS (doctor)
+ */
+router.get('/admitted-patients', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const connection = await pool.getConnection();
+
+    const [patients] = await connection.execute(`
+      SELECT 
+        a.id as admission_id,
+        a.patient_id,
+        a.room_number,
+        a.bed_number,
+        a.admission_date,
+        a.status as admission_status,
+        u.name as patient_name,
+        u.email as patient_email,
+        a.reason_for_admission,
+        a.admitting_diagnosis
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      WHERE a.status = 'admitted'
+      ORDER BY a.admission_date DESC
+    `);
+
+    connection.release();
+    res.json({ success: true, admittedPatients: patients });
+  } catch (error) {
+    console.error('Error fetching admitted patients for doctor:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch admitted patients' });
   }
 });
 

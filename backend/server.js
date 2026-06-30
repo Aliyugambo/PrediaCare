@@ -35,6 +35,7 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Session configuration
+const cookieSecure = process.env.NODE_ENV === 'production';
 const rateLimit = require('express-rate-limit');
 const csurf = require('csurf');
 const helmet = require('helmet');

@@ -488,14 +488,13 @@ router.get('/reports/:id/file', checkPermission(PERMISSIONS.VIEW_REPORTS), async
 router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), async (req, res) => {
   try {
     const staffId = req.session.userId;
-    const { patient_id, admission_id, status = 'ongoing' } = req.query;
+    const { patient_id, admission_id, status = 'ongoing', check_type } = req.query;
 
     let query = `
       SELECT rc.*, u.name as patient_name, u.email as patient_email,
-        d.doctor_name, rc.checked_by as staff_id, su.name as staff_name
+        rc.checked_by as staff_id, su.name as staff_name
       FROM round_checks rc
       JOIN users u ON rc.patient_id = u.id
-      JOIN doctors d ON rc.checked_by = d.id
       JOIN users su ON rc.checked_by = su.id
       WHERE 1=1
     `;
@@ -513,6 +512,10 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
       query += ' AND rc.status = ?';
       params.push(status);
     }
+    if (check_type && check_type !== 'all') {
+      query += ' AND rc.check_type = ?';
+      params.push(check_type);
+    }
 
     query += ' ORDER BY rc.check_date DESC LIMIT 100';
 
@@ -527,6 +530,18 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
           vitalSigns = typeof c.vital_signs === 'string' ? JSON.parse(c.vital_signs) : c.vital_signs;
         } catch (e) {}
       }
+      let fluidBalance = null;
+      if (c.fluid_balance) {
+        try {
+          fluidBalance = typeof c.fluid_balance === 'string' ? JSON.parse(c.fluid_balance) : c.fluid_balance;
+        } catch (e) {}
+      }
+      let drugChat = null;
+      if (c.drug_chat) {
+        try {
+          drugChat = typeof c.drug_chat === 'string' ? JSON.parse(c.drug_chat) : c.drug_chat;
+        } catch (e) {}
+      }
       return {
         id: c.id,
         patientId: c.patient_id,
@@ -534,12 +549,13 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
         patientEmail: c.patient_email,
         admissionId: c.admission_id,
         examinationId: c.examination_id,
-        doctorName: c.doctor_name,
         staffId: c.staff_id,
         staffName: c.staff_name,
         checkType: c.check_type,
         notes: c.notes,
         vitalSigns: vitalSigns,
+        fluidBalance: fluidBalance,
+        drugChat: drugChat,
         nextPlan: c.next_plan,
         status: c.status,
         checkDate: c.check_date,
@@ -560,41 +576,45 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
  * Create a new round-check record (nurse)
  * Permission: MANAGE_ROUND_CHECKS (staff)
  */
-router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
-  try {
-    const staffId = req.session.userId;
-    const {
-      patient_id,
-      admission_id,
-      examination_id,
-      check_type = 'nurse',
-      notes,
-      vital_signs,
-      next_plan,
-      status = 'ongoing'
-    } = req.body;
+  router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+    try {
+      const staffId = req.session.userId;
+      const {
+        patient_id,
+        admission_id,
+        examination_id,
+        check_type = 'nurse',
+        notes,
+        vital_signs,
+        fluid_balance,
+        drug_chat,
+        next_plan,
+        status = 'ongoing'
+      } = req.body;
 
-    if (!patient_id) {
-      return res.status(400).json({ success: false, message: 'Patient ID is required' });
-    }
+      if (!patient_id) {
+        return res.status(400).json({ success: false, message: 'Patient ID is required' });
+      }
 
-    const connection = await pool.getConnection();
+      const connection = await pool.getConnection();
 
-    const [result] = await connection.execute(`
-      INSERT INTO round_checks
-      (patient_id, admission_id, examination_id, checked_by, check_type, notes, vital_signs, next_plan, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      patient_id,
-      admission_id || null,
-      examination_id || null,
-      staffId,
-      check_type,
-      notes || null,
-      vital_signs ? JSON.stringify(vital_signs) : null,
-      next_plan || null,
-      status
-    ]);
+      const [result] = await connection.execute(`
+        INSERT INTO round_checks
+        (patient_id, admission_id, examination_id, checked_by, check_type, notes, vital_signs, fluid_balance, drug_chat, next_plan, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        patient_id,
+        admission_id || null,
+        examination_id || null,
+        staffId,
+        check_type,
+        notes || null,
+        vital_signs ? JSON.stringify(vital_signs) : null,
+        fluid_balance ? JSON.stringify(fluid_balance) : null,
+        drug_chat ? JSON.stringify(drug_chat) : null,
+        next_plan || null,
+        status
+      ]);
 
     connection.release();
 
@@ -618,7 +638,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
   try {
     const { id } = req.params;
     const staffId = req.session.userId;
-    const { status, next_plan, follow_up_note } = req.body;
+    const { status, next_plan, follow_up_note, notes, vital_signs, fluid_balance } = req.body;
 
     const connection = await pool.getConnection();
 
@@ -644,36 +664,23 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
       updates.push('next_plan = ?');
       values.push(next_plan);
     }
+    if (notes !== undefined) {
+      updates.push('notes = ?');
+      values.push(notes || null);
+    }
+    if (vital_signs !== undefined) {
+      updates.push('vital_signs = ?');
+      values.push(vital_signs ? JSON.stringify(vital_signs) : null);
+    }
 
-    // Append follow-up note to JSON array
-    if (follow_up_note !== undefined && follow_up_note.trim() !== '') {
-      let currentNotes = [];
-      try {
-        currentNotes = typeof record.follow_up_notes === 'string' ? JSON.parse(record.follow_up_notes) : (record.follow_up_notes || []);
-      } catch (e) {
-        currentNotes = [];
-      }
-      currentNotes.push({
-        userId: staffId,
-        checkType: 'nurse',
-        text: follow_up_note.trim(),
-        createdAt: new Date().toISOString()
-      });
-      updates.push('follow_up_notes = ?');
-      values.push(JSON.stringify(currentNotes));
+    if (fluid_balance !== undefined) {
+      updates.push('fluid_balance = ?');
+      values.push(JSON.stringify(fluid_balance));
     }
 
     if (updates.length === 0) {
       connection.release();
       return res.status(400).json({ success: false, message: 'No allowed fields to update' });
-    }
-
-    const forbidden = [];
-    if (req.body.notes !== undefined) forbidden.push('notes');
-    if (req.body.vital_signs !== undefined) forbidden.push('vital_signs');
-    if (forbidden.length > 0) {
-      connection.release();
-      return res.status(403).json({ success: false, message: `Forbidden: cannot update ${forbidden.join(', ')} after creation` });
     }
 
     updates.push('updated_at = NOW()');
@@ -685,10 +692,255 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
 
     connection.release();
 
-    res.json({ success: true, message: 'Nurse follow-up note added successfully' });
+    res.json({ success: true, message: 'Nurse round check updated successfully' });
   } catch (error) {
     console.error('Error updating nurse round check:', error);
     res.status(500).json({ success: false, message: 'Failed to update round check' });
+  }
+});
+
+/**
+ * GET /api/staff/appointments
+ * Get appointments for a specific doctor (staff can view doctor schedules)
+ * Permission: VIEW_TEST_REFERRALS (staff)
+ */
+router.get('/appointments', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), async (req, res) => {
+  try {
+    const { doctor_id, date, status = 'all', limit = 50, offset = 0 } = req.query;
+
+    if (!doctor_id) {
+      return res.status(400).json({ success: false, message: 'doctor_id is required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    let query = `
+      SELECT
+        a.id,
+        a.patient_id,
+        a.doctor_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.reason,
+        a.notes,
+        a.vitals_data,
+        a.created_at,
+        u_patient.name as patient_name,
+        u_patient.email as patient_email,
+        u_doctor.name as doctor_name,
+        d.specialization as doctor_specialization
+      FROM appointments a
+      JOIN users u_patient ON a.patient_id = u_patient.id
+      JOIN doctors d ON a.doctor_id = d.id
+      JOIN users u_doctor ON d.user_id = u_doctor.id
+      WHERE a.doctor_id = ?
+    `;
+
+    const params = [parseInt(doctor_id)];
+
+    if (date) {
+      query += ' AND a.appointment_date = ?';
+      params.push(date);
+    }
+
+    if (status !== 'all') {
+      query += ' AND a.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY a.appointment_date DESC, a.appointment_time ASC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+
+    const [appointments] = await connection.query(query, params);
+
+    let countQuery = 'SELECT COUNT(*) as total FROM appointments WHERE doctor_id = ?';
+    const countParams = [parseInt(doctor_id)];
+    if (date) {
+      countQuery += ' AND appointment_date = ?';
+      countParams.push(date);
+    }
+    if (status !== 'all') {
+      countQuery += ' AND status = ?';
+      countParams.push(status);
+    }
+    const [countResult] = await connection.execute(countQuery, countParams);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      count: appointments.length,
+      total: countResult[0].total,
+      appointments: appointments.map(apt => {
+        let vitalsData = null;
+        if (apt.vitals_data) {
+          try {
+            vitalsData = typeof apt.vitals_data === 'string' ? JSON.parse(apt.vitals_data) : apt.vitals_data;
+          } catch (e) {
+            vitalsData = null;
+          }
+        }
+        return {
+          id: apt.id,
+          patientId: apt.patient_id,
+          patientName: apt.patient_name,
+          patientEmail: apt.patient_email,
+          doctorId: apt.doctor_id,
+          doctorName: apt.doctor_name,
+          doctorSpecialization: apt.doctor_specialization,
+          appointmentDate: apt.appointment_date,
+          appointmentTime: apt.appointment_time,
+          status: apt.status,
+          reason: apt.reason,
+          notes: apt.notes,
+          vitalsData: vitalsData,
+          createdAt: apt.created_at
+        };
+      })
+    });
+  } catch (error) {
+    console.error('Error fetching staff appointments:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch appointments' });
+  }
+});
+
+/**
+ * POST /api/staff/appointments/:id/vitals
+ * Staff (nurse) records vitals for a patient before doctor examination
+ * Permission: MANAGE_ROUND_CHECKS (staff)
+ */
+router.post('/appointments/:id/vitals', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
+  try {
+    const staffId = req.session.userId;
+    const { id } = req.params;
+    const {
+      bp_systolic,
+      bp_diastolic,
+      heart_rate,
+      temperature,
+      spo2,
+      respiratory_rate,
+      glucose,
+      weight,
+      height,
+      bmi,
+      notes
+    } = req.body;
+
+    if (!bp_systolic || !bp_diastolic || !heart_rate || !temperature) {
+      return res.status(400).json({ success: false, message: 'BP, heart rate, and temperature are required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [appointments] = await connection.execute(`
+      SELECT a.id, a.patient_id, a.doctor_id, a.appointment_date, a.appointment_time, a.status,
+             u.name as patient_name, d.user_id as doctor_user_id
+      FROM appointments a
+      JOIN users u ON a.patient_id = u.id
+      JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.id = ?
+    `, [id]);
+
+    if (appointments.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    const appointment = appointments[0];
+
+    if (appointment.status === 'completed' || appointment.status === 'cancelled') {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'Cannot record vitals for completed/cancelled appointment' });
+    }
+
+    const vitalsData = {
+      bpSystolic: bp_systolic,
+      bpDiastolic: bp_diastolic,
+      heartRate: heart_rate,
+      temperature: temperature,
+      spo2: spo2 || null,
+      respiratoryRate: respiratory_rate || null,
+      glucose: glucose || null,
+      weight: weight || null,
+      height: height || null,
+      bmi: bmi || null,
+      recordedBy: staffId,
+      recordedAt: new Date().toISOString(),
+      notes: notes || null
+    };
+
+    const vitalsJson = JSON.stringify(vitalsData);
+
+    await connection.execute(`
+      UPDATE appointments
+      SET vitals_data = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [vitalsJson, id]);
+
+    await connection.execute(`
+      INSERT INTO examinations
+      (patient_id, doctor_id, appointment_id, examination_date, vital_signs, examination_notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, 'reviewed')
+    `, [
+      appointment.patient_id,
+      appointment.doctor_id,
+      id,
+      appointment.appointment_date,
+      vitalsJson,
+      `Pre-examination vitals recorded by nurse/staff. ${notes ? 'Notes: ' + notes : ''}`
+    ]);
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Vitals recorded successfully',
+      appointmentId: parseInt(id),
+      patientName: appointment.patient_name
+    });
+  } catch (error) {
+    console.error('Error recording vitals:', error);
+    res.status(500).json({ success: false, message: 'Failed to record vitals' });
+  }
+});
+
+/**
+ * GET /api/staff/admitted-patients
+ * Get admitted patients for nurse round checks
+ * Permission: VIEW_ADMISSIONS (staff)
+ */
+router.get('/admitted-patients', checkPermission(PERMISSIONS.VIEW_ADMISSIONS), async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    
+    const [patients] = await connection.execute(`
+      SELECT 
+        a.id as admission_id,
+        a.patient_id,
+        a.room_number,
+        a.bed_number,
+        a.admission_date,
+        a.status as admission_status,
+        u.name as patient_name,
+        u.email as patient_email,
+        du.name as doctor_name,
+        a.reason_for_admission,
+        a.admitting_diagnosis
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN users du ON d.user_id = du.id
+      WHERE a.status = 'admitted'
+      ORDER BY a.admission_date DESC
+    `);
+    
+    connection.release();
+    res.json({ success: true, admittedPatients: patients });
+  } catch (error) {
+    console.error('Error fetching admitted patients:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch admitted patients' });
   }
 });
 

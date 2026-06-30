@@ -176,60 +176,133 @@ function calculateBMI() {
 }
 
 // Open examination modal
-async function openExamination(appointmentId, patientName, patientId) {
-  selectedAppointment = { id: appointmentId, patientName: patientName, patientId: patientId };
-  
+async function openExamination(appointmentId, patientName, patientId, hasVitals) {
+  selectedAppointment = { id: appointmentId, patientName: patientName, patientId: patientId, hasPreRecordedVitals: hasVitals };
+
   document.getElementById('examPatientId').value = patientId;
   document.getElementById('examAppointmentId').value = appointmentId;
   document.getElementById('examPatientName').textContent = patientName;
   document.getElementById('examPatientAvatar').textContent = getInitials(patientName);
   document.getElementById('examPatientDetails').textContent = 'Loading patient details...';
-  
+
   resetExaminationForm();
-  await loadExaminationData(appointmentId);
-  
+  await loadExaminationData(appointmentId, hasVitals);
+
   var modal = document.getElementById('examinationModal');
   modal.classList.add('active');
-}
+ }
 
 // Load existing examination data
-async function loadExaminationData(appointmentId) {
-  try {
-    var response = await fetch(API_BASE + '/doctor/appointments/' + appointmentId + '/examination', {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-    if (response.ok) {
-      var data = await response.json();
-      if (data.success && data.examination) {
-        populateExaminationForm(data.examination);
-      } else if (data.appointmentInfo) {
-        var age = data.appointmentInfo.age || '--';
-        var bloodType = data.appointmentInfo.blood_type || '--';
-        document.getElementById('examPatientDetails').textContent = 'Age: ' + age + ' - Blood Type: ' + bloodType;
-      }
-    }
-  } catch (error) {
-    console.error('Error loading examination data:', error);
-  }
-}
+ async function loadExaminationData(appointmentId, hasVitals) {
+   try {
+     var url = API_BASE + '/doctor/appointments/' + appointmentId + '/examination';
+     var response = await fetch(url, {
+       credentials: 'include',
+       headers: { 'Content-Type': 'application/json' }
+     });
 
-// Populate examination form with existing data
+     if (response.ok) {
+       var data = await response.json();
+       if (data.success && data.examination) {
+         populateExaminationForm(data.examination);
+       } else if (data.appointmentInfo) {
+         var age = data.appointmentInfo.age || '--';
+         var bloodType = data.appointmentInfo.blood_type || '--';
+         document.getElementById('examPatientDetails').textContent = 'Age: ' + age + ' - Blood Type: ' + bloodType;
+       }
+
+       // Show staff vitals banner if available
+       if (hasVitals && data.staffVitals) {
+         showStaffVitalsBanner(data.staffVitals);
+         populateStaffVitalsInForm(data.staffVitals);
+       }
+     }
+   } catch (error) {
+     console.error('Error loading examination data:', error);
+   }
+  }
+
+// Show staff-recorded vitals banner above the examination form
+ function showStaffVitalsBanner(vitals) {
+   var banner = document.getElementById('staffVitalsBanner');
+   if (!banner) return;
+
+   var bp = (vitals.bpSystolic || '--') + '/' + (vitals.bpDiastolic || '--');
+   var hr = vitals.heartRate || '--';
+   var temp = vitals.temperature || '--';
+   var spo2 = vitals.spo2 || '--';
+   var rr = vitals.respiratoryRate || vitals.respiratory || '--';
+   var glucose = vitals.glucose || '--';
+   var weight = vitals.weight || '--';
+   var bmi = vitals.bmi || '--';
+   var recordedAt = vitals.recordedAt ? new Date(vitals.recordedAt).toLocaleString('en-GB') : '';
+
+   banner.innerHTML = `
+     <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; margin-bottom: 16px;">
+       <div style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+         <i class="fas fa-heartbeat"></i>
+       </div>
+       <div style="flex: 1;">
+         <div style="font-weight: 600; color: #1e40af; font-size: 14px; margin-bottom: 4px;">Pre-Examination Vitals (Recorded by Staff)</div>
+         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px; color: #1e3a8a;">
+           <div><strong>BP:</strong> ${bp} mmHg</div>
+           <div><strong>HR:</strong> ${hr} bpm</div>
+           <div><strong>Temp:</strong> ${temp}°C</div>
+           <div><strong>SpO2:</strong> ${spo2}%</div>
+           <div><strong>RR:</strong> ${rr}/min</div>
+           <div><strong>Glucose:</strong> ${glucose} mg/dL</div>
+           <div><strong>Weight:</strong> ${weight} kg</div>
+           <div><strong>BMI:</strong> ${bmi}</div>
+           ${recordedAt ? '<div><strong>At:</strong> ' + recordedAt + '</div>' : ''}
+         </div>
+         ${vitals.notes ? '<div style="margin-top: 6px; font-size: 12px; color: #1e3a8a;"><strong>Notes:</strong> ' + vitals.notes + '</div>' : ''}
+       </div>
+       <button type="button" onclick="document.getElementById('staffVitalsBanner').style.display='none'" style="background: none; border: none; color: #2563eb; cursor: pointer; font-size: 18px; padding: 4px 8px;">✕</button>
+     </div>
+ `;
+   banner.style.display = 'block';
+ }
+
+ // Populate staff vitals in the examination form (read-only)
+ function populateStaffVitalsInForm(vitals) {
+   var vitalInputs = ['vitalBpSystolic', 'vitalBpDiastolic', 'vitalHeartRate', 'vitalTemperature', 'vitalRespiratory', 'vitalSpo2', 'vitalGlucose', 'vitalWeight', 'vitalHeight', 'vitalBmi'];
+   
+   vitalInputs.forEach(function(id) {
+     var el = document.getElementById(id);
+     if (el) {
+       el.readOnly = true;
+       el.style.backgroundColor = '#f1f5f9';
+     }
+   });
+   
+   document.getElementById('vitalBpSystolic').value = vitals.bpSystolic || '';
+   document.getElementById('vitalBpDiastolic').value = vitals.bpDiastolic || '';
+   document.getElementById('vitalHeartRate').value = vitals.heartRate || '';
+   document.getElementById('vitalTemperature').value = vitals.temperature || '';
+   document.getElementById('vitalRespiratory').value = vitals.respiratoryRate || vitals.respiratory || '';
+   document.getElementById('vitalSpo2').value = vitals.spo2 || '';
+   document.getElementById('vitalGlucose').value = vitals.glucose || '';
+   document.getElementById('vitalWeight').value = vitals.weight || '';
+   document.getElementById('vitalHeight').value = vitals.height || '';
+   document.getElementById('vitalBmi').value = vitals.bmi || '';
+ }
+
+ // Populate examination form with existing data
 function populateExaminationForm(exam) {
   currentExamination = exam;
   
-  if (exam.vitalSigns) {
-    document.getElementById('vitalBpSystolic').value = exam.vitalSigns.bpSystolic || '';
-    document.getElementById('vitalBpDiastolic').value = exam.vitalSigns.bpDiastolic || '';
-    document.getElementById('vitalHeartRate').value = exam.vitalSigns.heartRate || '';
-    document.getElementById('vitalTemperature').value = exam.vitalSigns.temperature || '';
-    document.getElementById('vitalRespiratory').value = exam.vitalSigns.respiratory || '';
-    document.getElementById('vitalSpo2').value = exam.vitalSigns.spo2 || '';
-    document.getElementById('vitalWeight').value = exam.vitalSigns.weight || '';
-    document.getElementById('vitalHeight').value = exam.vitalSigns.height || '';
-    document.getElementById('vitalBmi').value = exam.vitalSigns.bmi || '';
-  }
+if (exam.vitalSigns) {
+     document.getElementById('vitalBpSystolic').value = exam.vitalSigns.bpSystolic || '';
+     document.getElementById('vitalBpDiastolic').value = exam.vitalSigns.bpDiastolic || '';
+     document.getElementById('vitalHeartRate').value = exam.vitalSigns.heartRate || '';
+     document.getElementById('vitalTemperature').value = exam.vitalSigns.temperature || '';
+     document.getElementById('vitalRespiratory').value = exam.vitalSigns.respiratory || '';
+     document.getElementById('vitalSpo2').value = exam.vitalSigns.spo2 || '';
+     document.getElementById('vitalGlucose').value = exam.vitalSigns.glucose || '';
+     document.getElementById('vitalWeight').value = exam.vitalSigns.weight || '';
+     document.getElementById('vitalHeight').value = exam.vitalSigns.height || '';
+     document.getElementById('vitalBmi').value = exam.vitalSigns.bmi || '';
+   }
   
   document.getElementById('chiefComplaint').value = exam.chiefComplaint || '';
   document.getElementById('examinationNotes').value = exam.examinationNotes || '';
@@ -276,18 +349,19 @@ async function saveExamination() {
     return;
   }
   
-  var vitalSigns = {
+var vitalSigns = {
     bpSystolic: document.getElementById('vitalBpSystolic').value,
     bpDiastolic: document.getElementById('vitalBpDiastolic').value,
     heartRate: document.getElementById('vitalHeartRate').value,
     temperature: document.getElementById('vitalTemperature').value,
     respiratory: document.getElementById('vitalRespiratory').value,
     spo2: document.getElementById('vitalSpo2').value,
+    glucose: document.getElementById('vitalGlucose').value,
     weight: document.getElementById('vitalWeight').value,
     height: document.getElementById('vitalHeight').value,
     bmi: document.getElementById('vitalBmi').value
   };
-  
+
   var examinationData = {
     appointment_id: selectedAppointment.id,
     patient_id: selectedAppointment.patientId,
@@ -303,10 +377,13 @@ async function saveExamination() {
 
   // Store examination data for later submission
   window._pendingExaminationData = examinationData;
-  
+  window._pendingPrescriptions = prescriptions;
+  window._pendingTestReferrals = testReferrals;
+
   // Show disposition modal
   var modal = document.getElementById('dispositionModal');
   if (modal) {
+    modal.style.display = 'flex';
     modal.classList.add('active');
   } else {
     // Fallback if modal not yet added - save directly
@@ -419,6 +496,7 @@ async function submitExamination() {
 function closeDispositionModal() {
   var modal = document.getElementById('dispositionModal');
   if (modal) {
+    modal.style.display = 'none';
     modal.classList.remove('active');
   }
   window._pendingExaminationData = null;
@@ -440,24 +518,30 @@ function chooseOutpatient() {
 }
 
 async function chooseAdmitPatient() {
-  closeDispositionModal();
-  
   // Open admission modal, passing saved examination data
-  window._pendingExaminationData.status = 'completed';
-  
+  if (window._pendingExaminationData) {
+    window._pendingExaminationData.status = 'completed';
+  }
+
   var modal = document.getElementById('admissionModal');
+  var dispositionModal = document.getElementById('dispositionModal');
+  if (dispositionModal) {
+    dispositionModal.style.display = 'none';
+    dispositionModal.classList.remove('active');
+  }
+
   if (modal) {
     document.getElementById('admissionPatientName').textContent = selectedAppointment.patientName;
     document.getElementById('admissionPatientId').value = selectedAppointment.patientId;
     document.getElementById('admissionAppointmentId').value = selectedAppointment.id;
-    
+
     if (window._pendingExaminationData) {
       document.getElementById('admissionDiagnosis').value = window._pendingExaminationData.diagnosis || '';
     }
-    
+
     document.getElementById('admissionForm').reset();
     document.getElementById('admissionDate').value = new Date().toISOString().split('T')[0];
-    
+
     modal.style.display = 'flex';
   } else {
     alert('Admission form not available');
@@ -476,7 +560,7 @@ async function finalizeAdmission() {
     admitting_diagnosis: document.getElementById('admissionDiagnosis').value,
     notes: document.getElementById('admissionNotes').value
   };
-  
+
   try {
     var response = await fetch(API_BASE + '/doctor/admissions', {
       method: 'POST',
@@ -484,16 +568,17 @@ async function finalizeAdmission() {
       credentials: 'include',
       body: JSON.stringify(admissionData)
     });
-    
+
     var result = await response.json();
-    
+
     if (result.success) {
       alert('Patient admitted successfully!');
       document.getElementById('admissionModal').style.display = 'none';
-      
+
       // Now save the examination too
       await submitExamination();
-      
+      closeDispositionModal();
+
       if (typeof loadTodayAppointments === 'function') {
         loadTodayAppointments();
       }
@@ -1020,16 +1105,18 @@ function showExaminationModal(exam) {
       <p style="font-size: 13px; color: #64748b;">${formatDate(exam.examination_date)}</p>
     </div>
     
-    <div style="padding: 16px; background: #f8fafc; border-radius: 10px; margin-bottom: 16px;">
-      <h5 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Vital Signs</h5>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px;">
-        <p><strong>BP:</strong> ${vitalSigns.bpSystolic || '--'}/${vitalSigns.bpDiastolic || '--'} mmHg</p>
-        <p><strong>HR:</strong> ${vitalSigns.heartRate || '--'} bpm</p>
-        <p><strong>Temp:</strong> ${vitalSigns.temperature || '--'} °F</p>
-        <p><strong>SpO2:</strong> ${vitalSigns.spo2 || '--'}%</p>
-        <p><strong>Weight:</strong> ${vitalSigns.weight || '--'} kg</p>
-        <p><strong>BMI:</strong> ${vitalSigns.bmi || '--'}</p>
-      </div>
+<div style="padding: 16px; background: #f8fafc; border-radius: 10px; margin-bottom: 16px;">
+       <h5 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Vital Signs</h5>
+       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px;">
+         <p><strong>BP:</strong> ${vitalSigns.bpSystolic || '--'}/${vitalSigns.bpDiastolic || '--'} mmHg</p>
+         <p><strong>HR:</strong> ${vitalSigns.heartRate || '--'} bpm</p>
+         <p><strong>Temp:</strong> ${vitalSigns.temperature || '--'} °C</p>
+         <p><strong>SpO2:</strong> ${vitalSigns.spo2 || '--'}%</p>
+         <p><strong>RR:</strong> ${vitalSigns.respiratory || '--'} /min</p>
+         <p><strong>Glucose:</strong> ${vitalSigns.glucose || '--'} mg/dL</p>
+         <p><strong>Weight:</strong> ${vitalSigns.weight || '--'} kg</p>
+         <p><strong>BMI:</strong> ${vitalSigns.bmi || '--'}</p>
+       </div>
     </div>
     
     <div style="padding: 16px; background: #f8fafc; border-radius: 10px; margin-bottom: 16px;">

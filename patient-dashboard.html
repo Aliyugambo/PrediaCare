@@ -2756,7 +2756,7 @@
           }
           
           // Glucose
-          const glucose = latestVitals.glucoseLevel || '--';
+          const glucose = latestVitals.glucose || latestVitals.glucoseLevel || '--';
           document.getElementById('glucoseLevel').textContent = glucose;
           const glucoseStatus = document.getElementById('glucoseStatus');
           const glucoseNum = parseInt(glucose);
@@ -3111,10 +3111,10 @@
         // Get the correct date field
         const recordDate = vital.examinationDate || vital.createdAt || vital.recordedAt;
         
-        const hr = vitalData?.heartRate || '--';
-        const bpSystolic = vitalData?.bpSystolic || '--';
-        const bpDiastolic = vitalData?.bpDiastolic || '--';
-        const glucose = vitalData?.glucoseLevel || '--';
+const hr = vitalData?.heartRate || '--';
+         const bpSystolic = vitalData?.bpSystolic || '--';
+         const bpDiastolic = vitalData?.bpDiastolic || '--';
+         const glucose = vitalData?.glucose || vitalData?.glucoseLevel || '--';
         
         return `
           <div class="metric-item">
@@ -3565,12 +3565,12 @@
           const specialization = exam.doctor?.specialization || '';
           
           // Format vital signs
-          const hr = vitalData?.heartRate || '--';
-          const bp = vitalData?.bpSystolic && vitalData?.bpDiastolic ? 
-            `${vitalData.bpSystolic}/${vitalData.bpDiastolic}` : '--';
-          const temp = vitalData?.temperature || '--';
-          const weight = vitalData?.weight || '--';
-          const glucose = vitalData?.glucoseLevel || '--';
+const hr = vitalData?.heartRate || '--';
+           const bp = vitalData?.bpSystolic && vitalData?.bpDiastolic ? 
+             `${vitalData.bpSystolic}/${vitalData.bpDiastolic}` : '--';
+           const temp = vitalData?.temperature || '--';
+           const weight = vitalData?.weight || '--';
+           const glucose = vitalData?.glucose || vitalData?.glucoseLevel || '--';
           
           // Parse diagnosis
           let diagnosis = exam.diagnosis;
@@ -3597,7 +3597,7 @@
               <div style="padding: 20px;">
                 <div style="margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #10b981;">
                   <h4 style="margin: 0 0 12px; color: #0f172a; font-size: 14px; font-weight: 600;">Vital Signs: 
-                    <span style="font-weight: 400; font-size: 13px;">HR ${hr} bpm | BP ${bp} mmHg | Temp ${temp}°F | Glucose ${glucose} mg/dL | Weight ${weight} kg</span>
+                    <span style="font-weight: 400; font-size: 13px;">HR ${hr} bpm | BP ${bp} mmHg | Temp ${temp}°C | Glucose ${glucose} mg/dL | Weight ${weight} kg</span>
                   </h4>
                 </div>
                 

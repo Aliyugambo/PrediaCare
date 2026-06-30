@@ -618,6 +618,312 @@
     .action-btn.secondary { background: #f1f5f9; color: #0f172a; }
     .action-btn.secondary:hover { background: #e2e8f0; }
     
+    .ml-auto { margin-left: auto; }
+    
+    /* Round Check Modal */
+    .rc-modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .rc-modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .rc-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f1f5f9;
+      cursor: pointer;
+      font-size: 16px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .rc-close-btn:hover {
+      background: #e2e8f0;
+    }
+    
+    .rc-patient-banner {
+      padding: 16px;
+      background: #eff6ff;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .rc-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .rc-patient-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .rc-patient-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 4px 0;
+    }
+    
+    .rc-patient-info p {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    .rc-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0;
+      flex-wrap: wrap;
+    }
+    
+    .rc-tab-btn {
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .rc-tab-btn:hover {
+      color: #0f172a;
+      background: #f8fafc;
+    }
+    
+    .rc-tab-btn.active {
+      color: #0284c7;
+      border-bottom-color: #0284c7;
+    }
+    
+    .rc-tab-panel {
+      display: none;
+    }
+    
+    .rc-tab-panel.active {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .rc-section {
+      margin-bottom: 20px;
+    }
+    
+    .rc-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .rc-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .rc-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    .rc-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .rc-field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    .rc-input {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .rc-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+    
+    .rc-input::placeholder {
+      color: #94a3b8;
+    }
+    
+    .rc-readonly {
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      color: #475569;
+      min-height: 40px;
+      box-sizing: border-box;
+    }
+    
+    .rc-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .rc-btn-primary {
+      background: #0284c7;
+      color: white;
+    }
+    
+    .rc-btn-primary:hover {
+      background: #0369a1;
+    }
+    
+    .rc-btn-secondary {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    
+    .rc-btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    
+    .rc-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 16px 0;
+    }
+    
+    /* Round Check Cards */
+    .round-check-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    .round-check-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border-color: #0284c7;
+    }
+    .rc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .rc-patient {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 14px;
+    }
+    .rc-time {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .rc-type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .rc-type-doctor { background: #f5f3ff; color: #7c3aed; }
+    .rc-type-nurse { background: #eff6ff; color: #0284c7; }
+    .rc-type-consultant { background: #fef3c7; color: #d97706; }
+    .rc-vitals-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .rc-status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .rc-ongoing { background: #dcfce7; color: #059669; }
+    .rc-resolved { background: #f1f5f9; color: #475569; }
+    .rc-escalated { background: #fee2e2; color: #dc2626; }
+    
+    /* View Buttons */
+    .view-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background: #0284c7;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .view-btn:hover { background: #0369a1; }
+    .view-btn.light {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .view-btn.light:hover { background: #e2e8f0; }
+    
     /* Staff Table */
     .search-bar {
       display: flex;
@@ -655,6 +961,22 @@
       background: white;
       cursor: pointer;
       color: #6b7280;
+    }
+    
+    .form-select {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      color: #0f172a;
+      cursor: pointer;
+    }
+    
+    .form-select:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
     }
 
     .filter-btn:hover {
@@ -1066,6 +1388,7 @@
             <button class="tab-btn" data-tab="attendance">Attendance</button>
             <button class="tab-btn" data-tab="test-referrals">Test Referrals</button>
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
+            <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
           </div>
           
           <div class="tab-content">
@@ -1266,6 +1589,108 @@
             </div>
             </div>
 
+            <!-- Appointment Vitals Tab -->
+            <div class="tab-pane" id="appointment-vitals">
+              <div class="content-grid">
+                <div class="content-card" style="grid-column: span 2;">
+                  <div class="content-card-header">
+                    <h3>Appointment Vitals</h3>
+                    <p>Record vitals for patients with scheduled appointments</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                      <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Select Doctor</label>
+                        <select id="vitalsDoctorSelect" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                          <option value="">Loading doctors...</option>
+                        </select>
+                      </div>
+                      <div class="form-group" style="flex: 1; min-width: 160px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Date</label>
+                        <input type="date" id="vitalsDatePicker" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                      </div>
+                      <button onclick="loadAppointmentsForVitals()" style="padding: 10px 20px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; white-space: nowrap;"><i class="fas fa-search"></i> Load Appointments</button>
+                    </div>
+                    <div id="appointmentsForVitalsList">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vitals Recording Modal -->
+            <div id="vitalsModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
+              <div style="background:white;border-radius:12px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                  <h3 id="vitalsModalTitle" style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Record Vitals</h3>
+                  <button onclick="closeVitalsModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
+                </div>
+                <form id="vitalsForm">
+                  <input type="hidden" id="vitalsAppointmentId" value="" />
+                  <input type="hidden" id="vitalsPatientId" value="" />
+                  <input type="hidden" id="vitalsPatientName" value="" />
+                  <div style="padding: 12px 16px; background: #eff6ff; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+                    <div id="vitalsPatientAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: #0284c7; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">--</div>
+                    <div style="flex: 1;">
+                      <h4 id="vitalsPatientNameDisplay" style="margin: 0; font-size: 14px; font-weight: 600; color: #0f172a;">Patient</h4>
+                      <p style="font-size: 12px; color: #64748b; margin: 2px 0 0;" id="vitalsApptInfo"></p>
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">BP Systolic *</label>
+                      <input type="number" id="vitalsBpSystolic" placeholder="120" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">BP Diastolic *</label>
+                      <input type="number" id="vitalsBpDiastolic" placeholder="80" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Heart Rate *</label>
+                      <input type="number" id="vitalsHeartRate" placeholder="72" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Temperature *</label>
+                      <input type="number" step="0.1" id="vitalsTemperature" placeholder="37.0" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">SpO2 (%)</label>
+                      <input type="number" id="vitalsSpo2" placeholder="98" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+                    <div class="form-group">
+                      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Resp. Rate (/min)</label>
+                      <input type="number" id="vitalsRespiratory" placeholder="16" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+<div class="form-group">
+                       <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Glucose (mg/dL)</label>
+                       <input type="number" id="vitalsGlucose" placeholder="100" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                     </div>
+                     <div class="form-group">
+                       <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Weight (kg)</label>
+                       <input type="number" step="0.1" id="vitalsWeight" placeholder="70" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                     </div>
+                     <div class="form-group">
+                       <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Height (cm)</label>
+                       <input type="number" step="0.1" id="vitalsHeight" placeholder="170" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                     </div>
+                     <div class="form-group">
+                       <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">BMI</label>
+                       <input type="number" step="0.1" id="vitalsBmi" placeholder="24.2" readonly style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #f8fafc;" />
+                     </div>
+                   </div>
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Notes (optional)</label>
+                    <textarea id="vitalsNotes" rows="2" placeholder="Any additional notes" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                  </div>
+                  <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+                    <button type="button" onclick="closeVitalsModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer;">Cancel</button>
+                    <button type="submit" style="padding: 10px 20px; border-radius: 8px; border: none; background: #0284c7; color: white; cursor: pointer; font-weight: 500;"><i class="fas fa-save"></i> Save Vitals</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
             <!-- Round Checks Tab (Nurse View) -->
             <div class="tab-pane" id="round-checks">
               <div class="content-grid">
@@ -1275,21 +1700,21 @@
                     <p>View admitted patients, record vitals and nursing notes during each round</p>
                   </div>
                   <div class="content-card-body">
-                    <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-                      <select id="nrcStatusFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                      <select id="nrcStatusFilter" class="form-select">
                         <option value="all">All Status</option>
                         <option value="ongoing">Ongoing</option>
                         <option value="resolved">Resolved</option>
                         <option value="escalated">Escalated</option>
                       </select>
-                      <select id="nrcTypeFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                      <select id="nrcTypeFilter" class="form-select">
                         <option value="all">All Types</option>
                         <option value="nurse">Nurse</option>
                         <option value="doctor">Doctor</option>
                         <option value="consultant">Consultant</option>
                       </select>
-                      <button onclick="loadNurseRoundChecks()" style="padding: 10px 20px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;"><i class="fas fa-sync"></i> Refresh</button>
-                      <button class="action-btn" style="padding: 10px 16px; margin-left: auto;" onclick="openNewNurseRoundCheck()"><i class="fas fa-plus"></i> New Nurse Round</button>
+                      <button class="action-btn secondary" onclick="loadNurseRoundChecks()"><i class="fas fa-sync"></i> Refresh</button>
+                      <button class="action-btn ml-auto" onclick="openNewNurseRoundCheck()"><i class="fas fa-plus"></i> New Nurse Round</button>
                     </div>
                     <div id="nurseRoundChecksGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
                       <div class="loading"><div class="spinner"></div></div>
@@ -1306,66 +1731,115 @@
 
   <!-- Nurse Round Check Modal -->
   <div id="nurseRoundCheckModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
-    <div style="background:white;border-radius:12px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 style="font-size:18px;font-weight:600;color:#0f172a;margin:0;">Nurse Round-Check</h3>
-        <button onclick="closeNurseRoundCheckModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
+    <div style="background:white;border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
+      <div class="rc-modal-header">
+        <h3>Nurse Round-Check</h3>
+        <button class="rc-close-btn" onclick="closeNurseRoundCheckModal()">✕</button>
       </div>
-      <form id="nurseRoundCheckForm">
-        <input type="hidden" id="nrcId" value="">
-        <input type="hidden" id="nrcPatientId" value="">
-        <input type="hidden" id="nrcAdmissionId" value="">
-        <input type="hidden" id="nrcExaminationId" value="">
+      
+      <div class="rc-modal-body" style="padding: 0 20px 20px 20px; overflow-y: auto; flex: 1;">
+        <form id="nurseRoundCheckForm">
+          <input type="hidden" id="nrcId" value="">
+          <input type="hidden" id="nrcPatientId" value="">
+          <input type="hidden" id="nrcAdmissionId" value="">
+          <input type="hidden" id="nrcExaminationId" value="">
 
-        <div style="padding: 12px 16px; background: #eff6ff; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-          <div id="nrcPatientAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: #0284c7; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">--</div>
-          <div style="flex: 1;">
-            <h4 id="nrcPatientName" style="font-size: 14px; font-weight: 600; color: #0f172a; margin: 0;">Patient</h4>
-            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0;">Bed: <span id="nrcBedInfo">--</span> &bull; <span id="nrcTime"></span></p>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-          <button type="button" class="nrc-tab-btn active" onclick="switchNrcTab('vitals')"><i class="fas fa-heartbeat"></i> Vitals</button>
-          <button type="button" class="nrc-tab-btn" onclick="switchNrcTab('chat')"><i class="fas fa-comments"></i> Read Chat</button>
-          <button type="button" class="nrc-tab-btn" onclick="switchNrcTab('note')"><i class="fas fa-sticky-note"></i> Write Note</button>
-        </div>
-
-        <div id="nrcTabVitals" class="nrc-tab-content">
-          <div class="form-row single">
-            <div class="form-group">
-              <label>Doctor's Vitals (Reference)</label>
-              <div id="nrcRefVitals" style="padding: 10px; background: #f8fafc; border-radius: 6px; font-size: 13px; color: #64748b; border: 1px solid #e2e8f0;">No prior record</div>
+          <div class="rc-patient-banner">
+            <div id="nrcPatientAvatar" class="rc-avatar">--</div>
+            <div class="rc-patient-info">
+              <h4 id="nrcPatientName">Patient</h4>
+              <p>Bed: <span id="nrcBedInfo">--</span> &bull; <span id="nrcTime"></span></p>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title"><i class="fas fa-edit"></i> Nurse Vitals Update</div>
-            <div class="vital-signs-grid">
-              <div class="vital-sign-item"><label>BP Sys</label><input type="number" id="nrcBpSystolic" placeholder="120"><span class="unit">mmHg</span></div>
-              <div class="vital-sign-item"><label>BP Dia</label><input type="number" id="nrcBpDiastolic" placeholder="80"><span class="unit">mmHg</span></div>
-              <div class="vital-sign-item"><label>HR</label><input type="number" id="nrcHeartRate" placeholder="72"><span class="unit">bpm</span></div>
-              <div class="vital-sign-item"><label>Temp</label><input type="number" step="0.1" id="nrcTemperature" placeholder="98.6"><span class="unit">°F</span></div>
-              <div class="vital-sign-item"><label>SpO2</label><input type="number" id="nrcSpo2" placeholder="98"><span class="unit">%</span></div>
-              <div class="vital-sign-item"><label>RR</label><input type="number" id="nrcRespiratory" placeholder="16"><span class="unit">/min</span></div>
+
+          <div class="rc-field">
+            <label>Select Admitted Patient</label>
+            <select id="nrcPatientSelect" onchange="onNrcPatientSelectChange()" class="rc-input">
+              <option value="">-- Choose an admitted patient --</option>
+            </select>
+          </div>
+
+          <div class="rc-tabs">
+            <button type="button" class="rc-tab-btn active" onclick="switchNrcTab('vitals')"><i class="fas fa-heartbeat"></i> Vitals</button>
+            <button type="button" class="rc-tab-btn" onclick="switchNrcTab('fluid')"><i class="fas fa-tint"></i> Fluid Balance</button>
+            <button type="button" class="rc-tab-btn" onclick="switchNrcTab('drug')"><i class="fas fa-pills"></i> Drug Chat</button>
+            <button type="button" class="rc-tab-btn" onclick="switchNrcTab('note')"><i class="fas fa-sticky-note"></i> Note</button>
+            <button type="button" class="rc-tab-btn" onclick="switchNrcTab('doctorNotes')"><i class="fas fa-user-md"></i> Doctor Notes</button>
+          </div>
+
+          <div id="nrcTabVitals" class="rc-tab-panel active">
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-eye"></i> Doctor's Vitals (Reference)</div>
+              <div id="nrcRefVitals" class="rc-readonly">No prior record</div>
+            </div>
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-edit"></i> Nurse Vitals Update</div>
+              <div class="rc-grid-3">
+                <div class="rc-field"><label>BP Sys</label><input type="number" id="nrcBpSystolic" class="rc-input" placeholder="120"><span style="font-size:11px;color:#94a3b8;">mmHg</span></div>
+                <div class="rc-field"><label>BP Dia</label><input type="number" id="nrcBpDiastolic" class="rc-input" placeholder="80"><span style="font-size:11px;color:#94a3b8;">mmHg</span></div>
+                <div class="rc-field"><label>HR</label><input type="number" id="nrcHeartRate" class="rc-input" placeholder="72"><span style="font-size:11px;color:#94a3b8;">bpm</span></div>
+                <div class="rc-field"><label>Temp (°C)</label><input type="number" step="0.1" id="nrcTemperature" class="rc-input" placeholder="37.0"><span style="font-size:11px;color:#94a3b8;">°C</span></div>
+                <div class="rc-field"><label>SpO2</label><input type="number" id="nrcSpo2" class="rc-input" placeholder="98"><span style="font-size:11px;color:#94a3b8;">%</span></div>
+                <div class="rc-field"><label>RR</label><input type="number" id="nrcRespiratory" class="rc-input" placeholder="16"><span style="font-size:11px;color:#94a3b8;">/min</span></div>
+                <div class="rc-field"><label>Glucose</label><input type="number" id="nrcGlucose" class="rc-input" placeholder="100"><span style="font-size:11px;color:#94a3b8;">mg/dL</span></div>
+                <div class="rc-field"><label>Weight</label><input type="number" step="0.1" id="nrcWeight" class="rc-input" placeholder="70"><span style="font-size:11px;color:#94a3b8;">kg</span></div>
+                <div class="rc-field"><label>Height</label><input type="number" step="0.1" id="nrcHeight" class="rc-input" placeholder="170"><span style="font-size:11px;color:#94a3b8;">cm</span></div>
+                <div class="rc-field"><label>BMI</label><input type="number" step="0.1" id="nrcBmi" class="rc-input" placeholder="24.2" readonly><span style="font-size:11px;color:#94a3b8;">auto</span></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="nrcTabChat" class="nrc-tab-content" style="display: none;">
-          <div style="max-height: 240px; overflow-y: auto; padding: 8px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;" id="nrcChatHistory">
-            <p style="color: #94a3b8; font-size: 13px; text-align: center;">No chat history</p>
+          <div id="nrcTabFluid" class="rc-tab-panel">
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-tint"></i> Fluid Balance</div>
+              <div class="rc-grid-2">
+                <div class="rc-field"><label>Oral Fluids (ml)</label><input type="number" id="nrcFluidOral" class="rc-input" placeholder="e.g. 500"></div>
+                <div class="rc-field"><label>IV Fluids (ml)</label><input type="number" id="nrcFluidIV" class="rc-input" placeholder="e.g. 1000"></div>
+                <div class="rc-field"><label>Blood Transfusion (ml)</label><input type="number" id="nrcFluidBlood" class="rc-input" placeholder="e.g. 450"></div>
+                <div class="rc-field"><label>Enteral Feeding - NG Tube (ml)</label><input type="number" id="nrcFluidEnteral" class="rc-input" placeholder="e.g. 300"></div>
+                <div class="rc-field" style="grid-column: 1 / -1;"><label>Liquid Medications (ml)</label><input type="number" id="nrcFluidMedications" class="rc-input" placeholder="e.g. 100"></div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div id="nrcTabNote" class="nrc-tab-content" style="display: none;">
-          <div class="form-row single">
-            <div class="form-group"><label>Nurse Round Note</label><textarea id="nrcNotes" placeholder="Record observations, patient concerns, care provided..." rows="4"></textarea></div>
+          <div id="nrcTabDrug" class="rc-tab-panel">
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-pills"></i> Drug Chat</div>
+              <div id="nrcDrugChatHistory" class="rc-readonly" style="max-height: 150px; overflow-y: auto; margin-bottom: 12px;">
+                <p style="color: #94a3b8; font-size: 13px; text-align: center;">No drugs recorded</p>
+              </div>
+              <div class="rc-grid-2">
+                <div class="rc-field"><label>Drug Name</label><input type="text" id="nrcDrugName" class="rc-input" placeholder="e.g. Paracetamol"></div>
+                <div class="rc-field"><label>Dose</label><input type="text" id="nrcDrugDose" class="rc-input" placeholder="e.g. 1g"></div>
+                <div class="rc-field"><label>Route</label><input type="text" id="nrcDrugRoute" class="rc-input" placeholder="e.g. Oral"></div>
+                <div class="rc-field"><label>Frequency</label><input type="text" id="nrcDrugFrequency" class="rc-input" placeholder="e.g. Every 8 hours"></div>
+                <div class="rc-field"><label>Start Date</label><input type="date" id="nrcDrugStartDate" class="rc-input"></div>
+                <div class="rc-field"><label>Prescribing Doctor</label><input type="text" id="nrcDrugPrescriber" class="rc-input" placeholder="e.g. Dr. Ahmed"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </form>
-      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
-        <button type="button" onclick="closeNurseRoundCheckModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #475569; cursor: pointer;">Cancel</button>
-        <button type="button" onclick="saveNurseRoundCheck()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #0284c7; color: white; cursor: pointer;"><i class="fas fa-save"></i> Save Round-Check</button>
+
+          <div id="nrcTabNote" class="rc-tab-panel">
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-sticky-note"></i> Nurse Round Note</div>
+              <textarea id="nrcNotes" class="rc-input" placeholder="Record observations, patient concerns, care provided..." rows="4"></textarea>
+            </div>
+          </div>
+
+          <div id="nrcTabDoctorNotes" class="rc-tab-panel">
+            <div class="rc-section">
+              <div class="rc-section-title"><i class="fas fa-user-md"></i> Doctor Notes</div>
+              <div id="nrcDoctorNotesHistory" class="rc-readonly" style="max-height: 200px; overflow-y: auto;">
+                <p style="color: #94a3b8; font-size: 13px; text-align: center;">No doctor notes yet</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: white; border-radius: 0 0 12px 12px;">
+        <button type="button" class="rc-btn rc-btn-secondary" onclick="closeNurseRoundCheckModal()">Cancel</button>
+        <button type="button" class="rc-btn rc-btn-primary" onclick="saveNurseRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
       </div>
     </div>
   </div>
@@ -1822,23 +2296,70 @@
     let nurseRoundChecks = [];
 
     function switchNrcTab(tab) {
-      ['vitals', 'chat', 'note'].forEach(t => {
+      ['vitals', 'fluid', 'drug', 'note', 'doctorNotes'].forEach(t => {
         const el = document.getElementById('nrcTab' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+        if (el) {
+          el.classList.toggle('active', t === tab);
+        }
       });
-      document.querySelectorAll('.nrc-tab-btn').forEach(btn => {
+      document.querySelectorAll('.rc-tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase().includes(tab));
       });
     }
 
     function getNrcTab(name) {
-      const map = { vitals: 'nrcTabVitals', chat: 'nrcTabChat', note: 'nrcTabNote' };
+      const map = { vitals: 'nrcTabVitals', fluid: 'nrcTabFluid', drug: 'nrcTabDrug', note: 'nrcTabNote', doctorNotes: 'nrcTabDoctorNotes' };
       return document.getElementById(map[name] || 'nrcTabVitals');
     }
 
     function closeNurseRoundCheckModal() {
       const modal = document.getElementById('nurseRoundCheckModal');
       if (modal) modal.style.display = 'none';
+    }
+
+    async function loadAdmittedPatientsForRoundCheck() {
+      const select = document.getElementById('nrcPatientSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">Loading...</option>';
+      try {
+        const res = await fetch(`${API_BASE}/staff/admitted-patients`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const patients = data.admittedPatients || [];
+          if (patients.length === 0) {
+            select.innerHTML = '<option value="">No admitted patients</option>';
+            return;
+          }
+          select.innerHTML = '<option value="">-- Choose an admitted patient --</option>' +
+            patients.map(p => `<option value="${p.patient_id}" data-admission="${p.admission_id}" data-room="${p.room_number || ''}" data-bed="${p.bed_number || ''}" data-name="${p.patient_name}">${p.patient_name} | Room ${p.room_number || 'N/A'} Bed ${p.bed_number || 'N/A'} | Adm: ${new Date(p.admission_date).toLocaleDateString('en-GB')}</option>`).join('');
+        } else {
+          select.innerHTML = '<option value="">Failed to load</option>';
+        }
+      } catch (err) {
+        console.error('Error loading admitted patients:', err);
+        select.innerHTML = '<option value="">Error loading</option>';
+      }
+    }
+
+    function onNrcPatientSelectChange() {
+      const select = document.getElementById('nrcPatientSelect');
+      const opt = select.options[select.selectedIndex];
+      if (!opt || !opt.value) {
+        document.getElementById('nrcPatientId').value = '';
+        document.getElementById('nrcAdmissionId').value = '';
+        document.getElementById('nrcPatientName').textContent = 'Select patient below';
+        document.getElementById('nrcBedInfo').textContent = '--';
+        document.getElementById('nrcPatientAvatar').textContent = '--';
+        return;
+      }
+      document.getElementById('nrcPatientId').value = opt.value;
+      document.getElementById('nrcAdmissionId').value = opt.dataset.admission || '';
+      document.getElementById('nrcPatientName').textContent = opt.dataset.name || 'Patient';
+      document.getElementById('nrcBedInfo').textContent = `Room ${opt.dataset.room || 'N/A'} Bed ${opt.dataset.bed || 'N/A'}`;
+      document.getElementById('nrcPatientAvatar').textContent = (opt.dataset.name || 'P').charAt(0).toUpperCase();
     }
 
     function openNewNurseRoundCheck() {
@@ -1851,9 +2372,23 @@
       document.getElementById('nrcBedInfo').textContent = '--';
       document.getElementById('nrcTime').textContent = new Date().toLocaleString();
       document.getElementById('nrcRefVitals').textContent = 'No prior record';
+      document.getElementById('nrcFluidOral').value = '';
+      document.getElementById('nrcFluidIV').value = '';
+      document.getElementById('nrcFluidBlood').value = '';
+      document.getElementById('nrcFluidEnteral').value = '';
+      document.getElementById('nrcFluidMedications').value = '';
+      document.getElementById('nrcDrugName').value = '';
+      document.getElementById('nrcDrugDose').value = '';
+      document.getElementById('nrcDrugRoute').value = '';
+      document.getElementById('nrcDrugFrequency').value = '';
+      document.getElementById('nrcDrugStartDate').value = '';
+      document.getElementById('nrcDrugPrescriber').value = '';
+      document.getElementById('nrcPatientSelect').innerHTML = '<option value="">-- Choose an admitted patient --</option>';
+      document.getElementById('nrcDoctorNotesHistory').innerHTML = '<p style="color: #94a3b8; font-size: 13px; text-align: center;">No doctor notes yet</p>';
       
       switchNrcTab('vitals');
       if (modal) modal.style.display = 'flex';
+      loadAdmittedPatientsForRoundCheck();
     }
 
     function openNurseRoundCheckDetail(id) {
@@ -1865,7 +2400,7 @@
       document.getElementById('nrcPatientId').value = rc.patientId || '';
       document.getElementById('nrcAdmissionId').value = rc.admissionId || '';
       document.getElementById('nrcPatientName').textContent = rc.patientName || 'Patient';
-      document.getElementById('nrcBedInfo').textContent = rc.roomNumber || rc.bedNumber ? `Room ${rc.roomNumber || ''} Bed ${rc.bedNumber || ''}` : 'Outpatient';
+      document.getElementById('nrcBedInfo').textContent = rc.roomNumber || rc.bedNumber ? `Room ${rc.roomNumber || ''} Bed ${rc.bedNumber}` : 'Outpatient';
       document.getElementById('nrcTime').textContent = formatDateTime(rc.checkDate);
       
       const vs = rc.vitalSigns || {};
@@ -1875,10 +2410,42 @@
       document.getElementById('nrcTemperature').value = vs.temperature || '';
       document.getElementById('nrcSpo2').value = vs.spo2 || '';
       document.getElementById('nrcRespiratory').value = vs.respiratory || '';
+      document.getElementById('nrcGlucose').value = vs.glucose || '';
+      document.getElementById('nrcWeight').value = vs.weight || '';
+      document.getElementById('nrcHeight').value = vs.height || '';
+      document.getElementById('nrcBmi').value = vs.bmi || '';
       document.getElementById('nrcNotes').value = rc.notes || '';
       
-      const refVitals = vs.bpSystolic ? `BP: ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} | HR: ${vs.heartRate || '--'} | Temp: ${vs.temperature || '--'}°F` : 'No vitals recorded';
+      const refVitals = vs.bpSystolic ? `BP: ${vs.bpSystolic}/${vs.bpDiastolic} | HR: ${vs.heartRate} | Temp: ${vs.temperature}°C` : 'No vitals recorded';
       document.getElementById('nrcRefVitals').textContent = refVitals;
+
+      const fb = rc.fluid_balance || {};
+      document.getElementById('nrcFluidOral').value = fb.oral || '';
+      document.getElementById('nrcFluidIV').value = fb.iv || '';
+      document.getElementById('nrcFluidBlood').value = fb.blood || '';
+      document.getElementById('nrcFluidEnteral').value = fb.enteral || '';
+      document.getElementById('nrcFluidMedications').value = fb.medications || '';
+      document.getElementById('nrcDrugName').value = '';
+      document.getElementById('nrcDrugDose').value = '';
+      document.getElementById('nrcDrugRoute').value = '';
+      document.getElementById('nrcDrugFrequency').value = '';
+      document.getElementById('nrcDrugStartDate').value = '';
+      document.getElementById('nrcDrugPrescriber').value = '';
+      
+      const followUps = rc.follow_up_notes || [];
+      const doctorNotes = followUps.filter(n => n.checkType === 'doctor');
+      const docNotesContainer = document.getElementById('nrcDoctorNotesHistory');
+      if (docNotesContainer) {
+        if (doctorNotes.length > 0) {
+          docNotesContainer.innerHTML = doctorNotes.map(n => `
+            <div style="padding: 8px 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 6px; font-size: 13px; color: #334155;">
+              <strong>Dr. Note (${new Date(n.createdAt).toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}):</strong> ${n.text}
+            </div>
+          `).join('');
+        } else {
+          docNotesContainer.innerHTML = '<p style="color: #94a3b8; font-size: 13px; text-align: center;">No doctor notes yet</p>';
+        }
+      }
       
       switchNrcTab('vitals');
       if (modal) modal.style.display = 'flex';
@@ -1915,29 +2482,34 @@
         return;
       }
       
-      container.innerHTML = nurseRoundChecks.map(rc => {
-        const vs = rc.vitalSigns || {};
-        return `<div class="round-check-card" style="margin-bottom:0;">
-          <div class="rc-header">
-            <div>
-              <span class="rc-patient">${rc.patientName || 'Patient'}</span>
-              <span class="rc-type-badge rc-type-${rc.checkType || 'nurse'}">${capitalizeFirst(rc.checkType || 'nurse')}</span>
-              <span class="rc-status rc-${rc.status || 'ongoing'}">${capitalizeFirst(rc.status || 'ongoing')}</span>
-            </div>
-            <span class="rc-time">${formatDateTime(rc.checkDate)}</span>
-          </div>
-          <div class="rc-vitals-preview">
-            <div><strong>BP:</strong> ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg</div>
-            <div><strong>HR:</strong> ${vs.heartRate || '--'} bpm</div>
-            <div><strong>Temp:</strong> ${vs.temperature || '--'}°F</div>
-          </div>
-          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Notes:</strong> ${(rc.notes || '').substring(0, 100) || 'None'}${(rc.notes || '').length > 100 ? '...' : ''}</p>
-          <div style="margin-top:8px;display:flex;gap:8px;">
-            <button class="view-btn" onclick="openNurseRoundCheckDetail(${rc.id})">Open</button>
-            ${rc.status === 'ongoing' ? `<button class="view-btn light" onclick="openNurseRoundCheckDetail(${rc.id})">Update</button>` : ''}
-          </div>
-        </div>`;
-      }).join('');
+       container.innerHTML = nurseRoundChecks.map(rc => {
+         const vs = rc.vitalSigns || {};
+         const followUps = rc.follow_up_notes || [];
+         const fluidCount = followUps.filter(n => n.noteType === 'fluid').length;
+         const drugCount = (rc.drugChat || []).length;
+         return `<div class="round-check-card" style="margin-bottom:0;">
+           <div class="rc-header">
+             <div>
+               <span class="rc-patient">${rc.patientName || 'Patient'}</span>
+               <span class="rc-type-badge rc-type-${rc.checkType || 'nurse'}">${capitalizeFirst(rc.checkType || 'nurse')}</span>
+               <span class="rc-status rc-${rc.status || 'ongoing'}">${capitalizeFirst(rc.status || 'ongoing')}</span>
+             </div>
+             <span class="rc-time">${formatDateTime(rc.checkDate)}</span>
+           </div>
+           <div class="rc-vitals-preview">
+             <div><strong>BP:</strong> ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg</div>
+             <div><strong>HR:</strong> ${vs.heartRate || '--'} bpm</div>
+             <div><strong>Temp:</strong> ${vs.temperature || '--'}°C</div>
+           </div>
+           <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Notes:</strong> ${(rc.notes || '').substring(0, 100) || 'None'}${(rc.notes || '').length > 100 ? '...' : ''}</p>
+           ${fluidCount ? `<p style="font-size:12px;color:#0284c7;margin:2px 0;"><i class="fas fa-tint"></i> Fluid: ${fluidCount} message${fluidCount !== 1 ? 's' : ''}</p>` : ''}
+           ${drugCount ? `<p style="font-size:12px;color:#7c3aed;margin:2px 0;"><i class="fas fa-pills"></i> Drug: ${drugCount} item${drugCount !== 1 ? 's' : ''}</p>` : ''}
+           <div style="margin-top:8px;display:flex;gap:8px;">
+             <button class="view-btn" onclick="openNurseRoundCheckDetail(${rc.id})">Open</button>
+             ${rc.status === 'ongoing' ? `<button class="view-btn light" onclick="openNurseRoundCheckDetail(${rc.id})">Update</button>` : ''}
+           </div>
+         </div>`;
+       }).join('');
     }
 
     async function saveNurseRoundCheck() {
@@ -1948,8 +2520,38 @@
         heartRate: document.getElementById('nrcHeartRate').value,
         temperature: document.getElementById('nrcTemperature').value,
         respiratory: document.getElementById('nrcRespiratory').value,
-        spo2: document.getElementById('nrcSpo2').value
+        spo2: document.getElementById('nrcSpo2').value,
+        glucose: document.getElementById('nrcGlucose').value,
+        weight: document.getElementById('nrcWeight').value,
+        height: document.getElementById('nrcHeight').value,
+        bmi: document.getElementById('nrcBmi').value
       };
+      const fluidBalance = {
+        oral: document.getElementById('nrcFluidOral').value || null,
+        iv: document.getElementById('nrcFluidIV').value || null,
+        blood: document.getElementById('nrcFluidBlood').value || null,
+        enteral: document.getElementById('nrcFluidEnteral').value || null,
+        medications: document.getElementById('nrcFluidMedications').value || null
+      };
+      const drugName = document.getElementById('nrcDrugName').value.trim();
+      const drugDose = document.getElementById('nrcDrugDose').value.trim();
+      const drugRoute = document.getElementById('nrcDrugRoute').value.trim();
+      const drugFrequency = document.getElementById('nrcDrugFrequency').value.trim();
+      const drugStartDate = document.getElementById('nrcDrugStartDate').value;
+      const drugPrescriber = document.getElementById('nrcDrugPrescriber').value.trim();
+      
+      let drugChat = null;
+      if (drugName || drugDose || drugRoute || drugFrequency || drugStartDate || drugPrescriber) {
+        drugChat = [{
+          drugName,
+          dose: drugDose,
+          route: drugRoute,
+          frequency: drugFrequency,
+          startDate: drugStartDate,
+          prescribingDoctor: drugPrescriber,
+          createdAt: new Date().toISOString()
+        }];
+      }
       
       const payload = {
         patient_id: parseInt(document.getElementById('nrcPatientId').value),
@@ -1957,6 +2559,8 @@
         check_type: 'nurse',
         notes: document.getElementById('nrcNotes').value,
         vital_signs: vitalSigns,
+        fluid_balance: fluidBalance,
+        drug_chat: drugChat,
         status: 'ongoing'
       };
       
@@ -2001,6 +2605,165 @@
       if (!str) return '';
       return String(str).charAt(0).toUpperCase() + String(str).slice(1);
     }
+
+    // ==================== APPOINTMENT VITALS (Staff) ====================
+    async function loadDoctorsForVitalsSelect() {
+      const select = document.getElementById('vitalsDoctorSelect');
+      if (!select) return;
+      try {
+        const res = await fetch(`${API_BASE}/doctors`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+        const data = await res.json();
+        if (data.success) {
+          const doctors = data.doctors || [];
+          select.innerHTML = '<option value="">Select Doctor</option>' + doctors.map(d => `<option value="${d.id}">${d.name}${d.specialization ? ' - ' + d.specialization : ''}</option>`).join('');
+        } else {
+          select.innerHTML = '<option value="">No doctors found</option>';
+        }
+      } catch (err) {
+        console.error('Error loading doctors:', err);
+        select.innerHTML = '<option value="">Error loading doctors</option>';
+      }
+    }
+
+    async function loadAppointmentsForVitals() {
+      const doctorId = document.getElementById('vitalsDoctorSelect').value;
+      const date = document.getElementById('vitalsDatePicker').value;
+      const container = document.getElementById('appointmentsForVitalsList');
+      if (!container) return;
+
+      if (!doctorId || !date) {
+        container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Please select a doctor and date</p>';
+        return;
+      }
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      try {
+        const res = await fetch(`${API_BASE}/staff/appointments?doctor_id=${doctorId}&date=${date}&status=all`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          renderAppointmentsForVitals(data.appointments || []);
+        } else {
+          container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Failed to load appointments</p>';
+        }
+      } catch (err) {
+        console.error('Error loading appointments for vitals:', err);
+        container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Error loading appointments</p>';
+      }
+    }
+
+    function renderAppointmentsForVitals(appointments) {
+      const container = document.getElementById('appointmentsForVitalsList');
+      if (!container) return;
+
+      if (appointments.length === 0) {
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">No appointments found for this doctor on the selected date</p>';
+        return;
+      }
+
+      container.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">' + appointments.map(apt => {
+        const vitalsRecorded = apt.vitalsData && (apt.vitalsData.bpSystolic || apt.vitalsData.heartRate || apt.vitalsData.temperature);
+        const vitalsBadge = vitalsRecorded ? '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#d1fae5;color:#059669;margin-left:8px;"><i class="fas fa-heartbeat"></i> Vitals Recorded</span>' : '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fef3c7;color:#d97706;margin-left:8px;">Pending Vitals</span>';
+        return `
+          <div class="appointment-item" style="flex-direction:column;align-items:flex-start;">
+            <div class="appointment-info" style="width:100%;">
+              <p class="patient-name">${apt.patientName || 'Patient'}</p>
+              <span class="appointment-time">${apt.appointmentTime || apt.appointmentTime || ''}</span>
+              ${vitalsBadge}
+            </div>
+            <div class="appointment-actions" style="margin-top:8px;">
+              <button class="action-btn" onclick="openVitalsModal(${apt.id}, ${apt.patientId}, '${(apt.patientName || 'Patient').replace(/'/g, "\\'")}', '${apt.appointmentTime || apt.appointmentTime || ''}')" ${vitalsRecorded ? 'style="background:#059669;"' : ''}>
+                <i class="fas fa-${vitalsRecorded ? 'edit' : 'stethoscope'}"></i> ${vitalsRecorded ? 'Edit Vitals' : 'Record Vitals'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('') + '</div>';
+    }
+
+    function openVitalsModal(appointmentId, patientId, patientName, appointmentTime) {
+      document.getElementById('vitalsAppointmentId').value = appointmentId;
+      document.getElementById('vitalsPatientId').value = patientId;
+      document.getElementById('vitalsPatientName').value = patientName;
+      document.getElementById('vitalsPatientNameDisplay').textContent = patientName;
+      document.getElementById('vitalsPatientAvatar').textContent = getInitials(patientName);
+      document.getElementById('vitalsApptInfo').textContent = 'Appointment: ' + appointmentTime;
+
+      const modal = document.getElementById('vitalsModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeVitalsModal() {
+      const modal = document.getElementById('vitalsModal');
+      if (modal) modal.style.display = 'none';
+      document.getElementById('vitalsForm').reset();
+    }
+
+async function saveVitals(e) {
+       e.preventDefault();
+       const appointmentId = document.getElementById('vitalsAppointmentId').value;
+       const payload = {
+         bp_systolic: document.getElementById('vitalsBpSystolic').value,
+         bp_diastolic: document.getElementById('vitalsBpDiastolic').value,
+         heart_rate: document.getElementById('vitalsHeartRate').value,
+         temperature: document.getElementById('vitalsTemperature').value,
+         spo2: document.getElementById('vitalsSpo2').value,
+         respiratory_rate: document.getElementById('vitalsRespiratory').value,
+         glucose: document.getElementById('vitalsGlucose').value,
+         weight: document.getElementById('vitalsWeight').value,
+         height: document.getElementById('vitalsHeight').value,
+         bmi: document.getElementById('vitalsBmi').value,
+         notes: document.getElementById('vitalsNotes').value
+       };
+
+      try {
+        const res = await fetch(`${API_BASE}/staff/appointments/${appointmentId}/vitals`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Vitals recorded successfully!');
+          closeVitalsModal();
+          loadAppointmentsForVitals();
+        } else {
+          alert(data.message || 'Failed to save vitals');
+        }
+      } catch (err) {
+        console.error('Error saving vitals:', err);
+        alert('Error saving vitals');
+      }
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(/\s+/);
+      return parts.map(p => p.charAt(0).toUpperCase()).slice(0, 2).join('');
+    }
+
+    // Event listeners for vitals tab
+    document.addEventListener('DOMContentLoaded', function() {
+      const vitalsForm = document.getElementById('vitalsForm');
+      if (vitalsForm) {
+        vitalsForm.addEventListener('submit', saveVitals);
+      }
+      const vitalsDoctorSelect = document.getElementById('vitalsDoctorSelect');
+      if (vitalsDoctorSelect) {
+        vitalsDoctorSelect.addEventListener('change', function() {
+          if (this.value) loadAppointmentsForVitals();
+        });
+      }
+      const vitalsDatePicker = document.getElementById('vitalsDatePicker');
+      if (vitalsDatePicker) {
+        const today = new Date().toISOString().split('T')[0];
+        vitalsDatePicker.value = today;
+      }
+      loadDoctorsForVitalsSelect();
+    });
   </script>
 </body>
 </html>

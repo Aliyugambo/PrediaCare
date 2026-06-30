@@ -166,6 +166,17 @@ async function initializeDatabase() {
     }
     console.log('Ensured appointments.duration column exists');
 
+    // Ensure appointments has vitals_data column (for staff-recorded vitals before doctor examination)
+    try {
+      const [colsVitals] = await connection.execute("SHOW COLUMNS FROM appointments LIKE 'vitals_data'");
+      if (!colsVitals || colsVitals.length === 0) {
+        await connection.execute("ALTER TABLE appointments ADD COLUMN vitals_data JSON DEFAULT NULL AFTER notes");
+      }
+    } catch (e) {
+      // Column might already exist
+    }
+    console.log('Ensured appointments.vitals_data column exists');
+
     // Create messages table (patient-doctor messaging)
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS messages (
@@ -337,6 +348,8 @@ async function initializeDatabase() {
         check_type ENUM('doctor', 'nurse', 'consultant') DEFAULT 'doctor',
         notes TEXT,
         vital_signs JSON,
+        fluid_balance JSON,
+        drug_chat JSON,
         follow_up_notes JSON,
         next_plan TEXT,
         status ENUM('ongoing', 'resolved', 'escalated') DEFAULT 'ongoing',
@@ -360,6 +373,28 @@ async function initializeDatabase() {
       }
     } catch (e) {
       console.log('follow_up_notes column check:', e.message);
+    }
+
+    // Ensure fluid_balance column exists on older installs
+    try {
+      const [colsFB] = await connection.execute("SHOW COLUMNS FROM round_checks LIKE 'fluid_balance'");
+      if (!colsFB || colsFB.length === 0) {
+        await connection.execute("ALTER TABLE round_checks ADD COLUMN fluid_balance JSON DEFAULT NULL AFTER vital_signs");
+        console.log('Added fluid_balance column to round_checks');
+      }
+    } catch (e) {
+      console.log('fluid_balance column check:', e.message);
+    }
+
+    // Ensure drug_chat column exists on older installs
+    try {
+      const [colsDC] = await connection.execute("SHOW COLUMNS FROM round_checks LIKE 'drug_chat'");
+      if (!colsDC || colsDC.length === 0) {
+        await connection.execute("ALTER TABLE round_checks ADD COLUMN drug_chat JSON DEFAULT NULL AFTER fluid_balance");
+        console.log('Added drug_chat column to round_checks');
+      }
+    } catch (e) {
+      console.log('drug_chat column check:', e.message);
     }
 
     // Ensure sessions table exists for express-mysql-session
@@ -781,7 +816,7 @@ if (fs.existsSync(seedSqlPath)) {
       if (doctors.length > 0) {
         await connection.execute(
           'INSERT INTO health_summaries (patient_id, doctor_id, summary_type, chief_complaint, vital_signs, diagnosis, recommendations, next_visit_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [patientId, doctors[0].id, 'checkup', 'Routine annual checkup', 'BP: 120/80 mmHg, Pulse: 72 bpm, Temp: 98.6°F', 'Generally healthy, all vital signs normal', 'Continue current diet and exercise routine. Return for next checkup in 1 year.', '2025-12-15']
+          [patientId, doctors[0].id, 'checkup', 'Routine annual checkup', 'BP: 120/80 mmHg, Pulse: 72 bpm, Temp: 37.0°C', 'Generally healthy, all vital signs normal', 'Continue current diet and exercise routine. Return for next checkup in 1 year.', '2025-12-15']
         );
         console.log('Sample health summary created');
       }
