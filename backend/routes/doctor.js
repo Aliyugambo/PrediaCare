@@ -709,14 +709,7 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         e.findings,
         e.diagnosis,
         e.treatment_plan,
-        e.recommendations,
-        e.next_visit_date,
-        e.follow_up_required,
-        e.prescriptions,
-        e.test_referrals,
-        e.follow_up_notes,
-        e.status,
-        u.name as doctor_name
+        e.status
       FROM examinations e
       JOIN doctors d ON e.doctor_id = d.id
       JOIN users u ON d.user_id = u.id
@@ -735,8 +728,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         a.reason_for_admission,
         a.admitting_diagnosis,
         a.notes,
-        a.discharge_date,
-        a.discharge_notes,
         a.status,
         u.name as doctor_name
       FROM admissions a
@@ -845,14 +836,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
             console.warn('Failed to parse vital_signs for patient profile examination:', e.id);
           }
         }
-        let followUpNotes = [];
-        if (e.follow_up_notes) {
-          try {
-            followUpNotes = typeof e.follow_up_notes === 'string' ? JSON.parse(e.follow_up_notes) : e.follow_up_notes;
-          } catch (err) {
-            console.warn('Failed to parse follow_up_notes:', e.id);
-          }
-        }
         return {
           id: e.id,
           examinationDate: e.examination_date,
@@ -862,12 +845,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
           findings: e.findings,
           diagnosis: e.diagnosis,
           treatmentPlan: e.treatment_plan,
-          recommendations: e.recommendations,
-          nextVisitDate: e.next_visit_date,
-          followUpRequired: e.follow_up_required,
-          prescriptions: e.prescriptions,
-          testReferrals: e.test_referrals,
-          followUpNotes,
           status: e.status,
           doctorName: e.doctor_name
         };
@@ -882,7 +859,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         admittingDiagnosis: a.admitting_diagnosis,
         notes: a.notes,
         dischargeDate: a.discharge_date,
-        dischargeNotes: a.discharge_notes,
         status: a.status,
         doctorName: a.doctor_name
       })),

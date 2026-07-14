@@ -3127,15 +3127,22 @@
   </div>
 
   <!-- Patient Profile Modal -->
-  <div id="patientProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
-      <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; color: #0f172a;">Patient Profile</h3>
+  <div id="patientProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; animation: modalSlideIn 0.3s ease; display: flex; flex-direction: column;">
+      <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 2; border-radius: 16px 16px 0 0;">
+        <div>
+          <h3 style="margin: 0; color: #0f172a; font-size: 20px;">Patient Medical Profile</h3>
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Complete clinical history and records</p>
+        </div>
         <button onclick="closePatientProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
       </div>
-      <div id="patientProfileModalBody" style="padding: 20px;">
+      <div id="patientProfileModalBody" style="padding: 20px 24px; overflow-y: auto; flex: 1;">
         <!-- Content will be populated by JavaScript -->
         <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div style="padding: 12px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: white; border-radius: 0 0 16px 16px; position: sticky; bottom: 0;">
+        <button onclick="closePatientProfileModal()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; font-size: 13px; font-weight: 500;">Close</button>
+        <button onclick="window.print()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #0284c7; color: white; cursor: pointer; font-size: 13px; font-weight: 500;"><i class="fas fa-print"></i> Print Profile</button>
       </div>
     </div>
   </div>
@@ -4400,7 +4407,6 @@
       modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
       
       try {
-        // Fetch patient details
         const response = await fetch(`${API_BASE}/doctor/patients/${patientId}`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
@@ -4410,161 +4416,204 @@
           const data = await response.json();
           if (data.success && data.patient) {
             const p = data.patient;
-            const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'N/A';
+            const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
+            const initial = (p.name || 'P').charAt(0).toUpperCase();
+            
+            const appointments = data.appointments || [];
+            const medications = data.medications || [];
+            const results = data.results || [];
+            const healthSummaries = data.healthSummaries || [];
+            const examinations = data.examinations || [];
+            const admissions = data.admissions || [];
+            const roundChecks = data.roundChecks || [];
+            const testReferrals = data.testReferrals || [];
+            
+            const card = (title, body) => `
+              <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;">
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 700; margin-bottom: 8px;">${title}</div>
+                ${body}
+              </div>
+            `;
+            
+            const empty = (label) => `
+              <div style="padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #e2e8f0; color: #94a3b8; font-size: 13px;">No ${label} recorded</div>
+            `;
             
             modalBody.innerHTML = `
-              <div style="text-align: center; margin-bottom: 20px;">
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; margin: 0 auto 12px;">
-                  ${p.name ? p.name.charAt(0).toUpperCase() : 'P'}
+              <div style="display: flex; gap: 18px; align-items: flex-start; margin-bottom: 16px;">
+                <div style="width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0;">${initial}</div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.2;">${p.name || 'Patient'}</div>
+                  <div style="font-size: 13px; color: #64748b; margin-top: 4px;">${p.email || ''}</div>
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Patient ID: #${p.id || 'N/A'} &nbsp;•&nbsp; Since ${createdAt}</div>
                 </div>
-                <h3 style="margin: 0; color: #0f172a;">${p.name || 'Patient'}</h3>
-                <p style="margin: 4px 0 0; color: #64748b;">${p.email || ''}</p>
               </div>
               
-              <div style="padding: 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px;">
-                <div style="font-size: 14px; color: #64748b;">Patient since: <strong style="color: #0f172a;">${createdAt}</strong></div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 700;">Appointments</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 4px;">${appointments.length}</div>
+                </div>
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 700;">Medications</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 4px;">${medications.length}</div>
+                </div>
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 700;">Admissions</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 4px;">${admissions.length}</div>
+                </div>
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 700;">Round Checks</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 4px;">${roundChecks.length}</div>
+                </div>
               </div>
               
-              ${data.appointments && data.appointments.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Recent Appointments</h4>
-                ${data.appointments.slice(0, 5).map(apt => `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <div>
-                        <div style="font-size: 14px; font-weight: 500; color: #0f172a;">${apt.date ? new Date(apt.date).toLocaleDateString() : 'N/A'}</div>
-                        <div style="font-size: 12px; color: #64748b;">${apt.time || ''} - ${apt.reason || 'General visit'}</div>
-                      </div>
-                      <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: ${apt.status === 'completed' ? '#dcfce7' : apt.status === 'scheduled' ? '#dbeafe' : '#fef3c7'}; color: ${apt.status === 'completed' ? '#16a34a' : apt.status === 'scheduled' ? '#2563eb' : '#d97706'};">${apt.status || ''}</span>
+              ${appointments.length > 0 ? card('Recent Appointments', `
+                ${appointments.slice(0, 5).map(apt => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                    <div style="min-width: 0; flex: 1;">
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${apt.date ? new Date(apt.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}</div>
+                      <div style="font-size: 12px; color: #64748b;">${apt.time || ''} ${apt.reason ? '• ' + apt.reason : ''}</div>
                     </div>
+                    <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${apt.status === 'completed' ? '#dcfce7' : apt.status === 'scheduled' ? '#dbeafe' : apt.status === 'pending' ? '#fef3c7' : '#f1f5f9'}; color: ${apt.status === 'completed' ? '#16a34a' : apt.status === 'scheduled' ? '#2563eb' : apt.status === 'pending' ? '#d97706' : '#475569'};">${apt.status || 'N/A'}</span>
                   </div>
                 `).join('')}
-              </div>
-              ` : ''}
+              `) : ''}
               
-              ${data.medications && data.medications.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Current Medications</h4>
-                ${data.medications.slice(0, 5).map(med => `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="font-size: 14px; font-weight: 500; color: #0f172a;">${med.medicationName || 'N/A'}</div>
-                    <div style="font-size: 12px; color: #64748b;">${med.dosage || ''} - ${med.frequency || ''}</div>
-                    <div style="font-size: 11px; color: ${med.status === 'active' ? '#16a34a' : '#64748b'};">${med.status}</div>
+              ${examinations.length > 0 ? card('Examination History', `
+                ${examinations.slice(0, 8).map(exam => {
+                  const vs = exam.vitalSigns || {};
+                  const vitalsText = [vs.bpSystolic, vs.heartRate, vs.temperature].some(Boolean)
+                    ? `${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg • ${vs.heartRate || '--'} bpm • ${vs.temperature || '--'} °C`
+                    : null;
+                  return `
+                    <div style="padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${new Date(exam.examinationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                        <div style="font-size: 11px; color: #94a3b8;">${exam.doctorName || ''}</div>
+                      </div>
+                      ${vitalsText ? `<div style="font-size: 12px; color: #475569; margin-bottom: 4px;">Vitals: ${vitalsText}</div>` : ''}
+                      ${exam.chiefComplaint ? `<div style="font-size: 12px; color: #334155;"><strong>Complaint:</strong> ${exam.chiefComplaint}</div>` : ''}
+                      ${exam.findings ? `<div style="font-size: 12px; color: #334155;"><strong>Findings:</strong> ${exam.findings}</div>` : ''}
+                      ${exam.diagnosis ? `<div style="font-size: 12px; color: #334155;"><strong>Diagnosis:</strong> ${exam.diagnosis}</div>` : ''}
+                      ${exam.treatmentPlan ? `<div style="font-size: 12px; color: #334155;"><strong>Treatment:</strong> ${exam.treatmentPlan}</div>` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              `) : ''}
+              
+              ${admissions.length > 0 ? card('Admissions History', `
+                ${admissions.map(adm => `
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                    <div style="min-width: 0; flex: 1;">
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${adm.admissionType ? adm.admissionType.charAt(0).toUpperCase() + adm.admissionType.slice(1) : 'Admission'} • Room ${adm.roomNumber || 'N/A'} Bed ${adm.bedNumber || 'N/A'}</div>
+                      <div style="font-size: 12px; color: #64748b; margin-top: 2px;">${new Date(adm.admissionDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                      ${adm.reason ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Reason:</strong> ${adm.reason}</div>` : ''}
+                      ${adm.admittingDiagnosis ? `<div style="font-size: 12px; color: #334155;"><strong>Diagnosis:</strong> ${adm.admittingDiagnosis}</div>` : ''}
+                      ${adm.dischargeDate ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px;"><strong>Discharged:</strong> ${new Date(adm.dischargeDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>` : ''}
+                    </div>
+                    <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${adm.status === 'admitted' ? '#fee2e2' : adm.status === 'discharged' ? '#dcfce7' : '#fef3c7'}; color: ${adm.status === 'admitted' ? '#dc2626' : adm.status === 'discharged' ? '#16a34a' : '#d97706'};">${adm.status ? adm.status.charAt(0).toUpperCase() + adm.status.slice(1) : 'Unknown'}</span>
                   </div>
                 `).join('')}
-              </div>
-              ` : ''}
+              `) : ''}
               
-              ${data.healthSummaries && data.healthSummaries.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Health Summaries & Findings</h4>
-                ${data.healthSummaries.slice(0, 5).map(hs => `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">${hs.summaryType || 'Consultation'} - ${new Date(hs.createdAt).toLocaleDateString()}</div>
-                    ${hs.chiefComplaint ? `<div style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Complaint:</strong> ${hs.chiefComplaint}</div>` : ''}
-                    ${hs.diagnosis ? `<div style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Diagnosis:</strong> ${hs.diagnosis}</div>` : ''}
-                    ${hs.treatmentPlan ? `<div style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Treatment:</strong> ${hs.treatmentPlan}</div>` : ''}
-                    ${hs.recommendations ? `<div style="font-size: 12px; color: #64748b;"><strong>Recommendations:</strong> ${hs.recommendations}</div>` : ''}
+              ${medications.length > 0 ? card('Current & Past Medications', `
+                ${medications.map(med => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                    <div>
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${med.medicationName || 'N/A'}</div>
+                      <div style="font-size: 12px; color: #64748b;">${med.dosage || ''} ${med.frequency ? '• ' + med.frequency : ''}</div>
+                      <div style="font-size: 11px; color: #94a3b8;">Prescribed: ${med.prescribedDate ? new Date(med.prescribedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'} ${med.doctorName ? '• ' + med.doctorName : ''}</div>
+                    </div>
+                    <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${med.status === 'active' ? '#dcfce7' : '#f1f5f9'}; color: ${med.status === 'active' ? '#16a34a' : '#475569'};">${med.status || 'N/A'}</span>
+                  </div>
+                `).join('')}
+              `) : ''}
+              
+              ${data.results && data.results.length > 0 ? card('Test Results / Labs', `
+                ${data.results.slice(0, 10).map(r => `
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${r.testName || r.testType || 'Test'}</div>
+                      <div style="font-size: 12px; color: #64748b;">${new Date(r.resultDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} ${r.doctorName ? '• ' + r.doctorName : ''}</div>
+                      ${r.resultData ? `<div style="font-size: 12px; color: #334155; margin-top: 2px;">${r.resultData}</div>` : ''}
+                    </div>
+                    <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${r.status === 'completed' ? '#dcfce7' : r.status === 'pending' ? '#fef3c7' : '#dbeafe'}; color: ${r.status === 'completed' ? '#16a34a' : r.status === 'pending' ? '#d97706' : '#2563eb'};">${r.status || 'N/A'}</span>
+                  </div>
+                `).join('')}
+              `) : ''}
+              
+              ${healthSummaries.length > 0 ? card('Health Summaries & Findings', `
+                ${healthSummaries.slice(0, 8).map(hs => `
+                  <div style="padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${hs.summaryType || 'Consultation'}</div>
+                      <div style="font-size: 11px; color: #94a3b8;">${new Date(hs.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                    </div>
+                    ${hs.chiefComplaint ? `<div style="font-size: 12px; color: #334155; margin-bottom: 2px;"><strong>Complaint:</strong> ${hs.chiefComplaint}</div>` : ''}
+                    ${hs.vitalSigns ? `<div style="font-size: 12px; color: #475569;"><strong>Vitals:</strong> ${(() => { try { const v = typeof hs.vitalSigns === 'string' ? JSON.parse(hs.vitalSigns) : hs.vitalSigns; return `${v.bpSystolic || '--'}/${v.bpDiastolic || '--'} mmHg • ${v.heartRate || '--'} bpm • ${v.temperature || '--'} °C`; } catch(e){ return 'N/A'; } })()}</div>` : ''}
+                    ${hs.diagnosis ? `<div style="font-size: 12px; color: #334155; margin-top: 2px;"><strong>Diagnosis:</strong> ${hs.diagnosis}</div>` : ''}
+                    ${hs.treatmentPlan ? `<div style="font-size: 12px; color: #334155;"><strong>Treatment:</strong> ${hs.treatmentPlan}</div>` : ''}
                     <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">By ${hs.doctorName || 'Unknown'}</div>
                   </div>
                 `).join('')}
-              </div>
-              ` : ''}
+              `) : ''}
               
-              ${data.examinations && data.examinations.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Examination History</h4>
-                ${data.examinations.slice(0, 10).map(exam => {
-                  const vs = exam.vitalSigns || {};
-                  return `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">${new Date(exam.examinationDate).toLocaleDateString()} - ${exam.doctorName || 'Unknown'}</div>
-                    ${vs.bpSystolic ? `<div style="font-size: 12px; color: #475569;">BP: ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg | HR: ${vs.heartRate || '--'} bpm | Temp: ${vs.temperature || '--'} °C</div>` : ''}
-                    ${exam.chiefComplaint ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Complaint:</strong> ${exam.chiefComplaint}</div>` : ''}
-                    ${exam.findings ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Findings:</strong> ${exam.findings}</div>` : ''}
-                    ${exam.diagnosis ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Diagnosis:</strong> ${exam.diagnosis}</div>` : ''}
-                    ${exam.treatmentPlan ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Treatment:</strong> ${exam.treatmentPlan}</div>` : ''}
-                    ${exam.recommendations ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px;"><strong>Recommendations:</strong> ${exam.recommendations}</div>` : ''}
-                  </div>
-                  `;
-                }).join('')}
-              </div>
-              ` : ''}
-              
-              ${data.admissions && data.admissions.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Admissions History</h4>
-                ${data.admissions.map(adm => `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">
-                      ${adm.admissionType ? adm.admissionType.charAt(0).toUpperCase() + adm.admissionType.slice(1) : 'Admission'} - Room ${adm.roomNumber || 'N/A'} Bed ${adm.bedNumber || 'N/A'}
-                    </div>
-                    <div style="font-size: 12px; color: #64748b;">${new Date(adm.admissionDate).toLocaleDateString()} - ${adm.status || 'Active'}</div>
-                    ${adm.reason ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Reason:</strong> ${adm.reason}</div>` : ''}
-                    ${adm.admittingDiagnosis ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Diagnosis:</strong> ${adm.admittingDiagnosis}</div>` : ''}
-                    ${adm.dischargeDate ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px;"><strong>Discharged:</strong> ${new Date(adm.dischargeDate).toLocaleDateString()}</div>` : ''}
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">By ${adm.doctorName || 'Unknown'}</div>
-                  </div>
-                `).join('')}
-              </div>
-              ` : ''}
-              
-              ${data.roundChecks && data.roundChecks.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Round Checks & Follow-ups</h4>
-                ${data.roundChecks.map(rc => {
+              ${roundChecks.length > 0 ? card('Round Checks & Follow-ups', `
+                ${roundChecks.slice(0, 10).map(rc => {
                   const vs = rc.vitalSigns || {};
+                  const vitalsText = [vs.bpSystolic, vs.heartRate, vs.temperature].some(Boolean)
+                    ? `${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg • ${vs.heartRate || '--'} bpm • ${vs.temperature || '--'} °C`
+                    : null;
                   return `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${rc.checkType ? rc.checkType.charAt(0).toUpperCase() + rc.checkType.slice(1) : 'Check'} - ${new Date(rc.checkDate).toLocaleDateString()}</div>
-                      <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: ${rc.status === 'resolved' ? '#dcfce7' : rc.status === 'escalated' ? '#fee2e2' : '#fef3c7'}; color: ${rc.status === 'resolved' ? '#16a34a' : rc.status === 'escalated' ? '#dc2626' : '#d97706'};">${rc.status || 'ongoing'}</span>
-                    </div>
-                    ${vs.bpSystolic ? `<div style="font-size: 12px; color: #475569;">BP: ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} | HR: ${vs.heartRate || '--'} | Temp: ${vs.temperature || '--'}°C</div>` : ''}
-                    ${rc.notes ? `<div style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Notes:</strong> ${rc.notes}</div>` : ''}
-                    ${rc.followUpNotes && rc.followUpNotes.length > 0 ? `
-                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f1f5f9;">
-                        ${rc.followUpNotes.slice(-2).map(n => `
-                          <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;"><strong>${n.checkType}:</strong> ${n.text} <span style="float: right; color: #94a3b8;">${new Date(n.createdAt).toLocaleDateString()}</span></div>
-                        `).join('')}
+                    <div style="padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${rc.checkType ? rc.checkType.charAt(0).toUpperCase() + rc.checkType.slice(1) : 'Check'}</div>
+                        <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${rc.status === 'resolved' ? '#dcfce7' : rc.status === 'escalated' ? '#fee2e2' : '#fef3c7'}; color: ${rc.status === 'resolved' ? '#16a34a' : rc.status === 'escalated' ? '#dc2626' : '#d97706'};">${rc.status || 'ongoing'}</span>
                       </div>
-                    ` : ''}
-                  </div>
+                      <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">${new Date(rc.checkDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} ${rc.checkedByName ? '• ' + rc.checkedByName : ''}</div>
+                      ${vitalsText ? `<div style="font-size: 12px; color: #475569; margin-bottom: 4px;">${vitalsText}</div>` : ''}
+                      ${rc.notes ? `<div style="font-size: 12px; color: #334155;"><strong>Notes:</strong> ${rc.notes}</div>` : ''}
+                      ${rc.followUpNotes && rc.followUpNotes.length > 0 ? `
+                        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #f1f5f9;">
+                          ${rc.followUpNotes.slice(-3).map(n => `
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;"><strong>${n.checkType || 'Note'}:</strong> ${n.text}</div>
+                          `).join('')}
+                        </div>
+                      ` : ''}
+                    </div>
                   `;
                 }).join('')}
-              </div>
-              ` : ''}
+              `) : ''}
               
-              ${data.testReferrals && data.testReferrals.length > 0 ? `
-              <div style="margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">Test Referrals</h4>
-                ${data.testReferrals.map(tr => `
-                  <div style="padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <div>
-                        <div style="font-size: 14px; font-weight: 500; color: #0f172a;">${tr.testName || tr.testType || 'Test'}</div>
-                        <div style="font-size: 12px; color: #64748b;">${tr.urgency || 'Routine'} - ${new Date(tr.createdAt).toLocaleDateString()}</div>
-                      </div>
-                      <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: ${tr.status === 'completed' ? '#dcfce7' : tr.status === 'pending' ? '#fef3c7' : '#dbeafe'}; color: ${tr.status === 'completed' ? '#16a34a' : tr.status === 'pending' ? '#d97706' : '#2563eb'};">${tr.status || 'Pending'}</span>
+              ${testReferrals.length > 0 ? card('Test Referrals', `
+                ${testReferrals.map(tr => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                    <div>
+                      <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${tr.testName || tr.testType || 'Test'}</div>
+                      <div style="font-size: 12px; color: #64748b;">${new Date(tr.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} ${tr.doctorName ? '• ' + tr.doctorName : ''}</div>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                      <span style="padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: ${tr.urgency === 'routine' ? '#f1f5f9' : tr.urgency === 'urgent' ? '#fef3c7' : '#fee2e2'}; color: ${tr.urgency === 'routine' ? '#475569' : tr.urgency === 'urgent' ? '#d97706' : '#dc2626'};">${tr.urgency || 'routine'}</span>
+                      <span style="padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${tr.status === 'completed' ? '#dcfce7' : tr.status === 'pending' ? '#fef3c7' : '#dbeafe'}; color: ${tr.status === 'completed' ? '#16a34a' : tr.status === 'pending' ? '#d97706' : '#2563eb'};">${tr.status || 'Pending'}</span>
                     </div>
                   </div>
                 `).join('')}
-              </div>
-              ` : ''}
+              `) : ''}
               
-              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; justify-content: flex-end;">
-                <button onclick="closePatientProfileModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; font-size: 14px;">Close</button>
+              <div style="margin-top: 6px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #e2e8f0; color: #64748b; font-size: 12px; text-align: center;">
+                Profile updates automatically as new records are added to the system.
               </div>
             `;
           } else {
-            modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Failed to load patient details</p>';
+            modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Failed to load patient details</div>';
           }
         } else {
-          modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Failed to load patient details</p>';
+          modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Failed to load patient details</div>';
         }
       } catch (error) {
         console.error('Error loading patient profile:', error);
-        modalBody.innerHTML = '<p style="color: #dc2626; text-align: center;">Error loading patient details</p>';
+        modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Error loading patient details</div>';
       }
     }
 
