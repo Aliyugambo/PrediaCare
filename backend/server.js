@@ -28,6 +28,8 @@ const billingRoutes = require('./routes/billing');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Serve static files from root directory
 app.use(express.static(path.join(__dirname, '..')));
 
