@@ -27,6 +27,7 @@ const pharmacyRoutes = require('./routes/pharmacy');
 const billingRoutes = require('./routes/billing');
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.set('trust proxy', 1);
 
