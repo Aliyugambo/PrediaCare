@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const pool = require('../config/database');
+const { sendEmail } = require('../config/email');
 const router = express.Router();
 
 // Rate limiter for auth endpoints
@@ -57,6 +58,47 @@ router.post('/register', authLimiter, async (req, res) => {
     const newUserId = newUser[0].id;
 
     connection.release();
+
+    const welcomeHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+          .detail { margin: 10px 0; }
+          .label { font-weight: bold; color: #555; }
+          .value { color: #333; }
+          .footer { background-color: #333; color: white; padding: 15px; text-align: center; border-radius: 0 0 5px 5px; font-size: 12px; }
+          .cta-button { display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2>Welcome to PrediaCare Clinic</h2>
+          </div>
+          <div class="content">
+            <p>Dear <strong>${name}</strong>,</p>
+            <p>Thank you for creating an account with <strong>PrediaCare Clinic</strong>. We're excited to have you on board.</p>
+            <p>Your account has been successfully registered. You can now log in to access your patient dashboard, book appointments, and manage your health records.</p>
+            <p style="text-align: center;">
+              <a href="#" class="cta-button">Proceed to Login</a>
+            </p>
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from PrediaCare Clinic.</p>
+            <p>© 2026 PrediaCare Clinic. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    sendEmail(email, 'Welcome to PrediaCare Clinic', welcomeHtml).catch(() => {});
 
     res.status(201).json({ 
       success: true, 

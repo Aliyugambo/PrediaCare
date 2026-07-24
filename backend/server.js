@@ -269,7 +269,7 @@ app.get('/doctor-dashboard.html', checkRole(['doctor']), (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'doctor-dashboard.html'));
 });
 
-app.get('/staff-dashboard.html', checkRole(['staff', 'admin']), (req, res) => {
+app.get('/staff-dashboard.html', checkRole(['staff', 'admin','nurse']), (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'staff-dashboard.html'));
 });
 
