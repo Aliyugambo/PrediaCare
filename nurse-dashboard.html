@@ -1223,12 +1223,12 @@
         <button class="header-icon-btn"><i class="far fa-moon"></i></button>
         <div class="user-dropdown">
           <button class="user-btn">
-            <div class="user-avatar" id="userInitials">SJ</div>
+            <div class="user-avatar">SJ</div>
           </button>
           <div class="dropdown-menu">
             <div class="dropdown-header">
-              <p class="user-name" id="userName">Dr. Sarah Johnson</p>
-              <p class="user-email" id="userEmail">admin@prediacare.com</p>
+              <p class="user-name">Dr. Sarah Johnson</p>
+              <p class="user-email">admin@prediacare.com</p>
             </div>
             <div class="dropdown-divider"></div>
             <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
@@ -1255,20 +1255,20 @@
           <a href="#" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-th-large"></i><span>Dashboard</span></div>
           </a>
-          <!-- <a href="#" class="nav-item">
+          <a href="#" class="nav-item has-submenu expanded">
             <div class="nav-item-left"><i class="fas fa-users"></i><span>Staff</span></div><i class="fas fa-chevron-down chevron"></i>
-          </a> -->
-          <!-- <div class="submenu show">
+          </a>
+          <div class="submenu show">
             <a href="staff-dashboard.html" class="submenu-item">All Staff</a>
             <a href="staff-add.html" class="submenu-item">Add Staff</a>
             <a href="staff-roles.html" class="submenu-item">Roles & Permissions</a>
             <a href="staff-attendance.html" class="submenu-item">Attendance</a>
             <a href="#" class="submenu-item">Records</a>
-          </div> -->
-          <a href="#" class="nav-item">
+          </div>
+          <a href="doctor-dashboard.html" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-user-md"></i><span>Doctors</span></div>
           </a>
-          <a href="#" class="nav-item">
+          <a href="patient-dashboard.html" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-user-injured"></i><span>Patients</span></div>
           </a>
           <a href="#" class="nav-item has-submenu">
@@ -1331,17 +1331,17 @@
         <!-- Welcome Section -->
         <section class="welcome-section">
           <div class="welcome-text">
-            <h1>Nurses Management</h1>
-            <p>Manage Patients</p>
+            <h1>Staff Management</h1>
+            <p>Manage clinic staff, roles, and permissions</p>
           </div>
-          <!-- <div class="page-actions">
+          <div class="page-actions">
             <button class="action-btn" onclick="addStaff()"><i class="fas fa-plus"></i> Add New Staff</button>
             <button class="action-btn secondary" onclick="showMoreOptions()"><i class="fas fa-chevron-down"></i> More Options</button>
-          </div> -->
+          </div>
         </section>
 
         <!-- Stats Grid -->
-        <!-- <section class="stats-grid">
+        <section class="stats-grid">
           <div class="stat-card purple">
             <div class="stat-header">
               <div class="stat-icon-wrap"><i class="fas fa-users"></i></div>
@@ -1378,14 +1378,14 @@
             <div class="stat-number">3</div>
             <p class="stat-desc">Inactive staff</p>
           </div>
-        </section> -->
+        </section>
 
         <!-- Tabs -->
         <div class="tabs-container">
           <div class="tabs-header">
-            <!-- <button class="tab-btn active" data-tab="staff">Staff Directory</button> -->
-            <!-- <button class="tab-btn" data-tab="roles">Roles & Permissions</button> -->
-            <!-- <button class="tab-btn" data-tab="attendance">Attendance</button> -->
+            <button class="tab-btn active" data-tab="staff">Staff Directory</button>
+            <button class="tab-btn" data-tab="roles">Roles & Permissions</button>
+            <button class="tab-btn" data-tab="attendance">Attendance</button>
             <button class="tab-btn" data-tab="test-referrals">Test Referrals</button>
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
             <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
@@ -1393,7 +1393,7 @@
           
           <div class="tab-content">
            
-            <!-- <div class="tab-pane active" id="staff">
+            <div class="tab-pane active" id="staff">
               <div class="content-grid">
                 <div class="content-card">
                   <div class="content-card-header">
@@ -1491,9 +1491,9 @@
                 </div>
               </div>
             </div>
-             -->
+            
             <!-- Roles Tab -->
-            <!-- <div class="tab-pane" id="roles">
+            <div class="tab-pane" id="roles">
               <div class="content-grid">
                 <div class="content-card">
                   <div class="content-card-header">
@@ -1513,10 +1513,10 @@
                   </div>
                 </div>
               </div>
-            </div> -->
+            </div>
             
-           
-            <!-- <div class="tab-pane" id="attendance">
+            <!-- Attendance Tab -->
+            <div class="tab-pane" id="attendance">
               <div class="content-grid">
                 <div class="content-card">
                   <div class="content-card-header">
@@ -1536,9 +1536,9 @@
                   </div>
                 </div>
               </div>
-            </div> -->
+            </div>
             
-            
+            <!-- Test Referrals Tab -->
             <div class="tab-pane" id="test-referrals">
               <div class="content-grid">
                 <div class="content-card">
@@ -1924,12 +1924,11 @@
         console.log('checkAuthentication: Role check comparison:');
         console.log('  - Is staff?', currentUser.role === 'staff');
         console.log('  - Is admin?', currentUser.role === 'admin');
-        console.log('  - Is nurse?', currentUser.role === 'nurse');
         console.log('  - Is doctor?', currentUser.role === 'doctor');
         console.log('  - Is patient?', currentUser.role === 'patient');
 
-        // Check if user is staff, admin, or nurse
-        if (currentUser.role !== 'staff' && currentUser.role !== 'admin' && currentUser.role !== 'nurse') {
+        // Check if user is staff or admin
+        if (currentUser.role !== 'staff' && currentUser.role !== 'admin') {
           console.log('checkAuthentication: ❌ Role check FAILED!');
           console.log('checkAuthentication: User role "' + currentUser.role + '" is not allowed');
           alert('Access Denied: You don\'t have access to this dashboard. Your role is: ' + currentUser.role);
@@ -1967,14 +1966,6 @@
       if (avatar) avatar.textContent = initials || 'U';
       if (profileName) profileName.textContent = name;
       if (profileRole) profileRole.textContent = roleLabel;
-
-      const headerInitials = document.getElementById('userInitials');
-      const headerName = document.getElementById('userName');
-      const headerEmail = document.getElementById('userEmail');
-
-      if (headerInitials) headerInitials.textContent = initials || 'U';
-      if (headerName) headerName.textContent = name;
-      if (headerEmail) headerEmail.textContent = currentUser.email || '';
     }
 
     function initializePage() {

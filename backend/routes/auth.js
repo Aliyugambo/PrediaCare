@@ -121,7 +121,7 @@ router.post('/login', authLimiter, async (req, res) => {
     }
 
     // Validate role (include admin so admins can authenticate)
-    if (!['patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist'].includes(role)) {
+    if (!['patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
@@ -215,7 +215,7 @@ router.post('/login', authLimiter, async (req, res) => {
     
     if (user.role === 'doctor') {
       redirectUrl = '/doctor-dashboard.html';
-    } else if (user.role === 'staff') {
+    } else if (user.role === 'staff' || user.role === 'nurse') {
       redirectUrl = '/staff-dashboard.html';
     } else if (user.role === 'admin') {
       redirectUrl = '/admin-dashboard.html';

@@ -437,8 +437,8 @@
                                                                 <option value="">Select Role</option>
                                                                 <option value="patient">Patient</option>
                                                                 <option value="doctor">Doctor</option>
-                                                                <option value="staff">Staff</option>
-                                                                <option value="staff">Nurses</option>
+                                                                <!-- <option value="staff">Staff</option> -->
+                                                                <option value="nurse">Nurses</option>
                                                                 <option value="admin">Admin</option>
                                                                 <option value="customer_care">Customer Care</option>
                                                                 <option value="diagnostic">Diagnostic Staff</option>
@@ -775,6 +775,23 @@
                 errorMsg.style.display = 'none';
             }
         })();
+        
+        // Password visibility toggle
+        document.querySelectorAll('.eye-icon').forEach(function(icon) {
+            icon.addEventListener('click', function() {
+                const input = this.closest('.form-floating').querySelector('input');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.querySelector('i').classList.remove('fa-eye-slash');
+                    this.querySelector('i').classList.add('fa-eye');
+                } else {
+                    input.type = 'password';
+                    this.querySelector('i').classList.remove('fa-eye');
+                    this.querySelector('i').classList.add('fa-eye-slash');
+                }
+            });
+        });
         </script>
     </body>
 </html>

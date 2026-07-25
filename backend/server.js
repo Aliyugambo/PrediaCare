@@ -277,6 +277,9 @@ app.get('/pharmacist-dashboard.html', checkRole(['pharmacist', 'admin']), (req, 
   res.sendFile(path.join(__dirname, '..', 'pharmacist-dashboard.html'));
 });
 
+app.get('/nurse-dashboard.html', checkRole(['staff','admin','nurse']), (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'nurse-dashboard.html'));
+});
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running' });

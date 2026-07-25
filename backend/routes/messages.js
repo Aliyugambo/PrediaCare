@@ -187,8 +187,8 @@ router.post('/', checkPermission(PERMISSIONS.MESSAGE_DOCTOR), async (req, res) =
     
     const recipient = users[0];
     
-    // Check if recipient is a doctor or staff
-    const isDoctorOrStaff = recipient.role === 'doctor' || recipient.role === 'staff';
+    // Check if recipient is a doctor, staff, or nurse
+    const isDoctorOrStaff = recipient.role === 'doctor' || recipient.role === 'staff' || recipient.role === 'nurse';
     
     // If not doctor/staff, check if there's an appointment relationship
     let actualDoctorId = null;

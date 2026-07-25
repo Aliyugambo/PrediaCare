@@ -31,7 +31,7 @@ async function initializeDatabase() {
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
-        role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist') NOT NULL DEFAULT 'patient',
+        role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse') NOT NULL DEFAULT 'patient',
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -41,7 +41,7 @@ async function initializeDatabase() {
     
     // Ensure admin role exists in ENUM (for older installations)
     try {
-      await connection.execute(`ALTER TABLE users MODIFY COLUMN role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist') NOT NULL DEFAULT 'patient'`);
+      await connection.execute(`ALTER TABLE users MODIFY COLUMN role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse') NOT NULL DEFAULT 'patient'`);
       console.log('Updated users table to include admin role');
     } catch (e) {
       // Column might already have the correct type

@@ -798,6 +798,23 @@
                 errorMsg.style.display = 'none';
             }
         })();
+        
+        // Password visibility toggle
+        document.querySelectorAll('.eye-icon').forEach(function(icon) {
+            icon.addEventListener('click', function() {
+                const input = this.closest('.form-floating').querySelector('input');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.querySelector('i').classList.remove('fa-eye-slash');
+                    this.querySelector('i').classList.add('fa-eye');
+                } else {
+                    input.type = 'password';
+                    this.querySelector('i').classList.remove('fa-eye');
+                    this.querySelector('i').classList.add('fa-eye-slash');
+                }
+            });
+        });
         </script>
     </body>
 </html>

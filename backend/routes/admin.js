@@ -339,6 +339,54 @@ router.post('/toggle-user-status', requireAdmin, async (req, res) => {
   }
 });
 
+// Update user information
+router.put('/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role, is_active } = req.body;
+
+    if (!name || !email || !role) {
+      return res.status(400).json({ success: false, message: 'Name, email, and role are required' });
+    }
+
+    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist'].includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [existing] = await connection.execute('SELECT id, email FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const [emailConflict] = await connection.execute('SELECT id FROM users WHERE email = ? AND id != ?', [email, id]);
+    if (emailConflict.length > 0) {
+      connection.release();
+      return res.status(409).json({ success: false, message: 'Email is already used by another user' });
+    }
+
+    const updates = [];
+    const params = [];
+
+    if (name) { updates.push('name = ?'); params.push(name); }
+    if (email) { updates.push('email = ?'); params.push(email); }
+    if (role) { updates.push('role = ?'); params.push(role); }
+    if (typeof is_active !== 'undefined') { updates.push('is_active = ?'); params.push(is_active ? 1 : 0); }
+
+    params.push(id);
+
+    await connection.execute(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+    connection.release();
+
+    res.json({ success: true, message: 'User updated successfully' });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Delete a user (doctor or staff)
 router.delete('/delete-user', requireAdmin, async (req, res) => {
   try {

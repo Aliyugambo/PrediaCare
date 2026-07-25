@@ -279,11 +279,13 @@
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
         <div class="sidebar-profile">
-          <div class="sidebar-avatar">JD</div>
+          <div class="sidebar-avatar" id="sidebarAvatar">JD</div>
           <div class="sidebar-profile-info">
-            <p class="sidebar-profile-name">John Doe</p>
-            <p class="sidebar-profile-role">Patient</p>
+            <p class="sidebar-profile-name" id="sidebarProfileName">User</p>
+            <p class="sidebar-profile-role" id="sidebarProfileRole">Patient</p>
           </div>
+        </div>
+      </div>
       </div>
     </aside>
 
@@ -703,12 +705,12 @@
       if (headerEmail) headerEmail.textContent = currentUser.email || '';
       
       // Update sidebar profile
-      const sidebarName = document.querySelector('.sidebar-profile-name');
-      const sidebarAvatar = document.querySelector('.sidebar-avatar');
-      const sidebarRole = document.querySelector('.sidebar-profile-role');
+      const sidebarName = document.getElementById('sidebarProfileName');
+      const sidebarAvatar = document.getElementById('sidebarAvatar');
+      const sidebarRole = document.getElementById('sidebarProfileRole');
       if (sidebarName) sidebarName.textContent = currentUser.name || 'Patient';
       if (sidebarAvatar) sidebarAvatar.textContent = initials;
-      if (sidebarRole) sidebarRole.textContent = 'Patient';
+      if (sidebarRole) sidebarRole.textContent = (currentUser.role || 'patient').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
     
     // Load demo data for testing without backend

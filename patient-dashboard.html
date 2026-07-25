@@ -1937,11 +1937,11 @@
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
         <div class="sidebar-profile">
-          <div class="sidebar-avatar" id="sidebarAvatar">JD</div>
-          <div class="sidebar-profile-info">
-            <p class="sidebar-profile-name" id="sidebarProfileName">John Doe</p>
-            <p class="sidebar-profile-role">Patient</p>
-          </div>
+           <div class="sidebar-avatar" id="sidebarAvatar">JD</div>
+           <div class="sidebar-profile-info">
+             <p class="sidebar-profile-name" id="sidebarProfileName">John Doe</p>
+             <p class="sidebar-profile-role" id="sidebarProfileRole">Patient</p>
+           </div>
         </div>
       </div>
     </aside>
@@ -2586,6 +2586,8 @@
       // Update sidebar
       document.getElementById('sidebarAvatar').textContent = initials;
       document.getElementById('sidebarProfileName').textContent = currentUser.name || 'Patient';
+      const sidebarProfileRole = document.getElementById('sidebarProfileRole');
+      if (sidebarProfileRole) sidebarProfileRole.textContent = (currentUser.role || 'patient').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
     
     // Load all dashboard data from database

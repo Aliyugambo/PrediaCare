@@ -1118,8 +1118,8 @@
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>
                 <option value="doctor">Doctor</option>
-                <option value="staff">Nurse</option>
-                <!-- <option value="staff">Nurse</option> -->
+                <option value="staff">Staff</option>
+                <option value="nurse">Nurse</option>
                 <option value="patient">Patient</option>
               </select>
             </div>
@@ -1696,8 +1696,8 @@
           <label class="form-label">Role</label>
           <select class="form-control" id="newUserRole">
             <option value="doctor">Doctor</option>
-            <option value="staff">Staff</option>
-            <option value="staff">Nurse</option>
+            <!-- <option value="staff">Staff</option> -->
+            <option value="nurse">Nurse</option>
             <option value="patient">Patient</option>
             <option value="customer_care">Customer Care</option>
             <option value="diagnostic">Diagnostic Staff</option>
@@ -1711,7 +1711,52 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- Edit User Modal -->
+  <div class="modal-overlay" id="modal-editUser" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Edit User</h3>
+        <button class="modal-close" onclick="closeModal('editUser')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="editUserId">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="editUserName" placeholder="Enter full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="editUserEmail" placeholder="Enter email address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-control" id="editUserRole">
+            <option value="doctor">Doctor</option>
+            <option value="staff">Staff</option>
+            <option value="nurse">Nurse</option>
+            <option value="patient">Patient</option>
+            <option value="admin">Admin</option>
+            <option value="customer_care">Customer Care</option>
+            <option value="diagnostic">Diagnostic Staff</option>
+            <option value="pharmacist">Pharmacist</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="editUserStatus">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeModal('editUser')">Cancel</button>
+        <button class="btn btn-primary" onclick="updateUser()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Send Message Modal -->
   <div class="modal-overlay" id="modal-sendMessage">
     <div class="modal">
@@ -2393,7 +2438,7 @@
             <td>${created}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-icon" title="Edit" onclick="editUser(${user.id})"><i class="fas fa-edit"></i></button>
                 <button class="btn btn-sm btn-icon btn-danger" title="Delete" onclick="deleteUser(${user.id})"><i class="fas fa-trash"></i></button>
               </div>
             </td>
@@ -3430,6 +3475,66 @@
       } catch (error) {
         console.error('Error deleting user:', error);
         alert('Error deleting user');
+      }
+    }
+
+    function editUser(userId) {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+
+      document.getElementById('editUserId').value = user.id;
+      document.getElementById('editUserName').value = user.name || '';
+      document.getElementById('editUserEmail').value = user.email || '';
+      document.getElementById('editUserRole').value = user.role || 'patient';
+      document.getElementById('editUserStatus').value = user.is_active ? '1' : '0';
+
+      const modal = document.getElementById('modal-editUser');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    async function updateUser() {
+      const userId = document.getElementById('editUserId').value;
+      const name = document.getElementById('editUserName').value.trim();
+      const email = document.getElementById('editUserEmail').value.trim();
+      const role = document.getElementById('editUserRole').value;
+      const isActive = document.getElementById('editUserStatus').value === '1';
+
+      if (!name || !email) {
+        alert('Name and email are required');
+        return;
+      }
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) {
+          headers['XSRF-TOKEN'] = csrfToken;
+        }
+
+        const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify({ name, email, role, is_active: isActive })
+        });
+
+        const newToken = response.headers.get('XSRF-TOKEN');
+        if (newToken) {
+          csrfToken = newToken;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('User updated successfully');
+          closeModal('editUser');
+          loadUsers();
+          loadDashboard();
+        } else {
+          alert(data.message || 'Failed to update user');
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+        alert('Error updating user');
       }
     }
     

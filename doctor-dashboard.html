@@ -2557,10 +2557,10 @@
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
         <div class="sidebar-profile">
-          <div class="sidebar-avatar">SJ</div>
+          <div class="sidebar-avatar" id="sidebarAvatar">SJ</div>
           <div class="sidebar-profile-info">
-            <p class="sidebar-profile-name">Dr. Sarah Johnson</p>
-            <p class="sidebar-profile-role">Administrator</p>
+            <p class="sidebar-profile-name" id="sidebarProfileName">User</p>
+            <p class="sidebar-profile-role" id="sidebarProfileRole">Staff</p>
           </div>
         </div>
       </div>
@@ -3618,12 +3618,12 @@
       if (headerEmail) headerEmail.textContent = currentUser.email || '';
       
       // Update sidebar profile
-      const sidebarName = document.querySelector('.sidebar-profile-name');
-      const sidebarAvatar = document.querySelector('.sidebar-avatar');
-      const sidebarRole = document.querySelector('.sidebar-profile-role');
+      const sidebarName = document.querySelector('#sidebarProfileName');
+      const sidebarAvatar = document.querySelector('#sidebarAvatar');
+      const sidebarRole = document.querySelector('#sidebarProfileRole');
       if (sidebarName) sidebarName.textContent = currentUser.name || 'Doctor';
       if (sidebarAvatar) sidebarAvatar.textContent = initials;
-      if (sidebarRole) sidebarRole.textContent = 'Doctor';
+      if (sidebarRole) sidebarRole.textContent = (currentUser.role || 'doctor').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
     
     // Load all dashboard data from API
