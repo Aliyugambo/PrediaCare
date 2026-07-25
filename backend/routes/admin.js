@@ -941,10 +941,10 @@ router.get('/medications', requireAdmin, async (req, res) => {
         u_doctor.name as doctor_name
       FROM medications m
       JOIN users u_patient ON m.patient_id = u_patient.id
-      JOIN users u_doctor ON m.prescribed_by = u_doctor.id
+      JOIN users u_doctor ON m.doctor_id = u_doctor.id
       ORDER BY m.created_at DESC
-      LIMIT ? OFFSET ?
-    `, [parseInt(limit), parseInt(offset)]);
+      LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
+    `);
     
     const [countResult] = await connection.execute('SELECT COUNT(*) as total FROM medications');
     
@@ -962,7 +962,7 @@ router.get('/medications', requireAdmin, async (req, res) => {
         status: m.status,
         prescribedAt: m.created_at,
         patient: { id: m.patient_id, name: m.patient_name },
-        doctor: { id: m.prescribed_by, name: m.doctor_name }
+        doctor: { id: m.doctor_id, name: m.doctor_name }
       })),
       total: countResult[0].total
     });
