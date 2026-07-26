@@ -464,7 +464,7 @@ router.get('/results', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res
     // Results table
     let query = `
       SELECT 
-        r.id, r.test_name, r.test_type as type, r.created_at, r.visibility,
+        r.id, r.test_name, r.test_type as type, r.created_at,
         CONCAT(u.name, ' (', u.email, ')') as patient_name,
         'result' as source
       FROM results r
