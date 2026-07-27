@@ -1063,6 +1063,19 @@
       font-weight: 500;
     }
     
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge-active { background: #d1fae5; color: #059669; }
+    .badge-inactive { background: #fee2e2; color: #dc2626; }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-completed { background: #d1fae5; color: #059669; }
+    
     .role-badge.admin { background: #ede9fe; color: #7c3aed; }
     .role-badge.doctor { background: #dbeafe; color: #2563eb; }
     .role-badge.nurse { background: #d1fae5; color: #059669; }
@@ -1341,54 +1354,48 @@
         </section>
 
         <!-- Stats Grid -->
-        <!-- <section class="stats-grid">
+        <section class="stats-grid">
           <div class="stat-card purple">
             <div class="stat-header">
               <div class="stat-icon-wrap"><i class="fas fa-users"></i></div>
-              <span class="stat-badge">+5</span>
             </div>
-            <div class="stat-label">Total Staff</div>
-            <div class="stat-number">63</div>
-            <p class="stat-desc">Active staff members</p>
+            <div class="stat-label">Total Nurses</div>
+            <div class="stat-number" id="statTotalNurses">-</div>
+            <p class="stat-desc">All nurses</p>
           </div>
           <div class="stat-card emerald">
             <div class="stat-header">
               <div class="stat-icon-wrap"><i class="fas fa-user-check"></i></div>
-              <span class="stat-badge">52</span>
             </div>
-            <div class="stat-label">Active</div>
-            <div class="stat-number">52</div>
+            <div class="stat-label">Active Nurses</div>
+            <div class="stat-number" id="statActiveNurses">-</div>
             <p class="stat-desc">Currently active</p>
           </div>
           <div class="stat-card amber">
             <div class="stat-header">
               <div class="stat-icon-wrap"><i class="fas fa-calendar-minus"></i></div>
-              <span class="stat-badge">8</span>
             </div>
             <div class="stat-label">On Leave</div>
-            <div class="stat-number">8</div>
-            <p class="stat-desc">On leave today</p>
+            <div class="stat-number" id="statOnLeaveNurses">-</div>
+            <p class="stat-desc">On leave</p>
           </div>
           <div class="stat-card rose">
             <div class="stat-header">
               <div class="stat-icon-wrap"><i class="fas fa-user-times"></i></div>
-              <span class="stat-badge">3</span>
             </div>
             <div class="stat-label">Inactive</div>
-            <div class="stat-number">3</div>
-            <p class="stat-desc">Inactive staff</p>
+            <div class="stat-number" id="statInactiveNurses">-</div>
+            <p class="stat-desc">Inactive nurses</p>
           </div>
-        </section> -->
+        </section>
 
         <!-- Tabs -->
         <div class="tabs-container">
           <div class="tabs-header">
-            <!-- <button class="tab-btn active" data-tab="staff">Staff Directory</button> -->
-            <!-- <button class="tab-btn" data-tab="roles">Roles & Permissions</button> -->
-            <!-- <button class="tab-btn" data-tab="attendance">Attendance</button> -->
             <button class="tab-btn" data-tab="test-referrals">Test Referrals</button>
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
             <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
+            <button class="tab-btn" data-tab="patients">Patients</button>
           </div>
           
           <div class="tab-content">
@@ -1613,6 +1620,52 @@
                     </div>
                     <div id="appointmentsForVitalsList">
                       <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Patients Tab -->
+            <div class="tab-pane" id="patients">
+              <div class="content-grid">
+                <div class="content-card" style="grid-column: span 2;">
+                  <div class="content-card-header">
+                    <h3>Patients</h3>
+                    <p>View all patients - admitted and non-admitted</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                      <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Search Patients</label>
+                        <input type="text" id="patientSearch" placeholder="Search by name or email..." onkeyup="searchPatients()" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                      </div>
+                      <div class="form-group" style="min-width: 160px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Status</label>
+                        <select id="patientStatusFilter" onchange="filterPatients()" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                          <option value="all">All Patients</option>
+                          <option value="admitted">Admitted</option>
+                          <option value="non-admitted">Non-Admitted</option>
+                        </select>
+                      </div>
+                      <button class="action-btn secondary" onclick="loadPatients()"><i class="fas fa-sync"></i> Refresh</button>
+                    </div>
+                    <div class="table-container">
+                      <table class="staff-table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Admission</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                          <tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -1844,6 +1897,22 @@
     </div>
   </div>
 
+  <!-- Diagnoses Modal -->
+  <div id="diagnosesModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
+    <div style="background:white;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="diagnosesModalTitle" style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Patient Diagnoses</h3>
+        <button onclick="closeDiagnosesModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
+      </div>
+      <div id="diagnosesModalBody" style="padding: 20px; overflow-y: auto; flex: 1;">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; background: white; border-radius: 0 0 12px 12px;">
+        <button type="button" class="rc-btn rc-btn-secondary" onclick="closeDiagnosesModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // IMPORTANT: Access this page through https://<your-frontend-domain>/staff-dashboard.html
     // Do NOT open the file directly (file://) or API calls will fail
@@ -1985,7 +2054,12 @@
           this.classList.add('active');
           document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
           const pane = document.getElementById(this.dataset.tab);
-          if (pane) pane.classList.add('active');
+          if (pane) {
+            pane.classList.add('active');
+            if (this.dataset.tab === 'patients') {
+              loadPatients();
+            }
+          }
         });
       });
 
@@ -2010,8 +2084,197 @@
       if (form) form.addEventListener('submit', handleStaffFormSubmit);
 
       // initial load
+      loadNurseStats();
       fetchStaffList();
       loadTestReferrals();
+    }
+
+    // Load nurse stats for dashboard cards
+    async function loadNurseStats() {
+      try {
+        const response = await fetch(`${API_BASE}/staff/nurse-stats`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.success) {
+          const s = data.stats;
+          const totalEl = document.getElementById('statTotalNurses');
+          const activeEl = document.getElementById('statActiveNurses');
+          const onLeaveEl = document.getElementById('statOnLeaveNurses');
+          const inactiveEl = document.getElementById('statInactiveNurses');
+          if (totalEl) totalEl.textContent = s.total || 0;
+          if (activeEl) activeEl.textContent = s.active || 0;
+          if (onLeaveEl) onLeaveEl.textContent = s.onLeave || 0;
+          if (inactiveEl) inactiveEl.textContent = s.inactive || 0;
+        }
+      } catch (error) {
+        console.error('Error loading nurse stats:', error);
+      }
+    }
+
+    // Patients tab functions
+    async function loadPatients() {
+      const tbody = document.getElementById('patientsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
+      
+      const searchInput = document.getElementById('patientSearch');
+      const statusFilter = document.getElementById('patientStatusFilter');
+      const search = searchInput ? searchInput.value.trim() : '';
+      const status = statusFilter ? statusFilter.value : 'all';
+      
+      let url = `${API_BASE}/staff/patients?status=${encodeURIComponent(status)}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!data.success) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
+          return;
+        }
+        
+        const patients = data.patients || [];
+        if (patients.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = patients.map(p => `
+          <tr>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.email)}</td>
+            <td>${escapeHtml(p.phone || '-')}</td>
+            <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
+            <td>${p.status === 'admitted' ? `<span class="badge badge-active">Admitted</span><br><small>Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>` : '<span class="badge badge-inactive">Non-Admitted</span>'}</td>
+            <td>
+              <button class="action-btn" onclick="viewDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
+                <i class="fas fa-eye"></i> View Diagnoses
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading patients:', error);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
+      }
+    }
+
+    function searchPatients() {
+      loadPatients();
+    }
+
+    function filterPatients() {
+      loadPatients();
+    }
+
+    async function viewDiagnoses(patientId, patientName) {
+      const modal = document.getElementById('diagnosesModal');
+      const title = document.getElementById('diagnosesModalTitle');
+      const body = document.getElementById('diagnosesModalBody');
+      
+      if (!modal || !body) return;
+      
+      title.textContent = `Diagnoses - ${patientName}`;
+      modal.style.display = 'flex';
+      body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      try {
+        const response = await fetch(`${API_BASE}/staff/patients/${patientId}/diagnoses`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (!data.success) {
+          body.innerHTML = `<p style="color: #dc2626;">${data.message || 'Failed to load diagnoses'}</p>`;
+          return;
+        }
+        
+        const diagnoses = data.diagnoses;
+        let html = '';
+        
+        if (diagnoses.healthSummaries.length === 0 && diagnoses.examinations.length === 0 && diagnoses.admissions.length === 0) {
+          html = '<p style="color: #64748b; text-align: center; padding: 20px;">No diagnoses found for this patient</p>';
+        } else {
+          html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
+          
+          if (diagnoses.healthSummaries.length > 0) {
+            html += `<h4 style="margin: 0 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Health Summaries (${diagnoses.healthSummaries.length})</h4>`;
+            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            diagnoses.healthSummaries.forEach(h => {
+              html += `
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: #0f172a; font-size: 14px;">${escapeHtml(h.summaryType || 'General')}</strong>
+                    <span style="font-size: 12px; color: #64748b;">${new Date(h.date).toLocaleDateString()}</span>
+                  </div>
+                  ${h.diagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Diagnosis:</strong> ${escapeHtml(h.diagnosis)}</p>` : ''}
+                  ${h.treatmentPlan ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Treatment Plan:</strong> ${escapeHtml(h.treatmentPlan)}</p>` : ''}
+                  ${h.recommendations ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Recommendations:</strong> ${escapeHtml(h.recommendations)}</p>` : ''}
+                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(h.doctorName || 'Unknown')}</p>
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          
+          if (diagnoses.examinations.length > 0) {
+            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Examinations (${diagnoses.examinations.length})</h4>`;
+            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            diagnoses.examinations.forEach(e => {
+              html += `
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: #0f172a; font-size: 14px;">Examination</strong>
+                    <span style="font-size: 12px; color: #64748b;">${new Date(e.date).toLocaleDateString()}</span>
+                  </div>
+                  ${e.diagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Diagnosis:</strong> ${escapeHtml(e.diagnosis)}</p>` : ''}
+                  ${e.findings ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Findings:</strong> ${escapeHtml(e.findings)}</p>` : ''}
+                  ${e.treatmentPlan ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Treatment Plan:</strong> ${escapeHtml(e.treatmentPlan)}</p>` : ''}
+                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(e.doctorName || 'Unknown')} | Status: ${escapeHtml(e.status || 'N/A')}</p>
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          
+          if (diagnoses.admissions.length > 0) {
+            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Admissions (${diagnoses.admissions.length})</h4>`;
+            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            diagnoses.admissions.forEach(a => {
+              html += `
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: #0f172a; font-size: 14px;">Admission</strong>
+                    <span style="font-size: 12px; color: #64748b;">${new Date(a.admissionDate).toLocaleDateString()}</span>
+                  </div>
+                  ${a.admittingDiagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Admitting Diagnosis:</strong> ${escapeHtml(a.admittingDiagnosis)}</p>` : ''}
+                  ${a.reasonForAdmission ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Reason:</strong> ${escapeHtml(a.reasonForAdmission)}</p>` : ''}
+                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(a.doctorName || 'Unknown')} | Status: ${escapeHtml(a.admissionStatus || 'N/A')}</p>
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          
+          html += '</div>';
+        }
+        
+        body.innerHTML = html;
+      } catch (error) {
+        console.error('Error loading diagnoses:', error);
+        body.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 20px;">Error loading diagnoses</p>';
+      }
+    }
+
+    function closeDiagnosesModal() {
+      const modal = document.getElementById('diagnosesModal');
+      if (modal) modal.style.display = 'none';
     }
 
     // Toggle between list and grid view

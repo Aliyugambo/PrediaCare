@@ -471,6 +471,10 @@
           <i class="fas fa-users"></i>
           Walk-in Patients
         </a>
+        <a class="menu-item" data-tab="billing">
+          <i class="fas fa-file-invoice-dollar"></i>
+          Billing & Invoices
+        </a>
       </div>
       <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
         <a class="menu-item" href="sign-in.html" onclick="handleLogout()">
@@ -660,6 +664,87 @@
           </div>
         </div>
       </div>
+
+      <!-- Tab: Billing & Invoices -->
+      <div class="tab-pane" id="billing">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Generate Invoice</h3>
+          </div>
+          <form id="invoiceForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Patient *</label>
+                <select id="invoicePatient" required>
+                  <option value="">Select Patient</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Due Date *</label>
+                <input type="date" id="invoiceDueDate" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Services *</label>
+                <select id="invoiceServices" multiple style="height: 120px;">
+                  <option value="">Loading services...</option>
+                </select>
+                <small style="color: var(--text-secondary);">Hold Ctrl to select multiple services</small>
+              </div>
+              <div class="form-group">
+                <label>Payment Method</label>
+                <select id="invoicePaymentMethod">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="transfer">Bank Transfer</option>
+                  <option value="insurance">Insurance</option>
+                </select>
+                <label style="margin-top: 12px;">Notes</label>
+                <textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <button type="button" class="btn btn-secondary" onclick="resetInvoiceForm()">Reset</button>
+              <button type="submit" class="btn btn-primary">Generate Invoice</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent Invoices</h3>
+          </div>
+          <div class="search-bar">
+            <input type="text" id="invoiceSearch" placeholder="Search by invoice number or patient...">
+            <select id="invoiceStatusFilter">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="overdue">Overdue</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadInvoices()">Search</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Patient</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesTable">
+                <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -732,6 +817,11 @@
         // Load data for tab
         if (tabId === 'test-referrals') loadTestReferrals();
         if (tabId === 'walkins') loadWalkins();
+        if (tabId === 'billing') {
+          loadBillingServices();
+          loadPatientsForInvoice();
+          loadInvoices();
+        }
       });
     });
     
@@ -914,6 +1004,182 @@
     }
     
     window.handleLogout = handleLogout;
+
+    // ==================== BILLING FUNCTIONS ====================
+
+    async function loadBillingServices() {
+      const select = document.getElementById('invoiceServices');
+      if (!select) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/billing/services`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          select.innerHTML = data.services.map(s => 
+            `<option value="${s.id}">${escapeHtml(s.name)} - ₦${parseFloat(s.price).toFixed(2)}</option>`
+          ).join('');
+        }
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    }
+
+    async function loadPatientsForInvoice() {
+      const select = document.getElementById('invoicePatient');
+      if (!select) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/admin/users?role=patient&limit=100`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const options = data.users.map(u => 
+            `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
+          ).join('');
+          select.innerHTML = '<option value="">Select Patient</option>' + options;
+        }
+      } catch (error) {
+        console.error('Error loading patients:', error);
+      }
+    }
+
+    document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const patientId = document.getElementById('invoicePatient').value;
+      const dueDate = document.getElementById('invoiceDueDate').value;
+      const paymentMethod = document.getElementById('invoicePaymentMethod').value;
+      const notes = document.getElementById('invoiceNotes').value;
+      const serviceSelect = document.getElementById('invoiceServices');
+      const serviceIds = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+      
+      if (!patientId || !dueDate || serviceIds.length === 0) {
+        alert('Please select a patient, due date, and at least one service');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/billing/invoices`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: patientId,
+            due_date: dueDate,
+            payment_method: paymentMethod,
+            service_ids: serviceIds,
+            notes: notes
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Invoice generated successfully! Invoice #: ' + data.invoice_number);
+          resetInvoiceForm();
+          loadInvoices();
+        } else {
+          alert(data.message || 'Failed to generate invoice');
+        }
+      } catch (error) {
+        console.error('Error generating invoice:', error);
+        alert('Failed to generate invoice');
+      }
+    });
+
+    function resetInvoiceForm() {
+      document.getElementById('invoiceForm').reset();
+    }
+
+    async function loadInvoices() {
+      const tbody = document.getElementById('invoicesTable');
+      if (!tbody) return;
+      
+      const search = document.getElementById('invoiceSearch').value;
+      const status = document.getElementById('invoiceStatusFilter').value;
+      
+      let url = `${API_BASE}/billing/invoices?limit=50`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (status) url += `&status=${encodeURIComponent(status)}`;
+      
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const invoices = data.invoices || [];
+          
+          if (invoices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">No invoices found</td></tr>';
+            return;
+          }
+          
+          tbody.innerHTML = invoices.map(inv => `
+            <tr>
+              <td><strong>${escapeHtml(inv.invoice_number)}</strong></td>
+              <td>${escapeHtml(inv.patient?.name || 'N/A')}</td>
+              <td>${new Date(inv.invoice_date).toLocaleDateString()}</td>
+              <td>${new Date(inv.due_date).toLocaleDateString()}</td>
+              <td><strong>₦${parseFloat(inv.total_amount).toFixed(2)}</strong></td>
+              <td><span class="badge badge-${inv.status === 'paid' ? 'completed' : inv.status === 'overdue' ? 'pending' : 'pending'}">${capitalize(inv.status)}</span></td>
+              <td>
+                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="downloadInvoice(${inv.id})">
+                  <i class="fas fa-download"></i> PDF
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error loading invoices:', error);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #dc2626;">Error loading invoices</td></tr>';
+      }
+    }
+
+    async function downloadInvoice(invoiceId) {
+      try {
+        const response = await fetch(`${API_BASE}/billing/invoices/${invoiceId}/pdf`, {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to download invoice');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-${invoiceId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading invoice:', error);
+        alert('Failed to download invoice PDF');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function capitalize(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
   </script>
 </body>
 </html>
