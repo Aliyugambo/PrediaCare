@@ -944,4 +944,256 @@ router.get('/admitted-patients', checkPermission(PERMISSIONS.VIEW_ADMISSIONS), a
   }
 });
 
+/**
+ * GET /api/staff/nurse-stats
+ * Get nurse counts for dashboard cards
+ * Permission: VIEW_ALL_USERS (staff, nurse, admin)
+ */
+router.get('/nurse-stats', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    
+    const [totalResult] = await connection.execute(
+      'SELECT COUNT(*) as count FROM users WHERE role = ?',
+      ['nurse']
+    );
+    
+    const [activeResult] = await connection.execute(
+      'SELECT COUNT(*) as count FROM users WHERE role = ? AND is_active = 1',
+      ['nurse']
+    );
+    
+    const [inactiveResult] = await connection.execute(
+      'SELECT COUNT(*) as count FROM users WHERE role = ? AND is_active = 0',
+      ['nurse']
+    );
+    
+    connection.release();
+    
+    const total = totalResult[0].count;
+    const active = activeResult[0].count;
+    const inactive = inactiveResult[0].count;
+    const onLeave = total - active - inactive;
+    
+    res.json({
+      success: true,
+      stats: {
+        total,
+        active,
+        inactive,
+        onLeave: onLeave > 0 ? onLeave : 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching nurse stats:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch nurse stats' });
+  }
+});
+
+/**
+ * GET /api/staff/patients
+ * Get all patients with admission status
+ * Permission: VIEW_ALL_USERS (staff, nurse, admin)
+ */
+router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    const { search = '', status = 'all' } = req.query;
+    
+    let query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.phone,
+        u.is_active,
+        u.created_at,
+        a.id as admission_id,
+        a.room_number,
+        a.bed_number,
+        a.admission_date,
+        a.status as admission_status,
+        a.admitting_diagnosis,
+        du.name as doctor_name
+      FROM users u
+      LEFT JOIN admissions a ON u.id = a.patient_id AND a.status = 'admitted'
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN users du ON d.user_id = du.id
+      WHERE u.role = 'patient'
+    `;
+    const params = [];
+    
+    if (search) {
+      query += ' AND (u.name LIKE ? OR u.email LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    if (status === 'admitted') {
+      query += ' AND a.id IS NOT NULL';
+    } else if (status === 'non-admitted') {
+      query += ' AND a.id IS NULL';
+    }
+    
+    query += ' ORDER BY u.created_at DESC';
+    
+    const [patients] = await connection.execute(query, params);
+    
+    const [countResult] = await connection.execute(
+      'SELECT COUNT(*) as total FROM users WHERE role = ?' + (search ? ' AND (name LIKE ? OR email LIKE ?)' : ''),
+      search ? ['patient', `%${search}%`, `%${search}%`] : ['patient']
+    );
+    
+    connection.release();
+    
+    res.json({
+      success: true,
+      patients: patients.map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+        isActive: p.is_active,
+        createdAt: p.created_at,
+        admissionId: p.admission_id,
+        roomNumber: p.room_number,
+        bedNumber: p.bed_number,
+        admissionDate: p.admission_date,
+        admissionStatus: p.admission_status,
+        admittingDiagnosis: p.admitting_diagnosis,
+        doctorName: p.doctor_name,
+        status: p.admission_id ? 'admitted' : 'non-admitted'
+      })),
+      total: countResult[0].total
+    });
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch patients' });
+  }
+});
+
+/**
+ * GET /api/staff/patients/:id/diagnoses
+ * Get all diagnoses for a patient from health summaries, examinations, and admissions
+ * Permission: VIEW_ALL_RECORDS (staff, nurse, admin)
+ */
+router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECORDS), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+    
+    // Get patient info
+    const [patients] = await connection.execute(
+      'SELECT id, name, email FROM users WHERE id = ? AND role = ?',
+      [id, 'patient']
+    );
+    
+    if (patients.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+    
+    const patient = patients[0];
+    
+    // Get diagnoses from health_summaries
+    const [healthSummaries] = await connection.execute(`
+      SELECT 
+        hs.id,
+        hs.summary_type,
+        hs.diagnosis,
+        hs.treatment_plan,
+        hs.recommendations,
+        hs.created_at,
+        u.name as doctor_name
+      FROM health_summaries hs
+      JOIN doctors d ON hs.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE hs.patient_id = ?
+      ORDER BY hs.created_at DESC
+    `, [id]);
+    
+    // Get diagnoses from examinations
+    const [examinations] = await connection.execute(`
+      SELECT 
+        e.id,
+        e.examination_date,
+        e.diagnosis,
+        e.treatment_plan,
+        e.findings,
+        e.status,
+        e.created_at,
+        u.name as doctor_name
+      FROM examinations e
+      JOIN doctors d ON e.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE e.patient_id = ?
+      ORDER BY e.created_at DESC
+    `, [id]);
+    
+    // Get diagnoses from admissions
+    const [admissions] = await connection.execute(`
+      SELECT 
+        a.id,
+        a.admission_date,
+        a.admitting_diagnosis,
+        a.reason_for_admission,
+        a.status as admission_status,
+        a.discharge_date,
+        u.name as doctor_name
+      FROM admissions a
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN users u ON d.user_id = u.id
+      WHERE a.patient_id = ?
+      ORDER BY a.admission_date DESC
+    `, [id]);
+    
+    connection.release();
+    
+    res.json({
+      success: true,
+      patient: {
+        id: patient.id,
+        name: patient.name,
+        email: patient.email
+      },
+      diagnoses: {
+        healthSummaries: healthSummaries.map(h => ({
+          id: h.id,
+          type: 'Health Summary',
+          summaryType: h.summary_type,
+          diagnosis: h.diagnosis,
+          treatmentPlan: h.treatment_plan,
+          recommendations: h.recommendations,
+          doctorName: h.doctor_name,
+          date: h.created_at
+        })),
+        examinations: examinations.map(e => ({
+          id: e.id,
+          type: 'Examination',
+          examinationDate: e.examination_date,
+          diagnosis: e.diagnosis,
+          treatmentPlan: e.treatment_plan,
+          findings: e.findings,
+          status: e.status,
+          doctorName: e.doctor_name,
+          date: e.created_at
+        })),
+        admissions: admissions.map(a => ({
+          id: a.id,
+          type: 'Admission',
+          admissionDate: a.admission_date,
+          admittingDiagnosis: a.admitting_diagnosis,
+          reasonForAdmission: a.reason_for_admission,
+          admissionStatus: a.admission_status,
+          dischargeDate: a.discharge_date,
+          doctorName: a.doctor_name
+        }))
+      },
+      total: healthSummaries.length + examinations.length + admissions.length
+    });
+  } catch (error) {
+    console.error('Error fetching patient diagnoses:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch patient diagnoses' });
+  }
+});
+
 module.exports = router;
