@@ -9,22 +9,82 @@ const multer = require('multer');
 const fs = require('fs');
 require('dotenv').config();
 
-const pool = require('./config/database');
+// const pool = require('./config/database');
+// const authRoutes = require('./routes/auth');
+// const doctorsRoutes = require('./routes/doctors');
+// const appointmentsRoutes = require('./routes/appointments');
+// const messagesRoutes = require('./routes/messages');
+// const resultsRoutes = require('./routes/results');
+// const medicationsRoutes = require('./routes/medications');
+// const healthSummaryRoutes = require('./routes/health-summary');
+// const doctorRoutes = require('./routes/doctor');
+// const adminRoutes = require('./routes/admin');
+// const staffRoutes = require('./routes/staff');
+// const customerCareRoutes = require('./routes/customer-care');
+// const diagnosticRoutes = require('./routes/diagnostic');
+// const healthTipsRoutes = require('./routes/health-tips');
+// const pharmacyRoutes = require('./routes/pharmacy');
+// const billingRoutes = require('./routes/billing');
+
+console.log("Loading auth");
 const authRoutes = require('./routes/auth');
+console.log("Loaded auth");
+
+console.log("Loading doctors");
 const doctorsRoutes = require('./routes/doctors');
+console.log("Loaded doctors");
+
+console.log("Loading appointments");
 const appointmentsRoutes = require('./routes/appointments');
+console.log("Loaded appointments");
+
+console.log("Loading messages");
 const messagesRoutes = require('./routes/messages');
+console.log("Loaded messages");
+
+console.log("Loading results");
 const resultsRoutes = require('./routes/results');
+console.log("Loaded results");
+
+console.log("Loading medications");
 const medicationsRoutes = require('./routes/medications');
+console.log("Loaded medications");
+
+console.log("Loading health-summary");
 const healthSummaryRoutes = require('./routes/health-summary');
+console.log("Loaded health-summary");
+
+console.log("Loading doctor");
 const doctorRoutes = require('./routes/doctor');
+console.log("Loaded doctor");
+
+console.log("Loading admin");
 const adminRoutes = require('./routes/admin');
+console.log("Loaded admin");
+
+console.log("Loading staff");
 const staffRoutes = require('./routes/staff');
+console.log("Loaded staff");
+
+console.log("Loading customer-care");
 const customerCareRoutes = require('./routes/customer-care');
+console.log("Loaded customer-care");
+
+console.log("Loading diagnostic");
 const diagnosticRoutes = require('./routes/diagnostic');
+console.log("Loaded diagnostic");
+
+console.log("Loading health-tips");
 const healthTipsRoutes = require('./routes/health-tips');
+console.log("Loaded health-tips");
+
+console.log("Loading pharmacy");
 const pharmacyRoutes = require('./routes/pharmacy');
+console.log("Loaded pharmacy");
+
+console.log("Loading billing");
 const billingRoutes = require('./routes/billing');
+console.log("Loaded billing");
 
 const app = express();
 app.set('trust proxy', 1);
