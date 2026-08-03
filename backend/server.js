@@ -27,6 +27,8 @@ const pharmacyRoutes = require('./routes/pharmacy');
 const billingRoutes = require('./routes/billing');
 
 const app = express();
+console.log("Passenger:", process.env.PASSENGER_APP_ENV);
+console.log("NODE_ENV:", process.env.NODE_ENV);
 app.set('trust proxy', 1);
 
 // Serve static files from root directory
