@@ -127,6 +127,7 @@ body {
   color: #64748b;
   font-size: 18px;
   transition: background 0.2s;
+  position: relative;
 }
 
 .header-icon-btn:hover {
@@ -1145,7 +1146,9 @@ body {
    NOTIFICATION BADGE
    ============================================ */
 .notification-badge {
-  display: inline-block;
+  position: absolute;
+  top: 4px;
+  right: 4px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
@@ -1155,7 +1158,7 @@ body {
   border-radius: 10px;
   text-align: center;
   line-height: 18px;
-  margin-left: -5px;
+  display: none;
 }
 
 /* ============================================

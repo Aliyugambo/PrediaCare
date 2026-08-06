@@ -139,6 +139,9 @@ const sendAppointmentNotificationToDoctor = async (doctor, patient, appointmentD
           </div>
           
           <p>Please log in to your doctor dashboard to view and manage this appointment.</p>
+         <p style="text-align: center;">
+            <button><a href="http://localhost:5000/sign-in.html" class="cta-button">Login Here</a><button>
+          </p>
           
           <p><strong>Note:</strong> If you need to reschedule or have any concerns, please contact the patient or the clinic administration.</p>
         </div>
@@ -228,7 +231,7 @@ const sendTestResultNotificationToPatient = async (patient, testName, resultData
           <p>Please log in to your patient dashboard to view the complete results and download any attached files.</p>
           
           <p style="text-align: center;">
-            <a href="#" class="cta-button">View Results</a>
+            <a href="http://localhost:5000/sign-in.html" class="cta-button">View Results</a>
           </p>
           
           <p><strong>Important:</strong> Please consult with your doctor to discuss these results. If you have any questions, please don't hesitate to contact us.</p>

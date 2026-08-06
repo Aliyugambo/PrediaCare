@@ -32,6 +32,7 @@
     
     .welcome-section {
       margin-bottom: 24px;
+      overflow: hidden;
     }
     
     .welcome-section h1 {
@@ -44,6 +45,28 @@
     .welcome-section p {
       color: var(--slate-500);
       font-size: 15px;
+    }
+    
+    .book-appt-btn {
+      margin-top: 12px;
+      float: right;
+      padding: 10px 24px;
+      background: var(--primary, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .book-appt-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
     }
     
     /* Stats Grid */
@@ -1422,53 +1445,7 @@
       color: var(--slate-500);
       margin: 0;
     }
-    
-    /* Billing Table */
-    .billing-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    
-    .billing-table th,
-    .billing-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .billing-table th {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--slate-500);
-      text-transform: uppercase;
-      background: #f8fafc;
-    }
-    
-    .billing-table td {
-      font-size: 14px;
-      color: #0f172a;
-    }
-    
-    .billing-table tr:hover td {
-      background: #f8fafc;
-    }
-    
-    .billing-amount {
-      font-weight: 600;
-    }
-    
-    .billing-amount.paid {
-      color: var(--emerald);
-    }
-    
-    .billing-amount.pending {
-      color: var(--amber);
-    }
-    
-    .billing-amount.overdue {
-      color: #dc2626;
-    }
-    
+     
     /* Notification Toast */
     .toast-container {
       position: fixed;
@@ -1597,9 +1574,9 @@
         text-align: center;
       }
       
-      .welcome-section h1 {
-        font-size: 22px;
-      }
+       .welcome-section h1 {
+         font-size: 22px;
+       }
       
       .health-metrics {
         grid-template-columns: 1fr;
@@ -1632,12 +1609,12 @@
       <div class="header-left">
         <a href="patient-dashboard.html" class="header-logo">
           <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo">
-          <span class="header-brand">PrediaCare</span>
+          <span class="header-brand">rediaCare</span>
         </a>
-        <div class="header-search">
+        <!-- <div class="header-search">
           <i class="fas fa-search search-icon"></i>
           <input type="search" placeholder="Search appointments, records..." class="search-input" />
-        </div>
+        </div> -->
       </div>
       
       <div class="header-right">
@@ -1648,8 +1625,9 @@
           <i class="far fa-comment"></i>
           <span class="notification-badge" id="messageBadge" style="display: none;"></span>
         </button>
-        <button class="header-icon-btn" title="Notifications">
+        <button class="header-icon-btn" title="Notifications" id="notificationBtn">
           <i class="far fa-bell"></i>
+          <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
         </button>
         <button class="header-icon-btn" title="Theme">
           <i class="far fa-moon"></i>
@@ -1664,10 +1642,10 @@
               <p class="user-email" id="headerUserEmail">john.doe@example.com</p>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
-            <a href="#" class="dropdown-item" onclick="switchTab('messages'); return false;"><i class="fas fa-comment"></i> Chat</a>
+            <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;"><i class="fas fa-user"></i> Profile</a>
+            <!-- <a href="#" class="dropdown-item" onclick="switchTab('messages'); return false;"><i class="fas fa-comment"></i> Chat</a>
             <a href="#" class="dropdown-item"><i class="fas fa-question-circle"></i> Support</a>
-            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a> -->
             <div class="dropdown-divider"></div>
             <a href="sign-in.html" class="dropdown-item" onclick="handleLogout(); return false;"><i class="fas fa-sign-out-alt"></i> Log out</a>
           </div>
@@ -1687,8 +1665,8 @@
 
       <nav class="sidebar-nav">
         <!-- Dashboard Section -->
-        <div class="nav-section">
-          <p class="nav-section-title">Dashboard</p>
+        <!-- <p class="nav-section-title">Dashboard</p> -->
+        <!-- <div class="nav-section">
           
           <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
@@ -1702,27 +1680,43 @@
             <a href="doctor-dashboard.html" class="submenu-item">Doctor Dashboard</a>
             <a href="patient-dashboard.html" class="submenu-item active">Patient Dashboard</a>
           </div>
-        </div>
+        </div> -->
 
         <!-- Main Management -->
         <div class="nav-section">
-          <p class="nav-section-title">Main</p>
+          <p class="nav-section-title">Main Tabs</p>
+
+          <a href="#" class="nav-item" onclick="switchTab('overview')">
+            <div class="nav-item-left">
+              <i class="fas fa-user-md"></i>
+              <span>Overview</span>
+            </div>
+          </a>
+
+           <a href="#" class="nav-item" onclick="switchTab('appointments')">
+            <div class="nav-item-left">
+              <i class="fas fa-user-md"></i>
+              <span>Appointments</span>
+            </div>
+          </a>
           
-          <a href="#" class="nav-item">
+          <a href="#" class="nav-item" onclick="switchTab('doctors')">
             <div class="nav-item-left">
               <i class="fas fa-user-md"></i>
               <span>Doctors</span>
             </div>
           </a>
+
           
-          <a href="#" class="nav-item">
+          
+          <!-- <a href="#" class="nav-item">
             <div class="nav-item-left">
               <i class="fas fa-user-injured"></i>
               <span>Patients</span>
             </div>
-          </a>
+          </a> -->
           
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+          <!-- <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
               <i class="fas fa-calendar-alt"></i>
               <span>Appointments</span>
@@ -1733,9 +1727,9 @@
             <a href="#" class="submenu-item">All Appointments</a>
             <a href="#" class="submenu-item">Add Appointment</a>
             <a href="#" class="submenu-item">Calendar View</a>
-          </div>
+          </div> -->
           
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+          <!-- <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
               <i class="fas fa-prescription"></i>
               <span>Prescriptions</span>
@@ -1752,9 +1746,9 @@
               <i class="fas fa-ambulance"></i>
               <span>Ambulance</span>
             </div>
-          </a>
+          </a> -->
           
-          <a href="#" class="nav-item">
+          <!-- <a href="#" class="nav-item">
             <div class="nav-item-left">
               <i class="fas fa-pills"></i>
               <span>Pharmacy</span>
@@ -1773,28 +1767,27 @@
             <a href="#" class="submenu-item">Blood Donors</a>
             <a href="#" class="submenu-item">Issue Blood</a>
           </div>
-        </div>
+        </div> -->
 
         <!-- Finance -->
-        <div class="nav-section">
-          <p class="nav-section-title">Finance</p>
-          
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
-            <div class="nav-item-left">
-              <i class="fas fa-receipt"></i>
-              <span>Billing</span>
-            </div>
-            <span class="chevron">▼</span>
-          </div>
-          <div class="submenu">
-            <a href="cart.html" class="submenu-item">Invoices</a>
-            <a href="#" class="submenu-item">Payments</a>
-            <a href="#" class="submenu-item">Insurance Claims</a>
-          </div>
-        </div>
+        <!-- <div class="nav-section">
+           <p class="nav-section-title">Finance</p>
+           
+           <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+             <div class="nav-item-left">
+               <i class="fas fa-receipt"></i>
+               <span>Invoices</span>
+             </div>
+             <span class="chevron">▼</span>
+           </div>
+           <div class="submenu">
+             <a href="cart.html" class="submenu-item">My Invoices</a>
+             <a href="#" class="submenu-item">Payment History</a>
+           </div>
+        </div> -->
 
         <!-- Hospital -->
-        <div class="nav-section">
+        <!-- <div class="nav-section">
           <p class="nav-section-title">Hospital</p>
           
           <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
@@ -1808,8 +1801,8 @@
             <a href="#" class="submenu-item">Department List</a>
             <a href="#" class="submenu-item">Add Department</a>
           </div>
-          
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+           -->
+          <!-- <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
               <i class="fas fa-boxes"></i>
               <span>Inventory</span>
@@ -1826,9 +1819,9 @@
               <i class="fas fa-user-tie"></i>
               <span>Staff</span>
             </div>
-          </a>
+          </a> -->
           
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+          <!-- <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
               <i class="fas fa-file-medical"></i>
               <span>Records</span>
@@ -1846,13 +1839,13 @@
               <span>Room Allotment</span>
             </div>
           </a>
-        </div>
+        </div> -->
 
         <!-- Reports & Settings -->
         <div class="nav-section">
-          <p class="nav-section-title">Reports & Settings</p>
+          <p class="nav-section-title">Reports</p>
           
-          <a href="#" class="nav-item">
+          <!-- <a href="#" class="nav-item">
             <div class="nav-item-left">
               <i class="fas fa-star"></i>
               <span>Reviews</span>
@@ -1864,22 +1857,22 @@
               <i class="fas fa-comment-dots"></i>
               <span>Feedback</span>
             </div>
-          </a>
+          </a> -->
           
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+          <div class="nav-item has-submenu" onclick="switchTab('reports')">
             <div class="nav-item-left">
               <i class="fas fa-chart-bar"></i>
               <span>Reports</span>
             </div>
-            <span class="chevron">▼</span>
+            <!-- <span class="chevron">▼</span> -->
           </div>
-          <div class="submenu">
+          <!-- <div class="submenu">
             <a href="#" class="submenu-item">Overview</a>
             <a href="#" class="submenu-item">Appointment Reports</a>
             <a href="#" class="submenu-item">Financial Reports</a>
-          </div>
+          </div> -->
           
-          <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
+          <!-- <div class="nav-item has-submenu" onclick="toggleSubmenu(this)">
             <div class="nav-item-left">
               <i class="fas fa-cog"></i>
               <span>Settings</span>
@@ -1891,10 +1884,10 @@
             <a href="#" class="submenu-item">Notifications</a>
             <a href="#" class="submenu-item">Working Hours</a>
           </div>
-        </div>
+        </div> -->
 
         <!-- Extra -->
-        <div class="nav-section">
+        <!-- <div class="nav-section">
           <p class="nav-section-title">Extra</p>
           
           <a href="#" class="nav-item">
@@ -1931,7 +1924,7 @@
               <span>Support</span>
             </div>
           </a>
-        </div>
+        </div> -->
       </nav>
 
       <!-- Sidebar Footer -->
@@ -1950,11 +1943,12 @@
     <main class="main">
       <div class="dashboard-container">
         <!-- Welcome Section -->
-        <section class="welcome-section">
-          <h1>Welcome back, <span id="welcomeName">John</span></h1>
-          <p>Here's your health overview and upcoming appointments.</p>
-        </section>
-
+          <section class="welcome-section">
+            <h1>Welcome back, <span id="welcomeName">John</span></h1>
+            <p>Here's your health overview and upcoming appointments.</p>
+            <button class="book-appt-btn" onclick="openBookingModal()">Book Appointment</button>
+          </section>
+         
         <!-- Stats Grid -->
         <section class="stats-grid">
           <!-- Appointments Card - Blue -->
@@ -2049,13 +2043,12 @@
           <div class="tabs-header">
             <button class="tab-btn active" data-tab="overview">Overview</button>
             <button class="tab-btn" data-tab="appointments">Appointments</button>
-            <button class="tab-btn" data-tab="medications">Medications</button>
-            <button class="tab-btn" data-tab="records">Test Results</button>
-            <button class="tab-btn" data-tab="reports">Medical Reports</button>
-            <button class="tab-btn" data-tab="vitals">Vitals</button>
-            <button class="tab-btn" data-tab="billing">Billing</button>
-            <button class="tab-btn" data-tab="doctors">Doctors</button>
-            <button class="tab-btn" data-tab="messages">Messages</button>
+             <button class="tab-btn" data-tab="medications">Medications</button>
+             <button class="tab-btn" data-tab="records">Test Results</button>
+             <button class="tab-btn" data-tab="reports">Medical Reports</button>
+             <button class="tab-btn" data-tab="vitals">Vitals</button>
+             <button class="tab-btn" data-tab="doctors">Doctors</button>
+             <button class="tab-btn" data-tab="messages">Messages</button>
           </div>
 
           <!-- Tab Content -->
@@ -2284,38 +2277,7 @@
               </div>
             </div>
 
-            <!-- Billing Tab -->
-            <div class="tab-pane" id="billing">
-              <div class="content-card">
-                <div class="content-card-header">
-                  <h3>Billing & Payments</h3>
-                  <p>Your invoices and payment history</p>
-                </div>
-                <div class="content-card-body">
-                  <table class="billing-table" id="billingTable">
-                    <thead>
-                      <tr>
-                        <th>Invoice #</th>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="billingTableBody">
-                      <tr>
-                        <td colspan="6">
-                          <div class="loading"><div class="spinner"></div></div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- Doctors Tab -->
+             <!-- Doctors Tab -->
             <div class="tab-pane" id="doctors">
               <div class="content-grid">
                 <div class="content-card" style="grid-column: 1 / -1;">
@@ -2354,6 +2316,44 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+        <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">JD</div>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Email Address</label>
+          <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Role</label>
+          <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Member Since</label>
+          <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- Book Appointment Modal -->
@@ -2638,9 +2638,8 @@
         'medicationSchedule',
         'testResultsList',
         'medicalReportsList',
-        'vitalsHistory',
-        'billingTableBody',
-        'doctorsList',
+         'vitalsHistory',
+         'doctorsList',
         'messagesList',
         'doctorList'
       ];
@@ -2663,9 +2662,8 @@
       renderMedicationsTab();
       renderRecordsTab();
       renderMedicalReportsTab();
-      renderVitalsTab();
-      renderBillingTab();
-      renderDoctorsTab();
+       renderVitalsTab();
+       renderDoctorsTab();
       renderMessagesTab();
     }
     
@@ -2675,7 +2673,9 @@
       const activeMedications = medications.filter(m => m.status === 'active');
       
       // Handle both demo data format (isRead) and database format (is_read)
-      const unreadMessages = messages.filter(m => m.isRead !== undefined ? !m.isRead : !m.is_read);
+      const sentUnread = messages.filter(m => m.isRead !== undefined ? !m.isRead : !m.is_read);
+      const receivedUnread = receivedMessages.filter(m => m.isRead !== undefined ? !m.isRead : !m.is_read);
+      const unreadMessages = receivedUnread.length > 0 ? receivedUnread : sentUnread;
       
       document.getElementById('appointmentCount').textContent = appointments.length;
       document.getElementById('appointmentBadge').textContent = `${upcomingAppointments.length} upcoming`;
@@ -2683,11 +2683,26 @@
       document.getElementById('medicationCount').textContent = medications.length;
       document.getElementById('medicationBadge').textContent = `${activeMedications.length} active`;
       
-      document.getElementById('messageCount').textContent = messages.length;
+      document.getElementById('messageCount').textContent = receivedMessages.length;
       document.getElementById('messageBadgeText').textContent = `${unreadMessages.length} unread`;
       
+      // Message badge - show unread count
+      const msgBadge = document.getElementById('messageBadge');
       if (unreadMessages.length > 0) {
-        document.getElementById('messageBadge').style.display = 'block';
+        msgBadge.style.display = 'inline-flex';
+        msgBadge.textContent = unreadMessages.length > 99 ? '99+' : unreadMessages.length;
+      } else {
+        msgBadge.style.display = 'none';
+      }
+      
+      // Notification badge - count new activities (upcoming appointments + new test results + unread messages)
+      const notificationCount = upcomingAppointments.length + testResults.length + unreadMessages.length;
+      const notifBadge = document.getElementById('notificationBadge');
+      if (notificationCount > 0) {
+        notifBadge.style.display = 'inline-flex';
+        notifBadge.textContent = notificationCount > 99 ? '99+' : notificationCount;
+      } else {
+        notifBadge.style.display = 'none';
       }
       
       // Test Results stats
@@ -3132,47 +3147,6 @@ const hr = vitalData?.heartRate || '--';
       }).join('');
     }
 
-    // Render Billing Tab
-    function renderBillingTab() {
-      const tbody = document.getElementById('billingTableBody');
-      
-      // Demo billing data
-      const billingData = [
-        { invoice: 'INV-001', date: '2025-04-15', description: 'General Consultation', status: 'paid', amount: 150.00 },
-        { invoice: 'INV-002', date: '2025-04-20', description: 'Blood Test', status: 'pending', amount: 85.00 },
-        { invoice: 'INV-003', date: '2025-04-25', description: 'Follow-up Visit', status: 'pending', amount: 100.00 }
-      ];
-      
-      if (billingData.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="empty-state">
-              <div class="empty-state-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-              </div>
-              <h4>No Invoices</h4>
-              <p>Your billing history will appear here</p>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-      
-      tbody.innerHTML = billingData.map(bill => `
-        <tr>
-          <td>${bill.invoice}</td>
-          <td>${formatDate(bill.date)}</td>
-          <td>${bill.description}</td>
-          <td><span class="appointment-badge ${bill.status}">${capitalizeFirst(bill.status)}</span></td>
-          <td class="billing-amount ${bill.status}">$${bill.amount.toFixed(2)}</td>
-          <td>
-            <button class="view-btn ${bill.status === 'paid' ? 'light' : ''}" onclick="viewInvoice('${bill.invoice}')">
-              ${bill.status === 'paid' ? 'View' : 'Pay'}
-            </button>
-          </td>
-        </tr>
-      `).join('');
-    }
 
     // Render Doctors Tab
     function renderDoctorsTab() {
@@ -3879,6 +3853,40 @@ const hr = vitalData?.heartRate || '--';
       document.getElementById('appointmentIdForMessage').value = '';
     }
 
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+
+      if (currentUser) {
+        const fullName = currentUser.name || '';
+        const nameParts = fullName.split(' ');
+        const firstName = nameParts[0] || fullName || 'N/A';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : nameParts[0]?.substring(0, 2).toUpperCase() || 'US';
+
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'patient').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
     // Book appointment
     async function bookAppointment() {
       const doctorId = document.getElementById('selectedDoctorId').value;
@@ -4272,12 +4280,7 @@ const hr = vitalData?.heartRate || '--';
       }
     }
 
-    // View invoice
-    function viewInvoice(invoiceId) {
-      window.open(`${API_BASE}/billing/invoices/${invoiceId}/pdf`, '_blank');
-    }
-
-    // Logout
+     // Logout
     function handleLogout() {
       fetch(`${API_BASE}/auth/logout`, {
         method: 'POST',

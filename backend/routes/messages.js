@@ -125,6 +125,74 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, res)
 });
 
 /**
+ * GET /api/messages/unread-count-generic
+ * Get unread message count for the logged-in user (any role)
+ * Public for authenticated users - no specific permission required
+ * Must be placed BEFORE /:id route to avoid route parameter conflict
+ */
+router.get('/unread-count-generic', async (req, res) => {
+  const userId = req.session.userId;
+  const userRole = req.session.userRole;
+
+  if (!userId) {
+    return res.json({
+      success: true,
+      unreadMessages: 0,
+      unreadNotifications: 0,
+      total: 0,
+      message: 'Not authenticated'
+    });
+  }
+
+  try {
+    const connection = await pool.getConnection();
+
+    let unreadCount = 0;
+    if (userRole === 'admin' || userRole === 'staff' || userRole === 'nurse' || userRole === 'customer_care') {
+      const [result] = await connection.execute(
+        'SELECT COUNT(*) as count FROM messages WHERE is_read = FALSE'
+      );
+      unreadCount = result[0].count;
+    } else {
+      const [result] = await connection.execute(
+        'SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = FALSE',
+        [userId]
+      );
+      unreadCount = result[0].count;
+    }
+
+    let notificationCount = 0;
+    if (userRole === 'admin' || userRole === 'staff' || userRole === 'nurse' || userRole === 'customer_care') {
+      const [aptResult] = await connection.execute(
+        'SELECT COUNT(*) as count FROM appointments WHERE status IN (\'pending\', \'scheduled\') AND appointment_date >= CURDATE()'
+      );
+      notificationCount = aptResult[0].count;
+    } else if (userRole === 'doctor') {
+      const [aptResult] = await connection.execute(
+        'SELECT COUNT(*) as count FROM appointments a JOIN doctors d ON a.doctor_id = d.id WHERE d.user_id = ? AND a.status IN (\'pending\', \'scheduled\', \'confirmed\') AND a.appointment_date >= CURDATE()',
+        [userId]
+      );
+      notificationCount = aptResult[0].count;
+    }
+
+    connection.release();
+
+    res.json({
+      success: true,
+      unreadMessages: unreadCount,
+      unreadNotifications: notificationCount,
+      total: unreadCount + notificationCount
+    });
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch unread count'
+    });
+  }
+});
+
+/**
  * GET /api/messages/unread-count
  * Get unread message count for the logged-in patient
  * Permission: VIEW_OWN_MESSAGES (patient)

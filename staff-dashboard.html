@@ -31,7 +31,7 @@
     @media (min-width:768px){ .header-search{display:block;} }
     .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:14px; }
     .search-input { width:300px; padding:8px 12px 8px 36px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; }
-    .header-right { display:flex; align-items:center; gap:8px; }
+    .header-right { display:flex; align-items:center; gap:8px; position:relative; }
     .header-icon-btn { width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:18px;transition:background .2s; }
     .header-icon-btn:hover{background:#101215;color:#0f172a;}
     .user-dropdown { position:relative; margin-left:8px; }
@@ -46,6 +46,126 @@
     .dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#475569;text-decoration:none;font-size:14px;transition:background .15s;}
     .dropdown-item:hover{background:#f1f5f9;color:#0f172a;}
     .dropdown-item i{width:16px;font-size:14px;}
+    
+    /* Notification Dropdown */
+    .notification-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 360px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 300;
+      max-height: 480px;
+      overflow: hidden;
+    }
+    
+    .notification-dropdown.show {
+      display: block;
+    }
+    
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .notification-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .notification-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+      line-height: 1;
+    }
+    
+    .notification-close:hover {
+      color: #0f172a;
+    }
+    
+    .notification-list {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    
+    .notification-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .notification-item:hover {
+      background: #f8fafc;
+    }
+    
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+    
+    .notification-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .notification-icon.appointment { background: #dbeafe; color: #2563eb; }
+    .notification-icon.message { background: #d1fae5; color: #059669; }
+    .notification-icon.admission { background: #fee2e2; color: #dc2626; }
+    .notification-icon.round-check { background: #fef3c7; color: #d97706; }
+    .notification-icon.test-referral { background: #f5f3ff; color: #7c3aed; }
+    .notification-icon.default { background: #f1f5f9; color: #475569; }
+    
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .notification-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    
+    .notification-desc {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    
+    .notification-time {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    
+    .notification-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+    
     /* sidebar */
     .sidebar{display:flex;flex-direction:column;width:260px;min-height:100vh;background:white;border-right:1px solid #e2e8f0;position:fixed;left:0;top:0;z-index:100;}
     .sidebar-header{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;}
@@ -250,6 +370,7 @@
       left: 0;
       top: 0;
       z-index: 100;
+      transition: transform 0.3s ease;
     }
     
     .sidebar-header {
@@ -1223,29 +1344,44 @@
       <div class="header-left">
         <a href="staff-dashboard.html" class="header-logo">
           <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo">
-          <span class="header-brand">PrediaCare</span>
+          <span class="header-brand">rediaCare</span>
         </a>
-        <div class="header-search">
+        <!-- <div class="header-search">
           <i class="fas fa-search search-icon"></i>
           <input type="search" placeholder="Search staff..." class="search-input" />
-        </div>
+        </div> -->
       </div>
       
       <div class="header-right">
-        <button class="header-icon-btn"><i class="far fa-bell"></i></button>
+        <button class="header-icon-btn" title="Notifications" id="notificationBtn" onclick="toggleNotificationDropdown()">
+          <i class="far fa-bell"></i>
+          <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+        </button>
+        
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+          <div class="notification-header">
+            <h3>Notifications</h3>
+            <button class="notification-close" onclick="toggleNotificationDropdown()">&times;</button>
+          </div>
+          <div class="notification-list" id="notificationList">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+        
         <button class="header-icon-btn"><i class="far fa-moon"></i></button>
         <div class="user-dropdown">
           <button class="user-btn">
-            <div class="user-avatar" id="userInitials">SJ</div>
+            <div class="user-avatar" id="userInitials">PC</div>
           </button>
           <div class="dropdown-menu">
             <div class="dropdown-header">
-              <p class="user-name" id="userName">Dr. Sarah Johnson</p>
-              <p class="user-email" id="userEmail">admin@prediacare.com</p>
+              <p class="user-name" id="userName">Dr. Predia Care</p>
+              <p class="user-email" id="userEmail">Predia@prediacare.com</p>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
-            <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;"><i class="fas fa-user"></i> Profile</a>
+            <!-- <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a> -->
             <div class="dropdown-divider"></div>
             <a href="sign-in.html" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Log out</a>
           </div>
@@ -1278,9 +1414,9 @@
             <a href="staff-attendance.html" class="submenu-item">Attendance</a>
             <a href="#" class="submenu-item">Records</a>
           </div> -->
-          <a href="#test-referrals" class="nav-item">
+          <!-- <a href="#test-referrals" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-user-md"></i><span>Test Referrals</span></div>
-          </a>
+          </a> -->
           <a href="#round-checks" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-user-injured"></i><span>Appointment Vitals</span></div>
           </a>
@@ -1294,7 +1430,7 @@
           </div>
         </div> -->
         
-        <div class="nav-section">
+        <!-- <div class="nav-section">
           <p class="nav-section-title">Medical</p>
           <a href="#" class="nav-item" data-section="reports">
             <div class="nav-item-left"><i class="fas fa-file-medical-alt"></i><span>Reports</span></div>
@@ -1311,9 +1447,9 @@
           <a href="#" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-tint"></i><span>Blood Bank</span></div>
           </a>
-        </div>
+        </div> -->
         
-        <div class="nav-section">
+        <!-- <div class="nav-section">
           <p class="nav-section-title">Management</p>
           <a href="#" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-file-invoice-dollar"></i><span>Billing</span></div>
@@ -1324,7 +1460,7 @@
           <a href="#" class="nav-item">
             <div class="nav-item-left"><i class="fas fa-boxes"></i><span>Inventory</span></div>
           </a>
-        </div>
+        </div> -->
       </nav>
 
       <div class="sidebar-footer">
@@ -1332,7 +1468,7 @@
           <div class="sidebar-avatar" id="sidebarAvatar">SJ</div>
           <div class="sidebar-profile-info">
             <p class="sidebar-profile-name" id="sidebarProfileName">User</p>
-            <p class="sidebar-profile-role" id="sidebarProfileRole">Staff</p>
+            <p class="sidebar-profile-role" id="sidebarProfileRole">Nurse</p>
           </div>
         </div>
       </div>
@@ -1392,7 +1528,7 @@
         <!-- Tabs -->
         <div class="tabs-container">
           <div class="tabs-header">
-            <button class="tab-btn" data-tab="test-referrals">Test Referrals</button>
+            <!-- <button class="tab-btn" data-tab="test-referrals">Test Referrals</button> -->
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
             <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
             <button class="tab-btn" data-tab="patients">Patients</button>
@@ -1650,23 +1786,25 @@
                       </div>
                       <button class="action-btn secondary" onclick="loadPatients()"><i class="fas fa-sync"></i> Refresh</button>
                     </div>
-                    <div class="table-container">
-                      <table class="staff-table">
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Status</th>
-                            <th>Admission</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody id="patientsTableBody">
-                          <tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
-                        </tbody>
-                      </table>
-                    </div>
+                     <div class="table-container" style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0;">
+                       <table class="staff-table" style="width: 100%; min-width: 1050px;">
+                         <thead>
+                           <tr>
+                             <th style="width: 18%;">Name</th>
+                             <th style="width: 18%;">Email</th>
+                             <th style="width: 10%;">Phone</th>
+                             <th style="width: 10%;">Status</th>
+                             <th style="width: 14%;">Admission</th>
+                             <th style="width: 14%;">Last Visit</th>
+                             <th style="width: 16%;">Latest Diagnosis</th>
+                             <th style="width: 10%;">Actions</th>
+                           </tr>
+                         </thead>
+                         <tbody id="patientsTableBody">
+                           <tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
+                         </tbody>
+                       </table>
+                     </div>
                   </div>
                 </div>
               </div>
@@ -1911,9 +2049,46 @@
         <button type="button" class="rc-btn rc-btn-secondary" onclick="closeDiagnosesModal()">Close</button>
       </div>
     </div>
-  </div>
+   </div>
 
-  <script>
+   <!-- Profile Modal -->
+   <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+         <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+       </div>
+       <div class="modal-body" style="padding: 20px;">
+         <div style="text-align: center; margin-bottom: 24px;">
+           <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">SJ</div>
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">First Name</label>
+           <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Last Name</label>
+           <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Email Address</label>
+           <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Role</label>
+           <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Member Since</label>
+           <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+         </div>
+       </div>
+       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
+       </div>
+     </div>
+   </div>
+   <script>
     // IMPORTANT: Access this page through https://<your-frontend-domain>/staff-dashboard.html
     // Do NOT open the file directly (file://) or API calls will fail
     const API_BASE = '/api';
@@ -1922,6 +2097,11 @@
     let csrfToken = null;
     
     let currentUser = null;
+
+     // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
 
     // Check authentication on page load
     document.addEventListener('DOMContentLoaded', async function() {
@@ -2010,6 +2190,7 @@
 
         console.log('checkAuthentication: ✅ Role check PASSED - allowing access');
         updateSidebarProfile();
+        loadNotificationCounts();
         console.log('checkAuthentication: Initializing page...');
         
         // Initialize page
@@ -2041,9 +2222,210 @@
       const headerName = document.getElementById('userName');
       const headerEmail = document.getElementById('userEmail');
 
-      if (headerInitials) headerInitials.textContent = initials || 'U';
+       if (headerInitials) headerInitials.textContent = initials || 'U';
       if (headerName) headerName.textContent = name;
       if (headerEmail) headerEmail.textContent = currentUser.email || '';
+    }
+
+    // Load notification and message counts
+    async function loadNotificationCounts() {
+      try {
+        const response = await fetch(`${API_BASE}/messages/unread-count-generic`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          const msgBadge = document.getElementById('messageBadge');
+          const notifBadge = document.getElementById('notificationBadge');
+          if (msgBadge) {
+            if (data.unreadMessages > 0) { msgBadge.style.display = 'inline-flex'; msgBadge.textContent = data.unreadMessages > 99 ? '99+' : data.unreadMessages; }
+            else { msgBadge.style.display = 'none'; }
+          }
+          if (notifBadge) {
+            if (data.unreadNotifications > 0) { notifBadge.style.display = 'inline-flex'; notifBadge.textContent = data.unreadNotifications > 99 ? '99+' : data.unreadNotifications; }
+            else { notifBadge.style.display = 'none'; }
+          }
+        }
+      } catch (error) { console.error('Error loading notification counts:', error); }
+    }
+
+    function toggleNotificationDropdown() {
+      const dropdown = document.getElementById('notificationDropdown');
+      if (!dropdown) return;
+      
+      const isVisible = dropdown.classList.contains('show');
+      if (isVisible) {
+        dropdown.classList.remove('show');
+      } else {
+        dropdown.classList.add('show');
+        loadNotifications();
+      }
+    }
+    
+    async function loadNotifications() {
+      const container = document.getElementById('notificationList');
+      if (!container) return;
+      
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      try {
+        const [testReferralsRes, admissionsRes, roundChecksRes] = await Promise.all([
+          fetch(`${API_BASE}/staff/test-referrals?status=all`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } }).catch(() => ({ ok: false })),
+          fetch(`${API_BASE}/staff/admitted-patients`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } }).catch(() => ({ ok: false })),
+          fetch(`${API_BASE}/staff/round-checks?status=all&check_type=all`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } }).catch(() => ({ ok: false }))
+        ]);
+        
+        const notifications = [];
+        
+        if (testReferralsRes.ok) {
+          const data = await testReferralsRes.json();
+          if (data.success && data.referrals && data.referrals.length > 0) {
+            data.referrals.slice(0, 5).forEach(ref => {
+              notifications.push({
+                type: 'test-referral',
+                icon: 'fa-file-medical',
+                title: 'New Test Referral',
+                desc: `${ref.patientName || 'Patient'} - ${ref.testName || 'Test'} (${ref.urgency || 'routine'})`,
+                time: ref.createdAt
+              });
+            });
+          }
+        }
+        
+        if (admissionsRes.ok) {
+          const data = await admissionsRes.json();
+          if (data.success && data.admittedPatients && data.admittedPatients.length > 0) {
+            data.admittedPatients.slice(0, 5).forEach(adm => {
+              notifications.push({
+                type: 'admission',
+                icon: 'fa-procedures',
+                title: 'Patient Admitted',
+                desc: `${adm.patient_name || 'Patient'} - Room ${adm.room_number || 'N/A'} Bed ${adm.bed_number || 'N/A'}`,
+                time: adm.admission_date
+              });
+            });
+          }
+        }
+        
+        if (roundChecksRes.ok) {
+          const data = await roundChecksRes.json();
+          if (data.success && data.roundChecks && data.roundChecks.length > 0) {
+            data.roundChecks.slice(0, 5).forEach(rc => {
+              notifications.push({
+                type: 'round-check',
+                icon: 'fa-stethoscope',
+                title: 'Round Check',
+                desc: `${rc.patient_name || 'Patient'} - ${capitalizeFirst(rc.check_type || 'check')} (${capitalizeFirst(rc.status || 'ongoing')})`,
+                time: rc.check_date
+              });
+            });
+          }
+        }
+        
+        notifications.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+        
+        if (notifications.length === 0) {
+          container.innerHTML = '<div class="notification-empty">No new notifications</div>';
+          return;
+        }
+        
+        container.innerHTML = notifications.slice(0, 20).map(n => `
+          <div class="notification-item" onclick="handleNotificationClick('${n.type}', '${(n.title || '').replace(/'/g, "\\'")}')">
+            <div class="notification-icon ${n.type}">
+              <i class="fas ${n.icon}"></i>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">${escapeHtml(n.title || 'Notification')}</div>
+              <div class="notification-desc">${escapeHtml(n.desc || '')}</div>
+              <div class="notification-time">${n.time ? formatDateTime(n.time) : ''}</div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+      }
+    }
+    
+    function handleNotificationClick(type, title) {
+      toggleNotificationDropdown();
+      
+      switch(type) {
+        case 'test-referral':
+          switchTab('test-referrals');
+          break;
+        case 'admission':
+          switchTab('patients');
+          break;
+        case 'round-check':
+          switchTab('round-checks');
+          break;
+        case 'appointment':
+          switchTab('appointment-vitals');
+          break;
+        default:
+          break;
+      }
+    }
+    
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('notificationDropdown');
+      const btn = document.getElementById('notificationBtn');
+      if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : (firstName?.substring(0, 2).toUpperCase() || 'US');
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'staff').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      
+      const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      if (tabBtn) tabBtn.classList.add('active');
+      
+      const pane = document.getElementById(tabId);
+      if (pane) {
+        pane.classList.add('active');
+        if (tabId === 'test-referrals') {
+          loadTestReferrals();
+        } else if (tabId === 'patients') {
+          loadPatients();
+        } else if (tabId === 'round-checks') {
+          loadNurseRoundChecks();
+        } else if (tabId === 'appointment-vitals') {
+          loadAppointmentsForVitals();
+        }
+      }
     }
 
     function initializePage() {
@@ -2113,56 +2495,58 @@
       }
     }
 
-    // Patients tab functions
-    async function loadPatients() {
-      const tbody = document.getElementById('patientsTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
-      
-      const searchInput = document.getElementById('patientSearch');
-      const statusFilter = document.getElementById('patientStatusFilter');
-      const search = searchInput ? searchInput.value.trim() : '';
-      const status = statusFilter ? statusFilter.value : 'all';
-      
-      let url = `${API_BASE}/staff/patients?status=${encodeURIComponent(status)}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
-      
-      try {
-        const response = await fetch(url, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        if (!data.success) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
-          return;
-        }
-        
-        const patients = data.patients || [];
-        if (patients.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
-          return;
-        }
-        
-        tbody.innerHTML = patients.map(p => `
-          <tr>
-            <td><strong>${escapeHtml(p.name)}</strong></td>
-            <td>${escapeHtml(p.email)}</td>
-            <td>${escapeHtml(p.phone || '-')}</td>
-            <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
-            <td>${p.status === 'admitted' ? `<span class="badge badge-active">Admitted</span><br><small>Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>` : '<span class="badge badge-inactive">Non-Admitted</span>'}</td>
-            <td>
-              <button class="action-btn" onclick="viewDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
-                <i class="fas fa-eye"></i> View Diagnoses
-              </button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        console.error('Error loading patients:', error);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
-      }
-    }
+     // Patients tab functions
+     async function loadPatients() {
+       const tbody = document.getElementById('patientsTableBody');
+       if (!tbody) return;
+       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
+       
+       const searchInput = document.getElementById('patientSearch');
+       const statusFilter = document.getElementById('patientStatusFilter');
+       const search = searchInput ? searchInput.value.trim() : '';
+       const status = statusFilter ? statusFilter.value : 'all';
+       
+       let url = `${API_BASE}/staff/patients?status=${encodeURIComponent(status)}`;
+       if (search) url += `&search=${encodeURIComponent(search)}`;
+       
+       try {
+         const response = await fetch(url, {
+           credentials: 'include',
+           headers: { 'Content-Type': 'application/json' }
+         });
+         const data = await response.json();
+         if (!data.success) {
+           tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
+           return;
+         }
+         
+         const patients = data.patients || [];
+         if (patients.length === 0) {
+           tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
+           return;
+         }
+         
+         tbody.innerHTML = patients.map(p => `
+           <tr>
+             <td><strong>${escapeHtml(p.name)}</strong></td>
+             <td>${escapeHtml(p.email)}</td>
+             <td>${escapeHtml(p.phone || '-')}</td>
+             <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
+             <td>${p.status === 'admitted' ? `<span class="badge badge-active">Admitted</span><br><small>Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>` : '<span class="badge badge-inactive">Non-Admitted</span>'}</td>
+             <td style="color: #64748b; font-size: 13px;">${p.latestDiagnosisDate ? formatDate(p.latestDiagnosisDate) : 'N/A'}</td>
+             <td style="font-size: 13px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.latestDiagnosis || '')}">${p.latestDiagnosis ? escapeHtml(p.latestDiagnosis) : '<span style="color:#94a3b8;">None</span>'}</td>
+             <td>
+               <button class="action-btn" onclick="viewDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
+                 <i class="fas fa-eye"></i> View Diagnoses
+               </button>
+             </td>
+           </tr>
+         `).join('');
+       } catch (error) {
+         console.error('Error loading patients:', error);
+         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
+       }
+     }
 
     function searchPatients() {
       loadPatients();
@@ -2196,15 +2580,37 @@
         }
         
         const diagnoses = data.diagnoses;
+        const isAdmin = currentUser && currentUser.role === 'admin';
         let html = '';
         
-        if (diagnoses.healthSummaries.length === 0 && diagnoses.examinations.length === 0 && diagnoses.admissions.length === 0) {
-          html = '<p style="color: #64748b; text-align: center; padding: 20px;">No diagnoses found for this patient</p>';
-        } else {
+        if (!isAdmin) {
+          html = '<p style="color: #64748b; text-align: center; padding: 20px;">Admission diagnoses are visible to nursing staff. Full examination and health summary records are restricted to administrators.</p>';
+        }
+        
+        if (diagnoses.admissions.length > 0 || isAdmin) {
           html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
           
-          if (diagnoses.healthSummaries.length > 0) {
-            html += `<h4 style="margin: 0 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Health Summaries (${diagnoses.healthSummaries.length})</h4>`;
+          if (diagnoses.admissions.length > 0) {
+            html += `<h4 style="margin: 0 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Admissions (${diagnoses.admissions.length})</h4>`;
+            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            diagnoses.admissions.forEach(a => {
+              html += `
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: #0f172a; font-size: 14px;">Admission</strong>
+                    <span style="font-size: 12px; color: #64748b;">${new Date(a.admissionDate).toLocaleDateString()}</span>
+                  </div>
+                  ${a.admittingDiagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Admitting Diagnosis:</strong> ${escapeHtml(a.admittingDiagnosis)}</p>` : ''}
+                  ${a.reasonForAdmission ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Reason:</strong> ${escapeHtml(a.reasonForAdmission)}</p>` : ''}
+                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(a.doctorName || 'Unknown')} | Status: ${escapeHtml(a.admissionStatus || 'N/A')}</p>
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          
+          if (isAdmin && diagnoses.healthSummaries.length > 0) {
+            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Health Summaries (${diagnoses.healthSummaries.length})</h4>`;
             html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
             diagnoses.healthSummaries.forEach(h => {
               html += `
@@ -2223,7 +2629,7 @@
             html += '</div>';
           }
           
-          if (diagnoses.examinations.length > 0) {
+          if (isAdmin && diagnoses.examinations.length > 0) {
             html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Examinations (${diagnoses.examinations.length})</h4>`;
             html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
             diagnoses.examinations.forEach(e => {
@@ -2243,26 +2649,9 @@
             html += '</div>';
           }
           
-          if (diagnoses.admissions.length > 0) {
-            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Admissions (${diagnoses.admissions.length})</h4>`;
-            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
-            diagnoses.admissions.forEach(a => {
-              html += `
-                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <strong style="color: #0f172a; font-size: 14px;">Admission</strong>
-                    <span style="font-size: 12px; color: #64748b;">${new Date(a.admissionDate).toLocaleDateString()}</span>
-                  </div>
-                  ${a.admittingDiagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Admitting Diagnosis:</strong> ${escapeHtml(a.admittingDiagnosis)}</p>` : ''}
-                  ${a.reasonForAdmission ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Reason:</strong> ${escapeHtml(a.reasonForAdmission)}</p>` : ''}
-                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(a.doctorName || 'Unknown')} | Status: ${escapeHtml(a.admissionStatus || 'N/A')}</p>
-                </div>
-              `;
-            });
-            html += '</div>';
-          }
-          
           html += '</div>';
+        } else {
+          html = '<p style="color: #64748b; text-align: center; padding: 20px;">No admission diagnoses found for this patient</p>';
         }
         
         body.innerHTML = html;
@@ -2508,6 +2897,7 @@
 
     function escapeHtml(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function capitalize(s){ if(!s) return ''; return s.charAt(0).toUpperCase()+s.slice(1); }
+    function formatDate(dateStr){ if(!dateStr) return 'N/A'; const d = new Date(dateStr); return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
 
     // Modal controls
     function openEditModal(userId) {

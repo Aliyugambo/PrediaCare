@@ -12,7 +12,8 @@
     .layout { display: flex; min-height: 100vh; }
 
     /* Sidebar */
-    .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+    .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; left: 0; top: 0; transition: transform 0.3s ease; }
+    .sidebar.open { transform: translateX(0); }
     .logo { display: flex; align-items: center; gap: 12px; padding: 0 24px 24px; border-bottom: 1px solid #e2e8f0; }
     .logo-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
     .logo h1 { font-size: 20px; font-weight: 700; color: black; }
@@ -145,10 +146,15 @@
     .loading i { font-size: 24px; }
 
     .action-btns { display: flex; gap: 8px; }
+    .mobile-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 18px; color: #64748b; }
+    .sidebar-close { display: none; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
 
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { width: 100%; height: auto; position: relative; }
+      .mobile-toggle { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-close { display: block; }
       .main { margin-left: 0; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .filters { flex-direction: column; align-items: stretch; }
@@ -156,14 +162,17 @@
     }
   </style>
 </head>
-<body>
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="logo">
-        <div class="logo-icon"><i class="fas fa-pills"> <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></i></div>
-        <h1>rediacare<span>Clinics</span></h1>
-      </div>
+  <body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+          <div class="logo-icon">
+            <i class="fas fa-pills"> <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></i></div>
+          <h1>rediacare<span>Clinics</span></h1>
+        </div>
 
       <nav class="nav">
         <div class="nav-section">
@@ -201,9 +210,28 @@
       <header class="header">
         <h2 id="pageTitle">Dashboard</h2>
         <div class="header-right">
-          <div class="user-menu">
-            <div class="user-avatar" id="userAvatar">P</div>
-            <span id="userName">Pharmacist</span>
+          <div class="header-icons" style="display: flex; align-items: center; gap: 8px;">
+            <button class="header-icon-btn" title="Notifications" id="notificationBtn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #f8f9fa; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb; transition: all 0.2s ease; position: relative;">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge" id="notificationBadge" style="display: none; position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; background: #dc2626; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 0 4px;"></span>
+            </button>
+            <button class="header-icon-btn" title="Messages" id="messageBtn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #f8f9fa; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb; transition: all 0.2s ease; position: relative;">
+              <i class="fas fa-envelope"></i>
+              <span class="notification-badge" id="messageBadge" style="display: none; position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; background: #dc2626; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 0 4px;"></span>
+            </button>
+          </div>
+          <div class="user-dropdown" style="position: relative; margin-left: 8px;">
+            <button class="user-btn" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: #0ea5e9; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;" id="userDropdownBtn" onclick="toggleUserDropdown()">P</button>
+            <div class="dropdown-menu" style="position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px; min-width: 160px; display: none; z-index: 10;">
+              <div class="dropdown-header" style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+                <div class="name" id="pharmacistUserName" style="font-weight: 600; color: #0f172a;">Pharmacist</div>
+                <div class="email" id="pharmacistUserEmail" style="font-size: 12px; color: #64748b;"></div>
+              </div>
+              <div class="dropdown-divider" style="height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
+              <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;" style="display: block; padding: 8px 16px; color: #334155; text-decoration: none; font-size: 14px;"><i class="fas fa-user" style="margin-right: 8px;"></i> Profile</a>
+              <div class="dropdown-divider" style="height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
+              <a href="sign-in.html" class="dropdown-item" onclick="handleLogout(); return false;" style="display: block; padding: 8px 16px; color: #334155; text-decoration: none; font-size: 14px;"><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout</a>
+            </div>
           </div>
         </div>
       </header>
@@ -435,7 +463,11 @@
     const pageSize = 20;
     let inventoryPage = 0;
     let salesPage = 0;
-    let cart = [];
+     let cart = [];
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
     let searchTimeout = null;
 
     // Init
@@ -458,9 +490,10 @@
             window.location.href = 'sign-in.html';
             return;
           }
-          document.getElementById('userName').textContent = currentUser.name;
-          document.getElementById('userAvatar').textContent = (currentUser.name || 'P')[0].toUpperCase();
-        }
+          const pharmUserNameEl = document.getElementById('pharmacistUserName');
+          if (pharmUserNameEl) pharmUserNameEl.textContent = currentUser.name;
+          loadNotificationCounts();
+         }
       } catch (error) {
         window.location.href = 'sign-in.html';
       }
@@ -823,6 +856,107 @@
     // Utils
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
     function capitalize(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1); }
-  </script>
-</body>
-</html>
+
+    // Load notification and message counts
+    async function loadNotificationCounts() {
+      try {
+        const response = await fetch(`${API_BASE}/messages/unread-count-generic`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const msgBadge = document.getElementById('messageBadge');
+          const notifBadge = document.getElementById('notificationBadge');
+          if (msgBadge) {
+            if (data.unreadMessages > 0) { msgBadge.style.display = 'inline-flex'; msgBadge.textContent = data.unreadMessages > 99 ? '99+' : data.unreadMessages; }
+            else { msgBadge.style.display = 'none'; }
+          }
+          if (notifBadge) {
+            if (data.unreadNotifications > 0) { notifBadge.style.display = 'inline-flex'; notifBadge.textContent = data.unreadNotifications > 99 ? '99+' : data.unreadNotifications; }
+            else { notifBadge.style.display = 'none'; }
+          }
+        }
+      } catch (error) { console.error('Error loading notification counts:', error); }
+    }
+
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : (firstName?.substring(0, 2).toUpperCase() || 'P');
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'pharmacist').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Toggle user dropdown
+    function toggleUserDropdown() {
+      const dropdown = document.querySelector('.user-dropdown .dropdown-menu');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+
+    // Logout
+    async function handleLogout() {
+      try { await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
+      window.location.href = 'sign-in.html';
+    }
+   </script>
+
+   <!-- Profile Modal -->
+   <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+         <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+       </div>
+       <div class="modal-body" style="padding: 20px;">
+         <div style="text-align: center; margin-bottom: 24px;">
+           <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">P</div>
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">First Name</label>
+           <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Last Name</label>
+           <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Email Address</label>
+           <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Role</label>
+           <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Member Since</label>
+           <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+         </div>
+       </div>
+       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
+       </div>
+     </div>
+   </div>
+   </body>
+   </html>

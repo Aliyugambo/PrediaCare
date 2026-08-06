@@ -33,6 +33,7 @@ async function initializeDatabase() {
         password_hash VARCHAR(255) NOT NULL,
         role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse') NOT NULL DEFAULT 'patient',
         is_active BOOLEAN DEFAULT TRUE,
+        patient_status ENUM('active', 'admitted', 'discharged', 'outpost') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -53,6 +54,17 @@ async function initializeDatabase() {
       if (!cols || cols.length === 0) {
         await connection.execute("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE AFTER role");
         console.log('Added is_active column to users table');
+      }
+    } catch (e) {
+      // Column might already exist
+    }
+    
+    // Ensure patient_status column exists (for older installations)
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM users LIKE 'patient_status'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE users ADD COLUMN patient_status ENUM('active', 'admitted', 'discharged', 'outpost') DEFAULT 'active' AFTER is_active");
+        console.log('Added patient_status column to users table');
       }
     } catch (e) {
       // Column might already exist
@@ -327,6 +339,7 @@ async function initializeDatabase() {
         status ENUM('admitted', 'discharged', 'transferred') DEFAULT 'admitted',
         admission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
         discharge_date DATETIME NULL,
+        discharge_data JSON DEFAULT NULL,
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -336,6 +349,17 @@ async function initializeDatabase() {
       )
     `);
     console.log('Admissions table created or already exists');
+
+    // Ensure discharge_data column exists on older installs
+    try {
+      const [colsD] = await connection.execute("SHOW COLUMNS FROM admissions LIKE 'discharge_data'");
+      if (!colsD || colsD.length === 0) {
+        await connection.execute("ALTER TABLE admissions ADD COLUMN discharge_data JSON DEFAULT NULL AFTER discharge_date");
+        console.log('Added discharge_data column to admissions table');
+      }
+    } catch (e) {
+      console.log('discharge_data column check:', e.message);
+    }
 
     // Create round_checks table (doctor continuous round-check notes)
     await connection.execute(`
@@ -652,8 +676,77 @@ async function initializeDatabase() {
     `);
     console.log('Billing payments table created or already exists');
 
-// SEED REAL HOSPITAL SERVICES (NGN)
-// Truncate related tables first (FK safe order)
+    // Create newsletter_subscribers table (for health newspaper subscriptions)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255),
+        subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_active BOOLEAN DEFAULT TRUE
+      )
+    `);
+    console.log('Newsletter subscribers table created or already exists');
+
+    // Create health_news table (pool of health articles for weekly newsletters)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS health_news (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        summary TEXT,
+        content TEXT,
+        category VARCHAR(100),
+        author VARCHAR(255) DEFAULT 'PrediaCare Medical Team',
+        status ENUM('published', 'draft') DEFAULT 'published',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Health news table created or already exists');
+
+    // Seed health news articles if empty
+    const [newsCount] = await connection.execute('SELECT COUNT(*) as count FROM health_news');
+    if (newsCount[0].count === 0) {
+      const sampleNews = [
+        {
+          title: '5 Essential Habits for Heart Health',
+          summary: 'Discover the five daily habits that can significantly reduce your risk of heart disease.',
+          content: 'Heart disease remains the leading cause of death worldwide. However, simple daily habits can make a tremendous difference in protecting your cardiovascular health. Here are five evidence-based habits: 1) Regular physical activity - aim for at least 150 minutes of moderate exercise per week. 2) A balanced diet rich in fruits, vegetables, and whole grains. 3) Avoiding smoking and limiting alcohol consumption. 4) Adequate sleep (7-9 hours per night). 5) Regular health check-ups to monitor blood pressure and cholesterol levels. Incorporating these habits into your routine can reduce your risk of heart disease by up to 80%.',
+          category: 'cardiology',
+          author: 'Dr. Sarah Doctor'
+        },
+        {
+          title: 'Understanding Diabetes: Types, Symptoms, and Management',
+          summary: 'Learn about the different types of diabetes, their symptoms, and effective management strategies.',
+          content: 'Diabetes is a chronic metabolic condition characterized by high blood sugar levels. There are three main types: Type 1 (autoimmune, insulin-dependent), Type 2 (insulin resistance), and gestational diabetes (during pregnancy). Common symptoms include frequent urination, excessive thirst, fatigue, and blurred vision. Management strategies include regular blood sugar monitoring, a balanced diet low in refined sugars, regular exercise, and appropriate medication or insulin therapy. Early detection and proper management can prevent complications such as heart disease, kidney failure, and vision loss.',
+          category: 'endocrinology',
+          author: 'Dr. Michael Chen'
+        },
+        {
+          title: 'Preventive Care: Why Regular Check-ups Matter',
+          summary: 'Regular health screenings and check-ups are key to early disease detection and prevention.',
+          content: 'Preventive healthcare is the cornerstone of maintaining good health. Regular check-ups allow healthcare providers to detect potential health issues before they become serious problems. Recommended screenings vary by age and risk factors but may include blood pressure checks, cholesterol tests, cancer screenings, immunizations, and vision/hearing tests. The benefits of preventive care include early disease detection, better treatment outcomes, reduced healthcare costs, and increased awareness of your health status. Make it a habit to visit your healthcare provider regularly, even when you feel healthy.',
+          category: 'prevention',
+          author: 'Dr. Emily Brown'
+        },
+        {
+          title: 'Nutrition Tips: Building a Balanced Meal Plate',
+          content: 'A well-balanced meal is essential for good nutrition. The key is to fill your plate with a variety of nutrient-dense foods from all food groups. Start by filling half your plate with colorful vegetables and fruits, which provide essential vitamins, minerals, and fiber. The other half should include lean proteins (such as fish, poultry, beans, or nuts) and whole grains (like brown rice, quinoa, or whole wheat). Healthy fats, such as those found in avocados, olive oil, and nuts, should be included in moderation. Limit added sugars, sodium, and processed foods for optimal health and to maintain a healthy weight.',
+          category: 'nutrition',
+          author: 'PrediaCare Medical Team'
+        }
+      ];
+
+      for (const article of sampleNews) {
+        await connection.execute(
+          'INSERT INTO health_news (title, summary, content, category, author) VALUES (?, ?, ?, ?, ?)',
+          [article.title, article.summary, article.content, article.category, article.author]
+        );
+      }
+      console.log('✅ Health news articles seeded (4 articles)');
+    }
+
+    // SEED REAL HOSPITAL SERVICES (NGN)
 await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
 await connection.execute('TRUNCATE TABLE billing_invoice_items');
 await connection.execute('TRUNCATE TABLE billing_invoices');

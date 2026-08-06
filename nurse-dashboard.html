@@ -250,6 +250,7 @@
       left: 0;
       top: 0;
       z-index: 100;
+      transition: transform 0.3s ease;
     }
     
     .sidebar-header {
@@ -1066,9 +1067,22 @@
     .role-badge.admin { background: #ede9fe; color: #7c3aed; }
     .role-badge.doctor { background: #dbeafe; color: #2563eb; }
     .role-badge.nurse { background: #d1fae5; color: #059669; }
-    .role-badge.staff { background: #fef3c7; color: #d97706; }
-    
-    .action-btns button {
+     .role-badge.staff { background: #fef3c7; color: #d97706; }
+     
+     .badge {
+       display: inline-block;
+       padding: 4px 10px;
+       border-radius: 20px;
+       font-size: 12px;
+       font-weight: 500;
+     }
+     
+     .badge-active { background: #d1fae5; color: #059669; }
+     .badge-inactive { background: #fee2e2; color: #dc2626; }
+     .badge-pending { background: #fef3c7; color: #d97706; }
+     .badge-completed { background: #d1fae5; color: #059669; }
+     
+     .action-btns button {
       padding: 6px 12px;
       border-radius: 6px;
       border: none;
@@ -1219,7 +1233,14 @@
       </div>
       
       <div class="header-right">
-        <button class="header-icon-btn"><i class="far fa-bell"></i></button>
+        <button class="header-icon-btn" title="Notifications" id="notificationBtn">
+          <i class="far fa-bell"></i>
+          <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+        </button>
+        <button class="header-icon-btn" title="Messages" id="messageBtn">
+          <i class="far fa-envelope"></i>
+          <span class="notification-badge" id="messageBadge" style="display: none;"></span>
+        </button>
         <button class="header-icon-btn"><i class="far fa-moon"></i></button>
         <div class="user-dropdown">
           <button class="user-btn">
@@ -1231,7 +1252,7 @@
               <p class="user-email">admin@prediacare.com</p>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+            <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;"><i class="fas fa-user"></i> Profile</a>
             <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
             <div class="dropdown-divider"></div>
             <a href="sign-in.html" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Log out</a>
@@ -1389,6 +1410,7 @@
             <button class="tab-btn" data-tab="test-referrals">Test Referrals</button>
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
             <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
+            <button class="tab-btn" data-tab="patients">Patients</button>
           </div>
           
           <div class="tab-content">
@@ -1689,9 +1711,56 @@
                   </div>
                 </form>
               </div>
-            </div>
+             </div>
 
-            <!-- Round Checks Tab (Nurse View) -->
+             <!-- Patients Tab -->
+             <div class="tab-pane" id="patients">
+               <div class="content-grid">
+                 <div class="content-card" style="grid-column: span 2;">
+                   <div class="content-card-header">
+                     <h3>Patients</h3>
+                     <p>View all patients and their diagnoses</p>
+                   </div>
+                   <div class="content-card-body">
+                     <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                       <div class="form-group" style="flex: 1; min-width: 200px;">
+                         <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Search Patients</label>
+                         <input type="text" id="nursePatientSearch" placeholder="Search by name or email..." onkeyup="searchNursePatients()" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                       </div>
+                       <div class="form-group" style="min-width: 160px;">
+                         <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Status</label>
+                         <select id="nursePatientStatusFilter" onchange="filterNursePatients()" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                           <option value="all">All Patients</option>
+                           <option value="admitted">Admitted</option>
+                           <option value="non-admitted">Non-Admitted</option>
+                         </select>
+                       </div>
+                       <button class="action-btn secondary" onclick="loadNursePatients()"><i class="fas fa-sync"></i> Refresh</button>
+                     </div>
+                     <div class="table-container" style="overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0;">
+                       <table class="staff-table" style="width: 100%; min-width: 900px;">
+                         <thead>
+                           <tr>
+                             <th style="width: 20%;">Name</th>
+                             <th style="width: 20%;">Email</th>
+                             <th style="width: 12%;">Phone</th>
+                             <th style="width: 10%;">Status</th>
+                             <th style="width: 18%;">Admission</th>
+                             <th style="width: 20%;">Latest Diagnosis</th>
+                             <th style="width: 10%;">Actions</th>
+                           </tr>
+                         </thead>
+                         <tbody id="nursePatientsTableBody">
+                           <tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
+                         </tbody>
+                       </table>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
+
+             <!-- Round Checks Tab (Nurse View) -->
             <div class="tab-pane" id="round-checks">
               <div class="content-grid">
                 <div class="content-card" style="grid-column: span 2;">
@@ -1842,9 +1911,60 @@
         <button type="button" class="rc-btn rc-btn-primary" onclick="saveNurseRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
       </div>
     </div>
-  </div>
+   </div>
 
-  <script>
+   <!-- Profile Modal -->
+   <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+         <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+       </div>
+       <div class="modal-body" style="padding: 20px;">
+         <div style="text-align: center; margin-bottom: 24px;">
+           <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">SJ</div>
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">First Name</label>
+           <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Last Name</label>
+           <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Email Address</label>
+           <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Role</label>
+           <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Member Since</label>
+           <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+         </div>
+       </div>
+       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
+       </div>
+     </div>
+    </div>
+
+    <!-- Diagnoses Modal -->
+    <div id="nurseDiagnosesModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+      <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+        <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 id="nurseDiagnosesModalTitle" style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 0;">Patient Diagnoses</h3>
+          <button type="button" onclick="document.getElementById('nurseDiagnosesModal').style.display='none'" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+        </div>
+        <div id="nurseDiagnosesModalBody" style="padding: 20px;">
+          <!-- Content will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <script>
     // IMPORTANT: Access this page through https://<your-frontend-domain>/staff-dashboard.html
     // Do NOT open the file directly (file://) or API calls will fail
     const API_BASE = '/api';
@@ -1853,6 +1973,11 @@
     let csrfToken = null;
     
     let currentUser = null;
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
 
     // Check authentication on page load
     document.addEventListener('DOMContentLoaded', async function() {
@@ -1940,6 +2065,7 @@
 
         console.log('checkAuthentication: ✅ Role check PASSED - allowing access');
         updateSidebarProfile();
+        loadNotificationCounts();
         console.log('checkAuthentication: Initializing page...');
         
         // Initialize page
@@ -1963,9 +2089,60 @@
       const profileName = document.getElementById('sidebarProfileName');
       const profileRole = document.getElementById('sidebarProfileRole');
 
-      if (avatar) avatar.textContent = initials || 'U';
+       if (avatar) avatar.textContent = initials || 'U';
       if (profileName) profileName.textContent = name;
       if (profileRole) profileRole.textContent = roleLabel;
+    }
+
+    // Load notification and message counts
+    async function loadNotificationCounts() {
+      try {
+        const response = await fetch(`${API_BASE}/messages/unread-count-generic`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          const msgBadge = document.getElementById('messageBadge');
+          const notifBadge = document.getElementById('notificationBadge');
+          if (msgBadge) {
+            if (data.unreadMessages > 0) { msgBadge.style.display = 'inline-flex'; msgBadge.textContent = data.unreadMessages > 99 ? '99+' : data.unreadMessages; }
+            else { msgBadge.style.display = 'none'; }
+          }
+          if (notifBadge) {
+            if (data.unreadNotifications > 0) { notifBadge.style.display = 'inline-flex'; notifBadge.textContent = data.unreadNotifications > 99 ? '99+' : data.unreadNotifications; }
+            else { notifBadge.style.display = 'none'; }
+          }
+        }
+      } catch (error) { console.error('Error loading notification counts:', error); }
+    }
+
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : (firstName?.substring(0, 2).toUpperCase() || 'US');
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'staff').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
     }
 
     function initializePage() {
@@ -1976,7 +2153,12 @@
           this.classList.add('active');
           document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
           const pane = document.getElementById(this.dataset.tab);
-          if (pane) pane.classList.add('active');
+          if (pane) {
+            pane.classList.add('active');
+            if (this.dataset.tab === 'patients') {
+              loadNursePatients();
+            }
+          }
         });
       });
 
@@ -2620,6 +2802,11 @@
         return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       } catch (e) { return str; }
     }
+    function formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+    }
     function capitalizeFirst(str) {
       if (!str) return '';
       return String(str).charAt(0).toUpperCase() + String(str).slice(1);
@@ -2762,6 +2949,116 @@ async function saveVitals(e) {
       if (!name) return '?';
       const parts = name.trim().split(/\s+/);
       return parts.map(p => p.charAt(0).toUpperCase()).slice(0, 2).join('');
+    }
+
+    // Nurse Patients tab functions
+    async function loadNursePatients() {
+      const tbody = document.getElementById('nursePatientsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
+      
+      const searchInput = document.getElementById('nursePatientSearch');
+      const statusFilter = document.getElementById('nursePatientStatusFilter');
+      const search = searchInput ? searchInput.value.trim() : '';
+      const status = statusFilter ? statusFilter.value : 'all';
+      
+      let url = `${API_BASE}/staff/patients?status=${encodeURIComponent(status)}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!data.success) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
+          return;
+        }
+        
+        const patients = data.patients || [];
+        if (patients.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = patients.map(p => `
+          <tr style="cursor: pointer;" onclick="viewNursePatientDiagnoses(${p.id}, '${escapeHtml(p.name)}')">
+            <td><strong style="color: #0284c7;">${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.email)}</td>
+            <td>${escapeHtml(p.phone || '-')}</td>
+            <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
+            <td>${p.status === 'admitted' ? `<span class="badge badge-active">Admitted</span><br><small style="color:#64748b;">Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>` : '<span class="badge badge-inactive">Non-Admitted</span>'}</td>
+            <td style="font-size: 13px; color: #475569;">${p.latestDiagnosis || 'No diagnosis recorded'}</td>
+            <td>
+              <button class="action-btn secondary" onclick="event.stopPropagation(); viewNursePatientDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
+                <i class="fas fa-eye"></i> View
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading patients:', error);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
+      }
+    }
+
+    function searchNursePatients() {
+      loadNursePatients();
+    }
+
+    function filterNursePatients() {
+      loadNursePatients();
+    }
+
+    async function viewNursePatientDiagnoses(patientId, patientName) {
+      const modal = document.getElementById('nurseDiagnosesModal');
+      const title = document.getElementById('nurseDiagnosesModalTitle');
+      const body = document.getElementById('nurseDiagnosesModalBody');
+      
+      if (!modal || !body) return;
+      
+      title.textContent = `Diagnoses - ${patientName}`;
+      modal.style.display = 'flex';
+      body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      
+      try {
+        const response = await fetch(`${API_BASE}/staff/patients/${patientId}/diagnoses`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (!data.success) {
+          body.innerHTML = `<p style="color: #dc2626;">${data.message || 'Failed to load diagnoses'}</p>`;
+          return;
+        }
+        
+        const diagnoses = data.diagnoses || [];
+        if (diagnoses.length === 0) {
+          body.innerHTML = '<p style="color: #64748b;">No diagnoses found for this patient</p>';
+          return;
+        }
+        
+        body.innerHTML = `
+          <div style="max-height: 400px; overflow-y: auto;">
+            ${diagnoses.map(d => `
+              <div style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                  <strong style="color: #0f172a;">${escapeHtml(d.diagnosis || 'N/A')}</strong>
+                  <span style="font-size: 12px; color: #64748b;">${formatDate(d.created_at)}</span>
+                </div>
+                ${d.doctor_name ? `<p style="margin: 4px 0; font-size: 13px; color: #475569;"><strong>Doctor:</strong> ${escapeHtml(d.doctor_name)}</p>` : ''}
+                ${d.notes ? `<p style="margin: 4px 0; font-size: 13px; color: #475569;"><strong>Notes:</strong> ${escapeHtml(d.notes)}</p>` : ''}
+                ${d.source ? `<p style="margin: 4px 0; font-size: 12px; color: #94a3b8;"><strong>Source:</strong> ${escapeHtml(d.source)}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading diagnoses:', error);
+        body.innerHTML = '<p style="color: #dc2626;">Error loading diagnoses</p>';
+      }
     }
 
     // Event listeners for vitals tab

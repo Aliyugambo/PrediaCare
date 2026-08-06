@@ -165,6 +165,31 @@
       flex-direction: column;
     }
     
+    /* Mobile toggle button */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--slate-500);
+    }
+    
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--slate-500);
+    }
+    
     /* Header */
     .header {
       background: var(--white);
@@ -472,6 +497,7 @@
     .badge-active { background: #d1fae5; color: #059669; }
     .badge-inactive { background: #fee2e2; color: #dc2626; }
     .badge-scheduled { background: #dbeafe; color: #131313; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
     .badge-confirmed { background: #d1fae5; color: #059669; }
     .badge-completed { background: #f3e8ff; color: #7c3aed; }
     .badge-cancelled { background: #fee2e2; color: #dc2626; }
@@ -539,15 +565,22 @@
       margin-bottom: 16px;
     }
     
-    .form-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
-    
-    .form-control {
+.form-label {
+       display: block;
+       font-size: 14px;
+       font-weight: 500;
+       color: var(--primary);
+       margin-bottom: 6px;
+     }
+     
+     .view-field {
+       margin: 0;
+       font-size: 14px;
+       color: var(--slate-600);
+       line-height: 1.5;
+     }
+     
+     .form-control {
       width: 100%;
       padding: 10px 14px;
       border: 1px solid var(--border);
@@ -776,6 +809,19 @@
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar-close {
+        display: block;
+      }
+      
+      .mobile-toggle {
+        display: block;
       }
       
       .main-content {
@@ -835,19 +881,19 @@
     }
   </style>
 </head>
-<body>
-  <div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="index.html" class="logo">
-          <div class="logo-icon"><img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" />
+  <body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <a href="index.html" class="logo">
+            <div class="logo-icon"><img src="assets/images/logo/logo_64.svg" alt="Prediacare" onerror="this.style.display='none'" /></div>
+            <span class="logo-text">rediacare</span>
+          </a>
+          <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
         </div>
-          <span class="logo-text">rediacare Clinics</span>
-        </a>
-      </div>
-      
-      <nav class="sidebar-nav">
+        <nav class="sidebar-nav">
         <div class="nav-section">
           <div class="nav-section-title">Main</div>
           <a href="#" class="nav-item active" data-section="dashboard">
@@ -866,9 +912,13 @@
             <i class="fas fa-user-md"></i>
             <span>Doctors</span>
           </a>
-          <a href="#" class="nav-item" data-section="patients">
+           <a href="#" class="nav-item" data-section="patients">
             <i class="fas fa-user-injured"></i>
             <span>Patients</span>
+          </a>
+          <a href="#" class="nav-item" data-section="discharged-patients">
+            <i class="fas fa-procedures"></i>
+            <span>Discharged Patients</span>
           </a>
           <a href="#" class="nav-item" data-section="staff">
             <i class="fas fa-user-nurse"></i>
@@ -944,10 +994,14 @@
           <h1 class="page-title" id="pageTitle">Dashboard</h1>
         </div>
         <div class="header-right">
-          <button class="header-btn" title="Notifications">
+          <button class="header-btn" title="Notifications" id="notificationBtn">
             <i class="fas fa-bell"></i>
-            <span class="badge" id="notifBadge" style="display:none">0</span>
+            <span class="badge" id="notificationBadge" style="display:none">0</span>
           </button>
+          <!-- <button class="header-btn" title="Messages" id="messageBtn">
+            <i class="fas fa-envelope"></i>
+            <span class="badge" id="messageBadge" style="display:none">0</span>
+          </button> -->
           <div class="user-menu">
             <div class="user-avatar" id="userInitials">A</div>
             <div class="dropdown-menu">
@@ -956,8 +1010,8 @@
                 <div class="email" id="userEmail">admin@carenix.com</div>
               </div>
               <div class="dropdown-divider"></div>
-              <a href="#" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
-              <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;"><i class="fas fa-user"></i> Profile</a>
+              <!-- <a href="#" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a> -->
               <div class="dropdown-divider"></div>
               <a href="#" class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
@@ -1181,6 +1235,15 @@
           <div class="card">
             <div class="card-header">
               <h3>Patient Management</h3>
+              <div class="filters" style="margin-top: 12px;">
+                <select id="patientStatusFilter" onchange="loadPatients()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); font-size: 14px;">
+                  <option value="all">All Patients</option>
+                  <option value="active">Active</option>
+                  <option value="admitted">Admitted</option>
+                  <option value="discharged">Discharged</option>
+                  <option value="outpost">Outpost</option>
+                </select>
+              </div>
             </div>
             <div class="table-container">
               <table>
@@ -1188,13 +1251,44 @@
                   <tr>
                     <th>Patient</th>
                     <th>Email</th>
+                    <th>Patient Status</th>
                     <th>Status</th>
                     <th>Joined</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="patientsTable">
-                  <tr><td colspan="5" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                  <tr><td colspan="6" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Discharged Patients Section -->
+        <div id="section-discharged-patients" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h3>Discharged Patients</h3>
+              <div class="filters" style="margin-top: 12px;">
+                <input type="text" id="dischargeSearch" placeholder="Search by name or email..." onkeyup="loadDischargedPatients()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); font-size: 14px; width: 240px;">
+              </div>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Email</th>
+                    <th>Doctor</th>
+                    <th>Admitted</th>
+                    <th>Discharged</th>
+                    <th>Room/Bed</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dischargedPatientsTable">
+                  <tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i></td></tr>
                 </tbody>
               </table>
             </div>
@@ -1275,9 +1369,7 @@
           <div class="card">
             <div class="card-header">
               <h3>Messages</h3>
-              <button class="btn btn-primary" onclick="openModal('sendMessage')">
-                <i class="fas fa-plus"></i> New Message
-              </button>
+              <button class="btn btn-primary" onclick="openSendMessageModal()"><i class="fas fa-plus"></i> New Message</button>
             </div>
             <div class="table-container">
               <table>
@@ -1694,7 +1786,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Role</label>
-          <select class="form-control" id="newUserRole">
+          <select class="form-control" id="newUserRole" onchange="toggleDoctorFields()">
             <option value="doctor">Doctor</option>
             <!-- <option value="staff">Staff</option> -->
             <option value="nurse">Nurse</option>
@@ -1703,6 +1795,14 @@
             <option value="diagnostic">Diagnostic Staff</option>
             <option value="pharmacist">Pharmacist</option>
           </select>
+        </div>
+        <div class="form-group" id="doctorSpecializationGroup" style="display: none;">
+          <label class="form-label">Specialization</label>
+          <input type="text" class="form-control" id="newUserSpecialization" placeholder="e.g. Cardiology, Neurology">
+        </div>
+        <div class="form-group" id="doctorExperienceGroup" style="display: none;">
+          <label class="form-label">Experience (years)</label>
+          <input type="number" class="form-control" id="newUserExperience" placeholder="Years of experience" min="0">
         </div>
       </div>
       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
@@ -1752,19 +1852,34 @@
       </div>
       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
         <button class="btn" onclick="closeModal('editUser')">Cancel</button>
-        <button class="btn btn-primary" onclick="updateUser()">Save Changes</button>
-      </div>
-    </div>
-  </div>
+<button class="btn btn-primary" onclick="updateUser()">Save Changes</button>
+       </div>
+     </div>
+   </div>
 
-  <!-- Send Message Modal -->
-  <div class="modal-overlay" id="modal-sendMessage">
-    <div class="modal">
-      <div class="modal-header">
+   <!-- View User/Patient Modal -->
+   <div class="modal-overlay" id="modal-viewUser" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3 id="viewUserTitle">View Details</h3>
+         <button class="modal-close" onclick="closeModal('viewUser')">&times;</button>
+       </div>
+       <div class="modal-body" id="viewUserBody" style="padding: 20px;">
+       </div>
+       <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button class="btn" onclick="closeModal('viewUser')">Close</button>
+       </div>
+     </div>
+   </div>
+
+   <!-- Send Message Modal -->
+  <div class="modal-overlay" id="modal-sendMessage" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
         <h3>Send Message</h3>
         <button class="modal-close" onclick="closeModal('sendMessage')">&times;</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="padding: 20px;">
         <div class="form-group">
           <label class="form-label">To (User)</label>
           <select class="form-control" id="messageReceiver">
@@ -1780,7 +1895,7 @@
           <textarea class="form-control" id="messageBody" rows="5" placeholder="Enter message"></textarea>
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
         <button class="btn" onclick="closeModal('sendMessage')">Cancel</button>
         <button class="btn btn-primary" onclick="sendMessage()">Send Message</button>
       </div>
@@ -2006,8 +2121,9 @@
       </div>
     </div>
   </div>
+</div> <!-- close .content -->
 
-  <!-- Create Invoice Modal -->
+<!-- Create Invoice Modal -->
   <div class="modal-overlay" id="modal-createInvoice" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
@@ -2074,9 +2190,49 @@
         <button class="btn btn-primary" onclick="createInvoice()">Create Invoice</button>
       </div>
     </div>
-  </div>
+   </div>
 
-  <script>
+   <!-- Profile Modal -->
+   <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+       <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+         <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+       </div>
+       <div class="modal-body" style="padding: 20px;">
+         <div style="text-align: center; margin-bottom: 24px;">
+           <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">A</div>
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">First Name</label>
+           <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Last Name</label>
+           <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Email Address</label>
+           <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Role</label>
+           <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+         </div>
+         <div class="form-group" style="margin-bottom: 20px;">
+           <label class="form-label">Member Since</label>
+            <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div> <!-- close main-content -->
+  </div> <!-- close app-container -->
+
+<script>
     const API_BASE = '/api';
     let csrfToken = null;
     let currentUser = null;
@@ -2089,6 +2245,11 @@
     // Data cache
     let allUsers = [];
     let allAppointments = [];
+    
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
     
     // Check authentication
     document.addEventListener('DOMContentLoaded', async function() {
@@ -2147,6 +2308,35 @@
       document.getElementById('userEmail').textContent = currentUser.email;
     }
     
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : (firstName?.substring(0, 2).toUpperCase() || 'AD');
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'admin').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
+    }
+    
     // Navigation
     function setupNavigation() {
       document.querySelectorAll('.nav-item[data-section]').forEach(item => {
@@ -2203,6 +2393,9 @@
           break;
         case 'patients':
           loadPatients();
+          break;
+        case 'discharged-patients':
+          loadDischargedPatients();
           break;
         case 'staff':
           loadStaff();
@@ -2270,12 +2463,20 @@
           
           if (stats.unreadMessages > 0) {
             const badge = document.getElementById('unreadMsgBadge');
-            badge.textContent = stats.unreadMessages;
-            badge.style.display = 'inline-block';
+            if (badge) { badge.textContent = stats.unreadMessages; badge.style.display = 'inline-block'; }
             
-            const notifBadge = document.getElementById('notifBadge');
-            notifBadge.textContent = stats.unreadMessages;
+            const msgBadge = document.getElementById('messageBadge');
+            msgBadge.textContent = stats.unreadMessages;
+            msgBadge.style.display = 'inline-flex';
+          }
+          
+          const notifBadge = document.getElementById('notificationBadge');
+          const notifCount = stats.unreadMessages + (stats.pendingResults || 0);
+          if (notifCount > 0) {
+            notifBadge.textContent = notifCount;
             notifBadge.style.display = 'inline-block';
+          } else {
+            notifBadge.style.display = 'none';
           }
         }
         
@@ -2329,15 +2530,17 @@
                 </div>
               </div>
             </td>
-            <td>${escapeHtml(user.email)}</td>
-            <td><span class="badge ${roleBadge}">${capitalize(user.role)}</span></td>
-            <td><span class="badge ${user.is_active ? 'badge-active' : 'badge-inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
-            <td>${created}</td>
-            <td>
-              <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="View"><i class="fas fa-eye"></i></button>
-              </div>
-            </td>
+<td>${escapeHtml(user.email)}</td>
+             <td><span class="badge ${roleBadge}">${capitalize(user.role)}</span></td>
+             <td><span class="badge ${user.is_active ? 'badge-active' : 'badge-inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+             <td>${created}</td>
+             <td>
+               <div class="action-btns">
+                 <button class="btn btn-sm btn-icon" title="View" onclick="viewUser(${user.id})"><i class="fas fa-eye"></i></button>
+                 <button class="btn btn-sm btn-icon" title="Edit" onclick="editUser(${user.id})"><i class="fas fa-edit"></i></button>
+                 <button class="btn btn-sm btn-icon btn-danger" title="Delete" onclick="deleteUser(${user.id})"><i class="fas fa-trash"></i></button>
+               </div>
+             </td>
           </tr>
         `;
       }).join('');
@@ -2534,31 +2737,49 @@
     // Patients
     async function loadPatients() {
       try {
-        const response = await fetch(`${API_BASE}/admin/users?role=patient`, {
+        const status = document.getElementById('patientStatusFilter').value;
+        const response = await fetch(`${API_BASE}/admin/users?role=patient&patient_status=${status}`, {
           credentials: 'include'
         });
         
         const data = await response.json();
         
-        if (data.success) {
-          renderPatientsTable(data.users);
+if (data.success) {
+           window._allPatients = data.users;
+           renderPatientsTable(data.users);
         }
       } catch (error) {
         console.error('Error loading patients:', error);
       }
     }
     
-    function renderPatientsTable(patients) {
+function renderPatientsTable(patients) {
       const tbody = document.getElementById('patientsTable');
       
       if (!patients || patients.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-user-injured"></i><h4>No patients found</h4></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-user-injured"></i><h4>No patients found</h4></td></tr>';
         return;
       }
+      
+      const statusBadgeMap = {
+        'active': 'badge-active',
+        'admitted': 'badge-warning',
+        'discharged': 'badge-inactive',
+        'outpost': 'badge-scheduled'
+      };
+      const statusLabelMap = {
+        'active': 'Active',
+        'admitted': 'Admitted',
+        'discharged': 'Discharged',
+        'outpost': 'Outpost'
+      };
       
       tbody.innerHTML = patients.map(patient => {
         const initials = (patient.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
         const created = patient.created_at ? new Date(patient.created_at).toLocaleDateString() : 'N/A';
+        const patientStatus = patient.patient_status || 'active';
+        const statusBadge = statusBadgeMap[patientStatus] || 'badge-active';
+        const statusLabel = statusLabelMap[patientStatus] || 'Active';
         
         return `
           <tr>
@@ -2571,18 +2792,219 @@
               </div>
             </td>
             <td>${escapeHtml(patient.email)}</td>
+            <td><span class="badge ${statusBadge}">${escapeHtml(statusLabel)}</span></td>
             <td><span class="badge ${patient.is_active ? 'badge-active' : 'badge-inactive'}">${patient.is_active ? 'Active' : 'Inactive'}</span></td>
             <td>${created}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="View"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-icon" title="View" onclick="viewPatient(${patient.id})"><i class="fas fa-eye"></i></button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
     }
-    
+
+    async function loadDischargedPatients() {
+      try {
+        const search = document.getElementById('dischargeSearch') ? document.getElementById('dischargeSearch').value.trim() : '';
+        const query = new URLSearchParams();
+        if (search) query.set('search', search);
+        const response = await fetch(`${API_BASE}/admin/discharged-patients?${query.toString()}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          window._dischargedPatients = data.patients;
+          renderDischargedPatientsTable(data.patients);
+        }
+      } catch (error) {
+        console.error('Error loading discharged patients:', error);
+      }
+    }
+
+    function renderDischargedPatientsTable(patients) {
+      const tbody = document.getElementById('dischargedPatientsTable');
+      if (!patients || patients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-user-injured"></i><h4>No discharged patients found</h4></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = patients.map(p => {
+        const initials = (p.patient_name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const roomBed = p.room_number && p.bed_number ? `${escapeHtml(p.room_number)} / ${escapeHtml(p.bed_number)}` : (p.room_number || p.bed_number || '-');
+        const admissionDate = p.admission_date ? new Date(p.admission_date).toLocaleDateString() : 'N/A';
+        const dischargeDate = p.discharge_date ? new Date(p.discharge_date).toLocaleDateString() : 'N/A';
+        const dischargeData = typeof p.discharge_data === 'string' ? JSON.parse(p.discharge_data) : (p.discharge_data || {});
+
+        return `
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar-small">${initials}</div>
+                <div class="user-info">
+                  <div class="name">${escapeHtml(p.patient_name)}</div>
+                </div>
+              </div>
+            </td>
+            <td>${escapeHtml(p.patient_email)}</td>
+            <td>${escapeHtml(p.doctor_name || 'N/A')}</td>
+            <td>${admissionDate}</td>
+            <td>${dischargeDate}</td>
+            <td>${roomBed}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-sm btn-icon" title="View Discharge History" onclick="viewDischargeHistory(${p.patient_id})"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-icon" title="Download Discharge Summary" onclick="downloadDischargePdf(${p.admission_id})"><i class="fas fa-download"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function viewDischargeHistory(patientId) {
+      try {
+        const response = await fetch(`${API_BASE}/admin/patients/${patientId}/discharge-history`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!data.success) return;
+
+        const body = document.getElementById('viewUserBody');
+        const title = document.getElementById('viewUserTitle');
+        if (!body || !title) return;
+
+        const patient = data.patient;
+        const admissions = data.admissions || [];
+
+        title.textContent = `Discharge History: ${patient ? escapeHtml(patient.patient_name) : 'N/A'}`;
+
+        let admissionsHtml = '';
+        if (admissions.length === 0) {
+          admissionsHtml = '<p style="color: #64748b; padding: 12px;">No discharge records found.</p>';
+        } else {
+          admissionsHtml = admissions.map(adm => {
+            const dischargeData = typeof adm.discharge_data === 'string' ? JSON.parse(adm.discharge_data) : (adm.discharge_data || {});
+            const admissionDate = adm.admission_date ? new Date(adm.admission_date).toLocaleString() : 'N/A';
+            const dischargeDate = adm.discharge_date ? new Date(adm.discharge_date).toLocaleString() : 'N/A';
+            const roomBed = adm.room_number && adm.bed_number ? `${escapeHtml(adm.room_number)} / ${escapeHtml(adm.bed_number)}` : '-';
+            const diagnosis = dischargeData.discharge_diagnosis || adm.admitting_diagnosis || 'N/A';
+            const condition = dischargeData.final_condition || 'N/A';
+            const doctor = adm.doctor_name || 'N/A';
+            const statusBadge = adm.status === 'discharged' ? 'badge-inactive' : 'badge-active';
+
+            return `
+              <div style="border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <h4 style="margin: 0;">Admission #${adm.admission_id}</h4>
+                  <span class="badge ${statusBadge}">${escapeHtml(adm.status || '')}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <div class="form-group">
+                    <label class="form-label">Doctor</label>
+                    <p class="view-field">${escapeHtml(doctor)}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Admission Date</label>
+                    <p class="view-field">${admissionDate}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Discharge Date</label>
+                    <p class="view-field">${dischargeDate}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Room / Bed</label>
+                    <p class="view-field">${roomBed}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Reason for Admission</label>
+                    <p class="view-field">${escapeHtml(adm.reason_for_admission || 'N/A')}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Admitting Diagnosis</label>
+                    <p class="view-field">${escapeHtml(adm.admitting_diagnosis || 'N/A')}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Discharge Diagnosis</label>
+                    <p class="view-field">${escapeHtml(diagnosis)}</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Final Condition</label>
+                    <p class="view-field">${escapeHtml(condition)}</p>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Notes</label>
+                  <p class="view-field">${escapeHtml(adm.notes || 'No notes')}</p>
+                </div>
+                ${dischargeData.discharge_summary ? `
+                <div class="form-group" style="margin-top: 8px;">
+                  <label class="form-label">Discharge Summary</label>
+                  <p class="view-field">${escapeHtml(dischargeData.discharge_summary)}</p>
+                </div>
+                ` : ''}
+                ${dischargeData.medications ? `
+                <div class="form-group" style="margin-top: 8px;">
+                  <label class="form-label">Medications on Discharge</label>
+                  <p class="view-field">${escapeHtml(dischargeData.medications)}</p>
+                </div>
+                ` : ''}
+                ${dischargeData.follow_up_instructions ? `
+                <div class="form-group" style="margin-top: 8px;">
+                  <label class="form-label">Follow-up Instructions</label>
+                  <p class="view-field">${escapeHtml(dischargeData.follow_up_instructions)}</p>
+                </div>
+                ` : ''}
+                <div style="margin-top: 12px; text-align: right;">
+                  <button class="btn btn-sm btn-icon" onclick="downloadDischargePdf(${adm.admission_id})" title="Download Discharge PDF">
+                    <i class="fas fa-download"></i> Download PDF
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        body.innerHTML = admissionsHtml;
+
+        const modal = document.getElementById('modal-viewUser');
+        if (modal) modal.style.display = 'flex';
+      } catch (error) {
+        console.error('Error viewing discharge history:', error);
+      }
+    }
+
+    async function downloadDischargePdf(admissionId) {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/admissions/${admissionId}/discharge/pdf`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          alert('Failed to download discharge PDF');
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `discharge_summary_${admissionId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading discharge PDF:', error);
+        alert('Failed to download discharge PDF');
+      }
+    }
+
     // Staff
     async function loadStaff() {
       try {
@@ -2753,8 +3175,9 @@
         
         const data = await response.json();
         
-        if (data.success) {
-          renderMessagesTable(data.messages);
+if (data.success) {
+           window._allMessages = data.messages;
+           renderMessagesTable(data.messages);
         }
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -2778,12 +3201,12 @@
             <td>${escapeHtml(msg.receiver?.name || 'N/A')}</td>
             <td>${escapeHtml(msg.subject || 'No Subject')}</td>
             <td>${date}</td>
-            <td><span class="badge ${msg.isRead ? 'badge-completed' : 'badge-pending'}">${msg.isRead ? 'Read' : 'Unread'}</span></td>
-            <td>
-              <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="View"><i class="fas fa-eye"></i></button>
-              </div>
-            </td>
+<td><span class="badge ${msg.isRead ? 'badge-completed' : 'badge-pending'}">${msg.isRead ? 'Read' : 'Unread'}</span></td>
+             <td>
+               <div class="action-btns">
+                 <button class="btn btn-sm btn-icon" title="View" onclick="viewMessage(${msg.id})"><i class="fas fa-eye"></i></button>
+               </div>
+             </td>
           </tr>
         `;
       }).join('');
@@ -2798,8 +3221,9 @@
         
         const data = await response.json();
         
-        if (data.success) {
-          renderResultsTable(data.results);
+if (data.success) {
+           window._allResults = data.results;
+           renderResultsTable(data.results);
         }
       } catch (error) {
         console.error('Error loading results:', error);
@@ -2824,12 +3248,12 @@
             <td>${escapeHtml(r.patient?.name || 'N/A')}</td>
             <td>Dr. ${escapeHtml(r.doctor?.name || 'N/A')}</td>
             <td>${date}</td>
-            <td><span class="badge ${statusBadge}">${capitalize(r.status)}</span></td>
-            <td>
-              <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="View"><i class="fas fa-eye"></i></button>
-              </div>
-            </td>
+<td><span class="badge ${statusBadge}">${capitalize(r.status)}</span></td>
+             <td>
+               <div class="action-btns">
+                 <button class="btn btn-sm btn-icon" title="View" onclick="viewResult(${r.id})"><i class="fas fa-eye"></i></button>
+               </div>
+             </td>
           </tr>
         `;
       }).join('');
@@ -2910,8 +3334,9 @@
         
         const data = await response.json();
         
-        if (data.success) {
-          renderHealthSummariesTable(data.summaries);
+if (data.success) {
+           window._allSummaries = data.summaries;
+           renderHealthSummariesTable(data.summaries);
         }
       } catch (error) {
         console.error('Error loading health summaries:', error);
@@ -2935,12 +3360,12 @@
             <td>Dr. ${escapeHtml(h.doctor?.name || 'N/A')}</td>
             <td><span class="badge badge-scheduled">${capitalize(h.summaryType || 'General')}</span></td>
             <td>${escapeHtml(h.chiefComplaint || 'N/A')}</td>
-            <td>${date}</td>
-            <td>
-              <div class="action-btns">
-                <button class="btn btn-sm btn-icon" title="View"><i class="fas fa-eye"></i></button>
-              </div>
-            </td>
+<td>${date}</td>
+             <td>
+               <div class="action-btns">
+                 <button class="btn btn-sm btn-icon" title="View" onclick="viewHealthSummary(${h.id})"><i class="fas fa-eye"></i></button>
+               </div>
+             </td>
           </tr>
         `;
       }).join('');
@@ -3396,29 +3821,37 @@
     }
 
     // User Actions
-    async function createUser() {
-      const name = document.getElementById('newUserName').value.trim();
-      const email = document.getElementById('newUserEmail').value.trim();
-      const password = document.getElementById('newUserPassword').value;
-      const role = document.getElementById('newUserRole').value;
-      
-      if (!name || !email || !password) {
-        alert('Please fill all fields');
-        return;
-      }
-      
-      try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (csrfToken) {
-          headers['XSRF-TOKEN'] = csrfToken;
-        }
-        
-        const response = await fetch(`${API_BASE}/admin/create-user`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: headers,
-          body: JSON.stringify({ name, email, password, role })
-        });
+async function createUser() {
+       const name = document.getElementById('newUserName').value.trim();
+       const email = document.getElementById('newUserEmail').value.trim();
+       const password = document.getElementById('newUserPassword').value;
+       const role = document.getElementById('newUserRole').value;
+       const specialization = document.getElementById('newUserSpecialization').value.trim();
+       const experienceYears = document.getElementById('newUserExperience').value;
+       
+       if (!name || !email || !password) {
+         alert('Please fill all fields');
+         return;
+       }
+       
+       try {
+         const headers = { 'Content-Type': 'application/json' };
+         if (csrfToken) {
+           headers['XSRF-TOKEN'] = csrfToken;
+         }
+         
+         const body = { name, email, password, role };
+         if (role === 'doctor') {
+           body.specialization = specialization || 'General Medicine';
+           body.experience_years = experienceYears ? parseInt(experienceYears, 10) : 0;
+         }
+         
+         const response = await fetch(`${API_BASE}/admin/create-user`, {
+           method: 'POST',
+           credentials: 'include',
+           headers: headers,
+           body: JSON.stringify(body)
+         });
         
         // Refresh CSRF token
         const newToken = response.headers.get('XSRF-TOKEN');
@@ -3478,19 +3911,355 @@
       }
     }
 
-    function editUser(userId) {
-      const user = allUsers.find(u => u.id === userId);
-      if (!user) return;
+function editUser(userId) {
+       const user = allUsers.find(u => u.id === userId);
+       if (!user) return;
 
-      document.getElementById('editUserId').value = user.id;
-      document.getElementById('editUserName').value = user.name || '';
-      document.getElementById('editUserEmail').value = user.email || '';
-      document.getElementById('editUserRole').value = user.role || 'patient';
-      document.getElementById('editUserStatus').value = user.is_active ? '1' : '0';
+       document.getElementById('editUserId').value = user.id;
+       document.getElementById('editUserName').value = user.name || '';
+       document.getElementById('editUserEmail').value = user.email || '';
+       document.getElementById('editUserRole').value = user.role || 'patient';
+       document.getElementById('editUserStatus').value = user.is_active ? '1' : '0';
 
-      const modal = document.getElementById('modal-editUser');
-      if (modal) modal.style.display = 'flex';
-    }
+       const modal = document.getElementById('modal-editUser');
+       if (modal) modal.style.display = 'flex';
+     }
+
+     function viewUser(userId) {
+       const user = allUsers.find(u => u.id === userId);
+       if (!user) return;
+
+       const body = document.getElementById('viewUserBody');
+       const title = document.getElementById('viewUserTitle');
+       if (!body || !title) return;
+
+       title.textContent = `View User: ${escapeHtml(user.name)}`;
+       body.innerHTML = `
+         <div class="form-group">
+           <label class="form-label">Full Name</label>
+           <p class="view-field">${escapeHtml(user.name)}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Email</label>
+           <p class="view-field">${escapeHtml(user.email)}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Role</label>
+           <p class="view-field">${capitalize(user.role)}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Status</label>
+           <p class="view-field">${user.is_active ? 'Active' : 'Inactive'}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Joined</label>
+           <p class="view-field">${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
+         </div>
+       `;
+
+       const modal = document.getElementById('modal-viewUser');
+       if (modal) modal.style.display = 'flex';
+     }
+
+     async function viewPatient(patientId) {
+        const patient = window._allPatients ? window._allPatients.find(p => p.id === patientId) : null;
+        if (!patient) return;
+
+        const body = document.getElementById('viewUserBody');
+        const title = document.getElementById('viewUserTitle');
+        if (!body || !title) return;
+
+        title.textContent = `View Patient: ${escapeHtml(patient.name)}`;
+        const created = patient.created_at ? new Date(patient.created_at).toLocaleDateString() : 'N/A';
+
+        body.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <p class="view-field">${escapeHtml(patient.name)}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <p class="view-field">${escapeHtml(patient.email)}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Patient Status</label>
+            <p class="view-field">${capitalize(patient.patient_status || 'active')}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <p class="view-field">${patient.is_active ? 'Active' : 'Inactive'}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Joined</label>
+            <p class="view-field">${created}</p>
+          </div>
+        `;
+
+        const modal = document.getElementById('modal-viewUser');
+        if (modal) modal.style.display = 'flex';
+
+        try {
+          const response = await fetch(`${API_BASE}/admin/patients/${patientId}/history`, {
+            credentials: 'include'
+          });
+          const data = await response.json();
+          if (data.success && data.patient) {
+            const history = data;
+            const p = data.patient;
+            const appointments = history.appointments || [];
+            const admissions = history.admissions || [];
+            const medications = history.medications || [];
+            const examinations = history.examinations || [];
+            const testReferrals = history.testReferrals || [];
+
+            const summaryHtml = `
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 12px 0 0 0;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a;">${appointments.length}</div>
+                  <div style="font-size: 11px; color: #64748b;">Appointments</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a;">${admissions.length}</div>
+                  <div style="font-size: 11px; color: #64748b;">Admissions</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a;">${medications.length}</div>
+                  <div style="font-size: 11px; color: #64748b;">Medications</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a;">${examinations.length}</div>
+                  <div style="font-size: 11px; color: #64748b;">Examinations</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                  <div style="font-size: 20px; font-weight: 700; color: #0f172a;">${testReferrals.length}</div>
+                  <div style="font-size: 11px; color: #64748b;">Test Referrals</div>
+                </div>
+              </div>
+            `;
+
+            let admissionsHtml = '';
+            if (admissions.length > 0) {
+              admissionsHtml = '<h4 style="margin: 16px 0 8px; color: #0f172a; font-size: 14px;">Admissions History</h4>';
+              admissionsHtml += admissions.map(adm => {
+                const admDate = adm.admission_date ? new Date(adm.admission_date).toLocaleDateString() : 'N/A';
+                const dischargeDate = adm.discharge_date ? new Date(adm.discharge_date).toLocaleDateString() : 'N/A';
+                const roomBed = adm.room_number && adm.bed_number ? `${escapeHtml(adm.room_number)} / ${escapeHtml(adm.bed_number)}` : (adm.room_number || adm.bed_number || '-');
+                const statusBadge = adm.status === 'discharged' ? 'badge-inactive' : adm.status === 'admitted' ? 'badge-active' : 'badge-warning';
+                const dischargeData = adm.dischargeData || {};
+                const hasDischarge = dischargeData.discharge_diagnosis || dischargeData.discharge_summary || dischargeData.medications || dischargeData.follow_up_instructions;
+
+                let dischargeSection = '';
+                if (adm.status === 'discharged' && hasDischarge) {
+                  dischargeSection = `
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px; margin-top: 8px;">
+                      ${dischargeData.discharge_diagnosis ? `<div style="font-size: 12px; color: #16a34a;"><strong>Discharge Diagnosis:</strong> ${escapeHtml(dischargeData.discharge_diagnosis)}</div>` : ''}
+                      ${dischargeData.final_condition ? `<div style="font-size: 12px; color: #16a34a;"><strong>Final Condition:</strong> ${escapeHtml(dischargeData.final_condition)}</div>` : ''}
+                      ${dischargeData.discharge_summary ? `<div style="font-size: 12px; margin-top: 4px;">${escapeHtml(dischargeData.discharge_summary)}</div>` : ''}
+                      ${dischargeData.medications ? `<div style="font-size: 12px; margin-top: 4px;"><strong>Medications:</strong> ${escapeHtml(dischargeData.medications)}</div>` : ''}
+                      ${dischargeData.follow_up_instructions ? `<div style="font-size: 12px; margin-top: 4px;"><strong>Follow-up:</strong> ${escapeHtml(dischargeData.follow_up_instructions)}</div>` : ''}
+                    </div>
+                  `;
+                }
+
+                return `
+                  <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                      <div style="font-weight: 600; color: #0f172a;">Admission #${adm.id}</div>
+                      <span class="badge ${statusBadge}">${escapeHtml(adm.status || '')}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; color: #475569;">
+                      <div><strong>Doctor:</strong> ${escapeHtml(adm.doctor_name || 'N/A')}</div>
+                      <div><strong>Room/Bed:</strong> ${roomBed}</div>
+                      <div><strong>Admission Date:</strong> ${admDate}</div>
+                      <div><strong>Discharge Date:</strong> ${dischargeDate}</div>
+                      ${adm.reason_for_admission ? `<div style="grid-column: 1 / -1;"><strong>Reason:</strong> ${escapeHtml(adm.reason_for_admission)}</div>` : ''}
+                      ${adm.admitting_diagnosis ? `<div style="grid-column: 1 / -1;"><strong>Admitting Diagnosis:</strong> ${escapeHtml(adm.admitting_diagnosis)}</div>` : ''}
+                    </div>
+                    ${dischargeSection}
+                  </div>
+                `;
+              }).join('');
+            }
+
+            let appointmentsHtml = '';
+            if (appointments.length > 0) {
+              appointmentsHtml = '<h4 style="margin: 16px 0 8px; color: #0f172a; font-size: 14px;">Recent Appointments</h4>';
+              appointmentsHtml += appointments.slice(0, 10).map(apt => {
+                const aptDate = apt.appointment_date ? new Date(apt.appointment_date).toLocaleDateString() : 'N/A';
+                const statusBadge = apt.status === 'completed' ? 'badge-active' : apt.status === 'cancelled' ? 'badge-inactive' : 'badge-pending';
+                return `
+                  <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div style="font-weight: 600; color: #0f172a;">${aptDate} at ${apt.appointment_time || 'N/A'}</div>
+                      <span class="badge ${statusBadge}">${escapeHtml(apt.status || '')}</span>
+                    </div>
+                    ${apt.reason ? `<div style="font-size: 13px; color: #475569; margin-top: 4px;">${escapeHtml(apt.reason)}</div>` : ''}
+                  </div>
+                `;
+              }).join('');
+            }
+
+            let medicationsHtml = '';
+            if (medications.length > 0) {
+              medicationsHtml = '<h4 style="margin: 16px 0 8px; color: #0f172a; font-size: 14px;">Recent Medications</h4>';
+              medicationsHtml += medications.slice(0, 10).map(med => {
+                const medDate = med.prescribed_date ? new Date(med.prescribed_date).toLocaleDateString() : 'N/A';
+                return `
+                  <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <div style="font-weight: 600; color: #0f172a;">${escapeHtml(med.medication_name)}</div>
+                    <div style="font-size: 13px; color: #475569; margin-top: 4px;">
+                      ${escapeHtml(med.dosage || '')} | ${escapeHtml(med.frequency || '')} | ${escapeHtml(med.duration || '')}
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Prescribed: ${medDate}${med.doctor_name ? ' by ' + escapeHtml(med.doctor_name) : ''}</div>
+                  </div>
+                `;
+              }).join('');
+            }
+
+            body.innerHTML = `
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <p class="view-field">${escapeHtml(p.name)}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <p class="view-field">${escapeHtml(p.email)}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <p class="view-field">${escapeHtml(p.phone || 'N/A')}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Patient Status</label>
+                <p class="view-field">${capitalize(p.patientStatus || 'active')}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Account Status</label>
+                <p class="view-field">${p.isActive ? 'Active' : 'Inactive'}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Joined</label>
+                <p class="view-field">${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'N/A'}</p>
+              </div>
+              ${summaryHtml}
+              ${admissionsHtml}
+              ${appointmentsHtml}
+              ${medicationsHtml}
+            `;
+
+          }
+        } catch (error) {
+          console.error('Error loading patient history:', error);
+        }
+      }
+
+     function viewMessage(messageId) {
+       const message = window._allMessages ? window._allMessages.find(m => m.id === messageId) : null;
+       if (!message) return;
+
+       const body = document.getElementById('viewUserBody');
+       const title = document.getElementById('viewUserTitle');
+       if (!body || !title) return;
+
+       title.textContent = `View Message`;
+       body.innerHTML = `
+         <div class="form-group">
+           <label class="form-label">From</label>
+           <p class="view-field">${escapeHtml(message.sender?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">To</label>
+           <p class="view-field">${escapeHtml(message.receiver?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Subject</label>
+           <p class="view-field">${escapeHtml(message.subject || 'No Subject')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Status</label>
+           <p class="view-field">${message.isRead ? 'Read' : 'Unread'}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Date</label>
+           <p class="view-field">${message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'N/A'}</p>
+         </div>
+       `;
+
+       const modal = document.getElementById('modal-viewUser');
+       if (modal) modal.style.display = 'flex';
+     }
+
+     function viewResult(resultId) {
+       const result = window._allResults ? window._allResults.find(r => r.id === resultId) : null;
+       if (!result) return;
+
+       const body = document.getElementById('viewUserBody');
+       const title = document.getElementById('viewUserTitle');
+       if (!body || !title) return;
+
+       title.textContent = `View Result: ${escapeHtml(result.testName || 'N/A')}`;
+       body.innerHTML = `
+         <div class="form-group">
+           <label class="form-label">Test Name</label>
+           <p class="view-field">${escapeHtml(result.testName || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Patient</label>
+           <p class="view-field">${escapeHtml(result.patient?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Doctor</label>
+           <p class="view-field">Dr. ${escapeHtml(result.doctor?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Status</label>
+           <p class="view-field">${capitalize(result.status)}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Date</label>
+           <p class="view-field">${result.createdAt ? new Date(result.createdAt).toLocaleDateString() : 'N/A'}</p>
+         </div>
+       `;
+
+       const modal = document.getElementById('modal-viewUser');
+       if (modal) modal.style.display = 'flex';
+     }
+
+     function viewHealthSummary(summaryId) {
+       const summary = window._allSummaries ? window._allSummaries.find(s => s.id === summaryId) : null;
+       if (!summary) return;
+
+       const body = document.getElementById('viewUserBody');
+       const title = document.getElementById('viewUserTitle');
+       if (!body || !title) return;
+
+       title.textContent = `Health Summary`;
+       body.innerHTML = `
+         <div class="form-group">
+           <label class="form-label">Patient</label>
+           <p class="view-field">${escapeHtml(summary.patient?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Doctor</label>
+           <p class="view-field">Dr. ${escapeHtml(summary.doctor?.name || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Type</label>
+           <p class="view-field">${capitalize(summary.summaryType || 'General')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Chief Complaint</label>
+           <p class="view-field">${escapeHtml(summary.chiefComplaint || 'N/A')}</p>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Date</label>
+           <p class="view-field">${summary.createdAt ? new Date(summary.createdAt).toLocaleDateString() : 'N/A'}</p>
+         </div>
+       `;
+
+       const modal = document.getElementById('modal-viewUser');
+       if (modal) modal.style.display = 'flex';
+     }
 
     async function updateUser() {
       const userId = document.getElementById('editUserId').value;
@@ -3604,13 +4373,31 @@
       }
     }
     
-    // Modal Functions
-    function openAddUserModal() {
-      const modal = document.getElementById('modal-addUser');
+    // Open Send Message modal and load users
+    async function openSendMessageModal() {
+      const modal = document.getElementById('modal-sendMessage');
       if (modal) {
         modal.style.display = 'flex';
       }
+      await loadUsersForMessageModal();
     }
+    
+    // Modal Functions
+    function openAddUserModal() {
+       const modal = document.getElementById('modal-addUser');
+       if (modal) {
+         modal.style.display = 'flex';
+       }
+       toggleDoctorFields();
+     }
+     
+     function toggleDoctorFields() {
+       const role = document.getElementById('newUserRole').value;
+       const specGroup = document.getElementById('doctorSpecializationGroup');
+       const expGroup = document.getElementById('doctorExperienceGroup');
+       if (specGroup) specGroup.style.display = role === 'doctor' ? 'block' : 'none';
+       if (expGroup) expGroup.style.display = role === 'doctor' ? 'block' : 'none';
+     }
     
     function closeAddUserModal() {
       const modal = document.getElementById('modal-addUser');

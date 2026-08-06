@@ -7,6 +7,9 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const { checkPermission, PERMISSIONS } = require('../config/permissions');
+const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * GET /api/doctor/dashboard/stats
@@ -610,7 +613,7 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
     
     // Get patient basic info
     const [patients] = await connection.execute(`
-      SELECT id, name, email, created_at
+      SELECT id, name, email, phone, address, created_at, patient_status
       FROM users WHERE id = ? AND role = 'patient'
     `, [id]);
     
@@ -723,6 +726,8 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         a.id,
         a.admission_type,
         a.admission_date,
+        a.discharge_date,
+        a.discharge_data,
         a.room_number,
         a.bed_number,
         a.reason_for_admission,
@@ -783,7 +788,10 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         id: patient.id,
         name: patient.name,
         email: patient.email,
-        createdAt: patient.created_at
+        phone: patient.phone,
+        address: patient.address,
+        createdAt: patient.created_at,
+        patientStatus: patient.patient_status
       },
       appointments: appointments.map(a => ({
         id: a.id,
@@ -849,19 +857,30 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
           doctorName: e.doctor_name
         };
       }),
-      admissions: admissions.map(a => ({
-        id: a.id,
-        admissionType: a.admission_type,
-        admissionDate: a.admission_date,
-        roomNumber: a.room_number,
-        bedNumber: a.bed_number,
-        reason: a.reason_for_admission,
-        admittingDiagnosis: a.admitting_diagnosis,
-        notes: a.notes,
-        dischargeDate: a.discharge_date,
-        status: a.status,
-        doctorName: a.doctor_name
-      })),
+      admissions: admissions.map(a => {
+        let dischargeData = null;
+        if (a.discharge_data) {
+          try {
+            dischargeData = typeof a.discharge_data === 'string' ? JSON.parse(a.discharge_data) : a.discharge_data;
+          } catch (err) {
+            console.warn('Failed to parse discharge_data for admission:', a.id);
+          }
+        }
+        return {
+          id: a.id,
+          admissionType: a.admission_type,
+          admissionDate: a.admission_date,
+          roomNumber: a.room_number,
+          bedNumber: a.bed_number,
+          reason: a.reason_for_admission,
+          admittingDiagnosis: a.admitting_diagnosis,
+          notes: a.notes,
+          dischargeDate: a.discharge_date,
+          dischargeData: dischargeData,
+          status: a.status,
+          doctorName: a.doctor_name
+        };
+      }),
       roundChecks: roundChecks.map(rc => {
         let vitalSigns = null;
         if (rc.vital_signs) {
@@ -1494,67 +1513,97 @@ if (exams.length > 0) {
 });
 
 /**
- * GET /api/doctor/patients
- * Get all patients for the logged-in doctor with optional search
- * Permission: VIEW_OWN_PATIENTS (doctor)
- */
-router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (req, res) => {
-  try {
-    const doctorId = req.session.doctorId;
-    const { search } = req.query;
-    console.log('patients called for doctorId=', doctorId, 'search=', search);
-    
-    const connection = await pool.getConnection();
-    
-    let query = `
-      SELECT DISTINCT
-        u.id as patient_id,
-        u.name as patient_name,
-        u.email as patient_email,
-        u.created_at as patient_created_at,
-        (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as total_visits,
-        (SELECT MAX(appointment_date) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as last_visit_date
-      FROM appointments a
-      JOIN users u ON a.patient_id = u.id
-      WHERE a.doctor_id = ?
-    `;
-    
-    const params = [doctorId, doctorId, doctorId];
-    
-    if (search) {
-      query += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
-      const searchPattern = `%${search}%`;
-      params.push(searchPattern, searchPattern);
-    }
-    
-    query += ` ORDER BY last_visit_date DESC, u.name ASC`;
-    
-    const [patients] = await connection.execute(query, params);
-    
-    console.log(`patients query result: found ${patients.length} patients`);
-    
-    connection.release();
-    
-    res.json({
-      success: true,
-      count: patients.length,
-      patients: patients.map(p => ({
-        id: p.patient_id,
-        name: p.patient_name,
-        email: p.patient_email,
-        createdAt: p.patient_created_at,
-        totalVisits: p.total_visits,
-        lastVisitDate: p.last_visit_date
-      }))
-    });
-  } catch (error) {
-    console.error('Error fetching patients:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch patients' 
-    });
-  }
-});
+  * GET /api/doctor/patients
+  * Get all patients for the logged-in doctor with optional search
+  * Permission: VIEW_OWN_PATIENTS (doctor)
+  */
+ router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (req, res) => {
+   try {
+     const doctorId = req.session.doctorId;
+     const { search, status } = req.query;
+     console.log('patients called for doctorId=', doctorId, 'search=', search, 'status=', status);
+     
+     const connection = await pool.getConnection();
+     
+       let query = `
+        SELECT DISTINCT
+          u.id as patient_id,
+          u.name as patient_name,
+          u.email as patient_email,
+          u.phone as patient_phone,
+          u.is_active as is_active,
+          u.patient_status as user_patient_status,
+          adm.id as admission_id,
+          adm.status as admission_status,
+          adm.room_number,
+          adm.bed_number,
+          adm.admission_date,
+          adm.discharge_date,
+          (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as total_visits,
+          (SELECT MAX(appointment_date) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as last_visit_date,
+          (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id AND e.doctor_id = ? ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
+          (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id AND e.doctor_id = ? ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date
+        FROM appointments a
+        JOIN users u ON a.patient_id = u.id
+        LEFT JOIN admissions adm ON adm.patient_id = u.id AND adm.status IN ('admitted', 'discharged')
+        WHERE a.doctor_id = ?
+      `;
+       
+       const params = [doctorId, doctorId, doctorId, doctorId, doctorId];
+      
+      if (search) {
+        query += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
+        const searchPattern = `%${search}%`;
+        params.push(searchPattern, searchPattern);
+      }
+      
+      if (status && status !== 'all') {
+        if (status === 'admitted') {
+          query += ` AND (adm.status = 'admitted' OR u.patient_status = 'admitted')`;
+        } else if (status === 'non-admitted') {
+          query += ` AND (adm.status = 'discharged' OR u.patient_status = 'discharged') = 0 AND (adm.id IS NULL AND u.patient_status NOT IN ('admitted', 'discharged'))`;
+        } else if (status === 'discharged') {
+          query += ` AND (adm.status = 'discharged' OR u.patient_status = 'discharged')`;
+        }
+      }
+     
+     query += ` ORDER BY last_visit_date DESC, u.name ASC`;
+     
+     const [patients] = await connection.execute(query, params);
+     
+     console.log(`patients query result: found ${patients.length} patients`);
+     
+     connection.release();
+     
+     res.json({
+       success: true,
+       count: patients.length,
+        patients: patients.map(p => ({
+          id: p.patient_id,
+          name: p.patient_name,
+          email: p.patient_email,
+          phone: p.patient_phone,
+          isActive: p.is_active,
+          status: p.admission_status || p.user_patient_status || 'non-admitted',
+          admissionId: p.admission_id,
+          roomNumber: p.room_number,
+          bedNumber: p.bed_number,
+          admissionDate: p.admission_date,
+          dischargeDate: p.discharge_date,
+          totalVisits: p.total_visits,
+          lastVisitDate: p.last_visit_date,
+          latestDiagnosis: p.latest_diagnosis,
+          latestDiagnosisDate: p.latest_diagnosis_date
+        }))
+     });
+   } catch (error) {
+     console.error('Error fetching patients:', error);
+     res.status(500).json({ 
+       success: false, 
+       message: 'Failed to fetch patients' 
+     });
+   }
+ });
 
 /**
  * GET /api/doctor/reports
@@ -1766,10 +1815,11 @@ router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async 
         a.updated_at,
         u.name as patient_name,
         u.email as patient_email,
-        d.doctor_name
+        du.name as doctor_name
       FROM admissions a
       JOIN users u ON a.patient_id = u.id
       JOIN doctors d ON a.doctor_id = d.id
+      JOIN users du ON d.user_id = du.id
       WHERE a.doctor_id = ? ${status !== 'all' ? 'AND a.status = ?' : ''}
       ORDER BY a.admission_date DESC
     `, status !== 'all' ? [doctorId, status] : [doctorId]);
@@ -1812,11 +1862,27 @@ router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async 
 router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
   try {
     const { id } = req.params;
+    const dischargeData = req.body;
     const connection = await pool.getConnection();
 
-    await connection.execute(`
-      UPDATE admissions SET status = 'discharged', discharge_date = NOW(), updated_at = NOW() WHERE id = ?
-    `, [id]);
+    const updateFields = ["status = 'discharged'", "discharge_date = ?", "updated_at = NOW()"];
+    const params = [new Date()];
+
+    if (dischargeData && typeof dischargeData === 'object') {
+      updateFields.push('discharge_data = ?');
+      params.push(JSON.stringify(dischargeData));
+    }
+
+    const [admissionResult] = await connection.execute(`
+      UPDATE admissions SET ${updateFields.join(', ')} WHERE id = ?
+    `, [...params, id]);
+
+    if (admissionResult.affectedRows > 0 && dischargeData && dischargeData.patient_id) {
+      await connection.execute(
+        'UPDATE users SET patient_status = ? WHERE id = ?',
+        ['discharged', dischargeData.patient_id]
+      );
+    }
 
     connection.release();
 
@@ -1828,6 +1894,192 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
 });
 
 /**
+ * GET /api/doctor/admissions/:id/discharge/pdf
+ * Generate a PDF of the discharge summary
+ * Permission: MANAGE_ADMISSIONS (doctor)
+ */
+router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    const [admissions] = await connection.execute(`
+      SELECT a.*, u.name as patient_name, u.email as patient_email
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      WHERE a.id = ?
+    `, [id]);
+
+    if (admissions.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Admission not found' });
+    }
+
+    const admission = admissions[0];
+
+    let dischargeData = {};
+    if (admission.discharge_data) {
+      try {
+        dischargeData = typeof admission.discharge_data === 'string' ? JSON.parse(admission.discharge_data) : admission.discharge_data;
+      } catch (e) {
+        dischargeData = {};
+      }
+    }
+
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="discharge-${admission.patient_name || 'patient'}.pdf"`);
+
+    doc.pipe(res);
+
+    const pageWidth = doc.page.width;
+    const margin = 50;
+    const contentWidth = pageWidth - margin * 2;
+
+    try {
+      const logoPath = path.join(__dirname, '../../assets/images/logo/logo.png');
+      if (fs.existsSync(logoPath)) {
+        doc.image(logoPath, margin, 30, { width: 60 });
+      }
+    } catch (e) {}
+
+    doc
+      .fontSize(20)
+      .fillColor('#dc2626')
+      .text('DISCHARGE SUMMARY', margin + 70, 35);
+
+    doc
+      .fontSize(10)
+      .fillColor('#6b7280')
+      .text(`Generated on ${new Date().toLocaleString('en-GB')}`, margin + 70, 55);
+
+    doc.moveDown(2);
+
+    const fieldGap = 18;
+
+function addSectionTitle(title) {
+      doc
+        .fontSize(12)
+        .fillColor('#991b1b')
+        .text(title, margin, doc.y);
+      doc
+        .rect(margin, doc.y + 2, contentWidth, 1)
+        .fill('#fecaca');
+      doc.moveDown(0.5);
+    }
+
+    function addField(label, value, x, y) {
+      doc
+        .fontSize(9)
+        .fillColor('#6b7280')
+        .text(label, x, y);
+      doc
+        .fontSize(10)
+        .fillColor('#111827')
+        .text(value || 'N/A', x, y + 12);
+    }
+
+    const patientName = dischargeData.patient_name || admission.patient_name || 'N/A';
+    const patientId = dischargeData.patient_id || admission.patient_id || 'N/A';
+    const dateAdmitted = dischargeData.date_of_admission || admission.admission_date ? new Date(admission.admission_date).toLocaleDateString('en-GB') : (dischargeData.date_admitted || 'N/A');
+    const dateDischarge = dischargeData.date_of_discharge || admission.discharge_date ? new Date(admission.discharge_date).toLocaleDateString('en-GB') : 'N/A';
+    const nextCheckup = dischargeData.date_of_next_checkup || 'N/A';
+    const physician = dischargeData.physician_approval || 'N/A';
+    const signature = dischargeData.signature || 'N/A';
+    const signatureDate = dischargeData.date_of_signature || 'N/A';
+    const patientStatus = dischargeData.patient_status || 'Recovered';
+    const reasonAdmission = dischargeData.reason_for_admission || 'N/A';
+    const diagnosisAdmission = dischargeData.diagnosis_at_admission || admission.admitting_diagnosis || 'N/A';
+    const treatmentSummary = dischargeData.treatment_summary || 'N/A';
+    const reasonDischarge = dischargeData.reason_for_discharge || 'N/A';
+    const diagnosisDischarge = dischargeData.diagnosis_at_discharge || 'N/A';
+    const furtherPlan = dischargeData.further_treatment_plan || 'N/A';
+    const address = dischargeData.address || 'N/A';
+    const phone = dischargeData.phone || admission.phone || 'N/A';
+    const email = dischargeData.email || admission.patient_email || 'N/A';
+    const medication = dischargeData.medication || 'N/A';
+    const dosage = dischargeData.dosage || 'N/A';
+    const amount = dischargeData.amount || 'N/A';
+    const frequency = dischargeData.frequency || 'N/A';
+    const medEndDate = dischargeData.end_date || 'N/A';
+    const medNotes = dischargeData.notes || 'N/A';
+
+    addSectionTitle('Patient Information');
+    addField('Patient Name', patientName, margin, doc.y);
+    addField('Patient ID', `#${patientId}`, margin + contentWidth / 3, doc.y - 12);
+    addField('Date Admitted', dateAdmitted, margin + contentWidth / 3 * 2, doc.y - 12);
+    doc.y += fieldGap;
+    addField('Address', address, margin, doc.y);
+    addField('Phone', phone, margin + contentWidth / 3, doc.y);
+    addField('Email', email, margin + contentWidth / 3 * 2, doc.y);
+    doc.y += fieldGap + 10;
+
+    addSectionTitle('Discharge Details');
+    addField('Date of Discharge', dateDischarge, margin, doc.y);
+    addField('Date of Next Checkup', nextCheckup, margin + contentWidth / 3, doc.y);
+    const statusDisplay = patientStatus.charAt(0).toUpperCase() + patientStatus.slice(1);
+    addField('Patient Status', statusDisplay, margin + contentWidth / 3 * 2, doc.y);
+    doc.y += fieldGap;
+    addField('Physician Approval', physician, margin, doc.y);
+    addField('Signature Date', signatureDate, margin + contentWidth / 3, doc.y);
+    addField('Signature', signature, margin + contentWidth / 3 * 2, doc.y);
+    doc.y += fieldGap + 10;
+
+    addSectionTitle('Clinical Information');
+    addField('Reason for Admission', reasonAdmission, margin, doc.y);
+    addField('Diagnosis at Admission', diagnosisAdmission, margin + contentWidth / 3, doc.y);
+    doc.y += fieldGap;
+    addField('Treatment Summary', treatmentSummary, margin, doc.y);
+    addField('Reason for Discharge', reasonDischarge, margin + contentWidth / 3, doc.y);
+    doc.y += fieldGap;
+    addField('Diagnosis at Discharge', diagnosisDischarge, margin, doc.y);
+    addField('Further Treatment Plan', furtherPlan, margin + contentWidth / 3, doc.y);
+    doc.y += fieldGap + 10;
+
+    addSectionTitle('Medication');
+    addField('Medication Name', medication, margin, doc.y);
+    addField('Dosage', dosage, margin + contentWidth / 3, doc.y);
+    addField('Frequency', frequency, margin + contentWidth / 3 * 2, doc.y);
+    doc.y += fieldGap;
+    addField('Amount', amount, margin, doc.y);
+    addField('End Date', medEndDate, margin + contentWidth / 3, doc.y);
+    addField('Notes', medNotes, margin + contentWidth / 3 * 2, doc.y);
+    doc.y += fieldGap + 10;
+
+    doc
+      .rect(margin, doc.y, contentWidth, 40)
+      .fill('#f9f9f9')
+      .stroke('#e5e7eb');
+
+    doc
+      .fontSize(10)
+      .fillColor('#374151')
+      .text('Signature: ___________________', margin + 10, doc.y + 20);
+
+    doc
+      .fontSize(10)
+      .fillColor('#374151')
+      .text(`Date: ${signatureDate}`, margin + contentWidth / 2, doc.y + 20);
+
+    doc.y = doc.page.height - 50;
+    doc
+      .fontSize(9)
+      .fillColor('#9ca3af')
+      .text('This document was generated electronically and is valid without physical signature.', margin, doc.y);
+
+    doc.end();
+
+    connection.release();
+  } catch (error) {
+    console.error('Error generating discharge PDF:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: 'Failed to generate PDF' });
+    }
+  }
+});
+
+/**
  * GET /api/doctor/round-checks
  * Get round-check records for the doctor
  * Permission: MANAGE_ROUND_CHECKS (doctor)
@@ -1835,15 +2087,16 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
 router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
   try {
     const doctorId = req.session.doctorId;
-    const { patient_id, admission_id, check_type } = req.query;
+    const { patient_id, admission_id, check_type, status } = req.query;
 
     let query = `
-      SELECT rc.*, u.name as patient_name
+      SELECT rc.*, u.name as patient_name, a.status as admission_status
       FROM round_checks rc
       JOIN users u ON rc.patient_id = u.id
+      LEFT JOIN admissions a ON rc.admission_id = a.id
       WHERE rc.checked_by = ?
          OR rc.admission_id IN (
-           SELECT id FROM admissions WHERE doctor_id = ? AND status = 'admitted'
+            SELECT id FROM admissions WHERE doctor_id = ? AND status = 'admitted'
          )
     `;
     const params = [doctorId, doctorId];
@@ -1856,9 +2109,13 @@ router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), as
       query += ' AND rc.admission_id = ?';
       params.push(admission_id);
     }
-    if (check_type) {
+    if (check_type && check_type !== 'all') {
       query += ' AND rc.check_type = ?';
       params.push(check_type);
+    }
+    if (status && status !== 'all') {
+      query += ' AND rc.status = ?';
+      params.push(status);
     }
 
     query += ' ORDER BY rc.check_date DESC LIMIT 100';
@@ -2083,6 +2340,337 @@ router.get('/admitted-patients', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS
   } catch (error) {
     console.error('Error fetching admitted patients for doctor:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch admitted patients' });
+  }
+});
+
+/**
+ * GET /api/doctor/medications
+ * Get prescriptions for the doctor's patients
+ * Permission: VIEW_MEDICATIONS (doctor)
+ */
+router.get('/medications', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { patient_id, status } = req.query;
+
+    let query = `
+      SELECT m.*, 
+        u_patient.name as patient_name,
+        u_doctor.name as doctor_name
+      FROM medications m
+      JOIN users u_patient ON m.patient_id = u_patient.id
+      JOIN doctors d ON m.doctor_id = d.id
+      JOIN users u_doctor ON d.user_id = u_doctor.id
+      WHERE m.doctor_id = ?
+    `;
+    const params = [doctorId];
+
+    if (patient_id) {
+      query += ' AND m.patient_id = ?';
+      params.push(patient_id);
+    }
+    if (status && status !== 'all') {
+      query += ' AND m.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY m.created_at DESC';
+
+    const connection = await pool.getConnection();
+    const [medications] = await connection.execute(query, params);
+    connection.release();
+
+    res.json({
+      success: true,
+      medications: medications.map(m => ({
+        id: m.id,
+        medicationName: m.medication_name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        duration: m.duration,
+        instructions: m.instructions,
+        refillsRemaining: m.refills_remaining,
+        status: m.status,
+        prescribedDate: m.prescribed_date,
+        expiryDate: m.expiry_date,
+        createdAt: m.created_at,
+        updatedAt: m.updated_at,
+        patient: { id: m.patient_id, name: m.patient_name },
+        doctor: { id: m.doctor_id, name: m.doctor_name }
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching medications:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch medications' });
+  }
+});
+
+/**
+ * GET /api/doctor/medications/:id
+ * Get specific prescription
+ * Permission: VIEW_MEDICATIONS (doctor)
+ */
+router.get('/medications/:id', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+
+    const connection = await pool.getConnection();
+    const [medications] = await connection.execute(`
+      SELECT m.*, 
+        u_patient.name as patient_name,
+        u_doctor.name as doctor_name
+      FROM medications m
+      JOIN users u_patient ON m.patient_id = u_patient.id
+      JOIN doctors d ON m.doctor_id = d.id
+      JOIN users u_doctor ON d.user_id = u_doctor.id
+      WHERE m.id = ? AND m.doctor_id = ?
+    `, [id, doctorId]);
+
+    connection.release();
+
+    if (medications.length === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found' });
+    }
+
+    const m = medications[0];
+    res.json({
+      success: true,
+      medication: {
+        id: m.id,
+        medicationName: m.medication_name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        duration: m.duration,
+        instructions: m.instructions,
+        refillsRemaining: m.refills_remaining,
+        status: m.status,
+        prescribedDate: m.prescribed_date,
+        expiryDate: m.expiry_date,
+        createdAt: m.created_at,
+        updatedAt: m.updated_at,
+        patient: { id: m.patient_id, name: m.patient_name },
+        doctor: { id: m.doctor_id, name: m.doctor_name }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch medication' });
+  }
+});
+
+/**
+ * POST /api/doctor/medications
+ * Create a new prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.post('/medications', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { patient_id, appointment_id, medication_name, dosage, frequency, duration, instructions, refills_remaining = 0, prescribed_date, expiry_date } = req.body;
+
+    if (!patient_id || !medication_name || !dosage || !frequency) {
+      return res.status(400).json({ success: false, message: 'Patient, medication name, dosage, and frequency are required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      INSERT INTO medications (patient_id, doctor_id, appointment_id, medication_name, dosage, frequency, duration, instructions, refills_remaining, status, prescribed_date, expiry_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
+    `, [
+      patient_id,
+      doctorId,
+      appointment_id || null,
+      medication_name,
+      dosage,
+      frequency,
+      duration || null,
+      instructions || null,
+      refills_remaining,
+      prescribed_date || new Date().toISOString().split('T')[0],
+      expiry_date || null
+    ]);
+
+    connection.release();
+
+    res.json({ success: true, message: 'Prescription created successfully', medicationId: result.insertId });
+  } catch (error) {
+    console.error('Error creating medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to create prescription' });
+  }
+});
+
+/**
+ * PUT /api/doctor/medications/:id
+ * Update a prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.put('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+    const { medication_name, dosage, frequency, duration, instructions, refills_remaining } = req.body;
+
+    if (!medication_name || !dosage || !frequency) {
+      return res.status(400).json({ success: false, message: 'Medication name, dosage, and frequency are required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      UPDATE medications SET 
+        medication_name = ?, dosage = ?, frequency = ?, duration = ?, instructions = ?, refills_remaining = ?, updated_at = NOW()
+      WHERE id = ? AND doctor_id = ?
+    `, [medication_name, dosage, frequency, duration || null, instructions || null, refills_remaining || 0, id, doctorId]);
+
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found or access denied' });
+    }
+
+    res.json({ success: true, message: 'Prescription updated successfully' });
+  } catch (error) {
+    console.error('Error updating medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to update prescription' });
+  }
+});
+
+/**
+ * POST /api/doctor/medications/:id/cancel
+ * Cancel/stop a prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.post('/medications/:id/cancel', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      UPDATE medications SET status = 'stopped', updated_at = NOW()
+      WHERE id = ? AND doctor_id = ?
+    `, [id, doctorId]);
+
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found or access denied' });
+    }
+
+    res.json({ success: true, message: 'Prescription stopped successfully' });
+  } catch (error) {
+    console.error('Error cancelling medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel prescription' });
+  }
+});
+
+/**
+ * POST /api/doctor/medications/:id/renew
+ * Renew a prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.post('/medications/:id/renew', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      UPDATE medications SET status = 'active', refills_remaining = refills_remaining + 1, updated_at = NOW()
+      WHERE id = ? AND doctor_id = ?
+    `, [id, doctorId]);
+
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found or access denied' });
+    }
+
+    res.json({ success: true, message: 'Prescription renewed successfully' });
+  } catch (error) {
+    console.error('Error renewing medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to renew prescription' });
+  }
+});
+
+/**
+ * POST /api/doctor/medications/:id/refill
+ * Add a refill to a prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.post('/medications/:id/refill', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+    const { refills = 1 } = req.body;
+
+    const connection = await pool.getConnection();
+
+    const [result] = await connection.execute(`
+      UPDATE medications SET refills_remaining = refills_remaining + ?, updated_at = NOW()
+      WHERE id = ? AND doctor_id = ?
+    `, [refills, id, doctorId]);
+
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found or access denied' });
+    }
+
+    res.json({ success: true, message: 'Refill added successfully' });
+  } catch (error) {
+    console.error('Error adding refill:', error);
+    res.status(500).json({ success: false, message: 'Failed to add refill' });
+  }
+});
+
+/**
+ * GET /api/doctor/patients/:id/medications
+ * Get all medications for a specific patient
+ * Permission: VIEW_PATIENT_RECORDS (doctor)
+ */
+router.get('/patients/:id/medications', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id: patientId } = req.params;
+
+    const connection = await pool.getConnection();
+
+    const [medications] = await connection.execute(`
+      SELECT m.*, u_doctor.name as doctor_name
+      FROM medications m
+      JOIN doctors d ON m.doctor_id = d.id
+      JOIN users u_doctor ON d.user_id = u_doctor.id
+      WHERE m.patient_id = ? AND m.doctor_id = ?
+      ORDER BY m.created_at DESC
+    `, [patientId, doctorId]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      medications: medications.map(m => ({
+        id: m.id,
+        medicationName: m.medication_name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        duration: m.duration,
+        instructions: m.instructions,
+        refillsRemaining: m.refills_remaining,
+        status: m.status,
+        prescribedDate: m.prescribed_date,
+        expiryDate: m.expiry_date,
+        createdAt: m.created_at,
+        doctorName: m.doctor_name
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching patient medications:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch patient medications' });
   }
 });
 

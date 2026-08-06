@@ -793,5 +793,78 @@
         <script src="assets/js/SmoothScroll.js"></script>
         <!-- main Js -->
         <script src="assets/js/main.js"></script>
+
+        <script>
+        const API_BASE = '/api';
+
+        async function subscribeNewsletter(form) {
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const emailInput = form.querySelector('input[name="subscribe"], input[name="emailid"], input[type="email"], input[name="email"]');
+            const email = emailInput ? emailInput.value.trim() : '';
+            
+            if (!email) {
+              showSubscribeMessage(form, 'Please enter your email address', 'error');
+              return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+              showSubscribeMessage(form, 'Please enter a valid email address', 'error');
+              return;
+            }
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Sending...';
+            submitBtn.disabled = true;
+
+            try {
+              const response = await fetch(`${API_BASE}/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+              });
+              const data = await response.json();
+              
+              if (data.success) {
+                showSubscribeMessage(form, data.message || 'Subscribed successfully!', 'success');
+                emailInput.value = '';
+              } else {
+                showSubscribeMessage(form, data.message || 'Subscription failed', 'error');
+              }
+            } catch (error) {
+              console.error('Subscription error:', error);
+              showSubscribeMessage(form, 'Failed to subscribe. Please try again.', 'error');
+            } finally {
+              submitBtn.innerHTML = originalText;
+              submitBtn.disabled = false;
+            }
+          });
+        }
+
+        function showSubscribeMessage(form, message, type) {
+          let msgEl = form.querySelector('.subscribe-message');
+          if (!msgEl) {
+            msgEl = document.createElement('div');
+            msgEl.className = 'subscribe-message';
+            msgEl.style.cssText = 'margin-top:10px;padding:10px;border-radius:5px;font-size:14px;text-align:center;';
+            form.appendChild(msgEl);
+          }
+          msgEl.style.backgroundColor = type === 'success' ? '#d1fae5' : '#fee2e2';
+          msgEl.style.color = type === 'success' ? '#065f46' : '#991b1b';
+          msgEl.style.border = type === 'success' ? '1px solid #6ee7b7' : '1px solid #fca5a5';
+          msgEl.textContent = message;
+          setTimeout(() => { msgEl.remove(); }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          const ctaForm = document.querySelector('.cta-section-3 form');
+          const footerForm = document.querySelector('.widget-subscribe form');
+          
+          if (ctaForm) subscribeNewsletter(ctaForm);
+          if (footerForm) subscribeNewsletter(footerForm);
+        });
+        </script>
     </body>
 </html>

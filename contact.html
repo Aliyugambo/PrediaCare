@@ -146,7 +146,7 @@
                     <!-- offcanvas contact end -->
                     <!-- offcanvas button wapper start -->
                     <div class="offcanvas-button-wapper"> 
-                        <a href="https://prediacareclinics.com/sign-in.html" class="theme-button style-1" aria-label="Book Appointment">
+                        <a href="http://localhost:5000/sign-in.html" class="theme-button style-1" aria-label="Book Appointment">
                             <span data-text="Book Appointment">Book Appointment</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </a>
@@ -262,7 +262,7 @@
                                                     <li>
                                                         <a href="about.html">Getting Started<i class="fa-solid fa-angle-down"></i></a>                                                        
                                                         <ul class="submenu">
-                                                            <li><a href="http://prediacareclinics.com/sign-in.html">Appointment</a></li>
+                                                            <!-- <li><a href="http://localhost:5000/sign-in.html">Appointment</a></li> -->
                                                             <li><a href="sign-in.html">Sign In </a></li>
                                                             <li><a href="register.html">Register</a></li>
                                                             <!-- <li><a href="forget-password.html">Forgot Password</a></li> -->
@@ -526,14 +526,21 @@
                         <div class="row">
                             <div class="col-lg-12 p-0">
                                 <!-- google map iframe start -->
-                                <div class="google-map-iframe">
+                                <div class="google-map-iframe" style="position:relative;">
                                     <iframe
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2396791.478889806!2d-5.623982693932331!3d54.08054089214548!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x25a3b1142c791a9%3A0xc4f8a0433288257a!2sUnited%20Kingdom!5e0!3m2!1sen!2sin!4v1746685564327!5m2!1sen!2sin"
+                                        src="https://www.google.com/maps/embed?hl=en&q=No+48+Arsenal+Road,+Sun+City+Estate,+Galadimawa,+Abuja"
                                         allowfullscreen=""
                                         loading="lazy"
                                         referrerpolicy="no-referrer-when-downgrade"
                                         title="google map"
+                                        style="width:100%;height:100%;border:0;position:absolute;top:0;left:0;z-index:1;"
                                     ></iframe>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=No%2048%20Arsenal%20Road,%20Sun%20City%20Estate,%20Galadimawa,%20Abuja" target="_blank" rel="noopener noreferrer" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;text-decoration:none;"></a>
+                                </div>
+                                <div style="padding:15px;background:#fff;border:1px solid #e5e7eb;border-top:none;text-align:center;">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=No%2048%20Arsenal%20Road,%20Sun%20City%20Estate,%20Galadimawa,%20Abuja" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+                                        <i class="fas fa-directions"></i> Open in Maps
+                                    </a>
                                 </div>
                                 <!-- google map iframe end -->
                             </div>
@@ -701,7 +708,7 @@
                                                 <li>
                                                     <p>
                                                         <i class="fa-solid fa-clock"></i>
-                                                        Mon - Fri 8:00 - 6:30
+                                                        Mon - Sun 24hr
                                                     </p>
                                                 </li>
                                             </ul>
@@ -764,5 +771,46 @@
         <script src="assets/js/SmoothScroll.js"></script>
         <!-- main Js -->
         <script src="assets/js/main.js"></script>
+        <script>
+        const API_BASE = '/api';
+        async function subscribeNewsletter(form) {
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const emailInput = form.querySelector('input[name="emailid"], input[name="subscribe"], input[type="email"]');
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email) { showSubscribeMessage(form, 'Please enter your email address', 'error'); return; }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) { showSubscribeMessage(form, 'Please enter a valid email address', 'error'); return; }
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Sending...';
+            submitBtn.disabled = true;
+            try {
+              const response = await fetch(`${API_BASE}/newsletter/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+              });
+              const data = await response.json();
+              if (data.success) { showSubscribeMessage(form, data.message || 'Subscribed successfully!', 'success'); emailInput.value = ''; }
+              else { showSubscribeMessage(form, data.message || 'Subscription failed', 'error'); }
+            } catch (error) { showSubscribeMessage(form, 'Failed to subscribe. Please try again.', 'error'); }
+            finally { submitBtn.innerHTML = originalText; submitBtn.disabled = false; }
+          });
+        }
+        function showSubscribeMessage(form, message, type) {
+          let msgEl = form.querySelector('.subscribe-message');
+          if (!msgEl) { msgEl = document.createElement('div'); msgEl.className = 'subscribe-message'; msgEl.style.cssText = 'margin-top:10px;padding:10px;border-radius:5px;font-size:14px;text-align:center;'; form.appendChild(msgEl); }
+          msgEl.style.backgroundColor = type === 'success' ? '#d1fae5' : '#fee2e2';
+          msgEl.style.color = type === 'success' ? '#065f46' : '#991b1b';
+          msgEl.style.border = type === 'success' ? '1px solid #6ee7b7' : '1px solid #fca5a5';
+          msgEl.textContent = message;
+          setTimeout(() => { msgEl.remove(); }, 5000);
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          const footerForm = document.querySelector('.widget-subscribe form');
+          if (footerForm) subscribeNewsletter(footerForm);
+        });
+        </script>
     </body>
 </html>

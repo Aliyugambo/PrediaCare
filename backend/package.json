@@ -1,11 +1,12 @@
 {
   "name": "carenix-backend",
   "version": "1.0.0",
-  "description": "Backend server for Carenix clinic website",
+  "description": "Backend server for PrediaCare clinic website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "weekly-newsletter": "node scripts/send-weekly-newsletter.js"
   },
   "keywords": [
     "clinic",

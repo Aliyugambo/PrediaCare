@@ -480,10 +480,13 @@ async function submitExamination() {
       if (typeof loadTodayAppointments === 'function') {
         loadTodayAppointments();
       }
-      if (typeof loadAppointmentsForDate === 'function' && document.getElementById('scheduleDatePicker')?.value) {
-        loadAppointmentsForDate(document.getElementById('scheduleDatePicker').value);
-      }
-    } else {
+       if (typeof loadAppointmentsForDate === 'function' && document.getElementById('scheduleDatePicker')?.value) {
+         loadAppointmentsForDate(document.getElementById('scheduleDatePicker').value);
+       }
+       if (document.getElementById('patientProfileModal')?.style.display === 'flex') {
+         viewPatientProfile(selectedAppointment.patientId);
+       }
+     } else {
       alert('Failed to save examination: ' + result.message);
     }
   } catch (error) {
@@ -582,6 +585,9 @@ async function finalizeAdmission() {
       if (typeof loadTodayAppointments === 'function') {
         loadTodayAppointments();
       }
+      if (document.getElementById('patientProfileModal')?.style.display === 'flex') {
+        viewPatientProfile(parseInt(document.getElementById('admissionPatientId').value));
+      }
     } else {
       alert('Failed to admit patient: ' + result.message);
     }
@@ -594,7 +600,7 @@ async function finalizeAdmission() {
 // Save prescription medication
 async function savePrescriptionMedication(patientId, appointmentId, prescription) {
   try {
-    var response = await fetch(API_BASE + '/medications/prescribe', {
+    var response = await fetch(API_BASE + '/doctor/medications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -624,60 +630,156 @@ async function savePrescriptionMedication(patientId, appointmentId, prescription
 // Add prescription
 function addPrescription() {
   document.getElementById('prescriptionIndex').value = -1;
+  document.getElementById('prescriptionId').value = '';
   document.getElementById('prescriptionForm').reset();
   document.getElementById('prescriptionModalTitle').textContent = 'Add Medication';
+  
+  var patientIdInput = document.getElementById('examPatientId');
+  var prescriptionPatientSelect = document.getElementById('prescriptionPatientId');
+  
+  if (patientIdInput && patientIdInput.value && prescriptionPatientSelect) {
+    prescriptionPatientSelect.value = patientIdInput.value;
+  }
   
   var modal = document.getElementById('prescriptionModal');
   modal.classList.add('active');
 }
 
+function openPrescriptionModalForCurrentPatient() {
+  var patientFilter = document.getElementById('prescriptionPatientFilter');
+  var patientId = patientFilter ? patientFilter.value : '';
+  
+  if (!patientId) {
+    alert('Please select a patient first');
+    return;
+  }
+  
+  var prescriptionPatientSelect = document.getElementById('prescriptionPatientId');
+  if (prescriptionPatientSelect && prescriptionPatientSelect.options.length <= 1) {
+    loadPatientsForPrescription();
+  }
+  
+  setTimeout(function() {
+    document.getElementById('prescriptionPatientId').value = patientId;
+    addPrescription();
+  }, prescriptionPatientSelect && prescriptionPatientSelect.options.length <= 1 ? 500 : 0);
+}
+
+function loadPatientsForPrescription() {
+  fetch(API_BASE + '/doctor/patients?status=all', {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      var patientSelect = document.getElementById('prescriptionPatientId');
+      var patientFilter = document.getElementById('prescriptionPatientFilter');
+      
+      var options = '<option value="">Select Patient</option>';
+      data.patients.forEach(function(p) {
+        options += '<option value="' + p.id + '">' + p.name + ' (' + (p.status === 'admitted' ? 'Admitted' : 'Non-Admitted') + ')</option>';
+      });
+      
+      if (patientSelect) patientSelect.innerHTML = options;
+      if (patientFilter) {
+        var filterOptions = '<option value="">All Patients</option>';
+        data.patients.forEach(function(p) {
+          filterOptions += '<option value="' + p.id + '">' + p.name + '</option>';
+        });
+        patientFilter.innerHTML = filterOptions;
+      }
+    }
+  })
+  .catch(function(err) { 
+    console.error('Error loading patients for prescription:', err);
+  });
+}
+
 // Edit prescription
-function editPrescription(index) {
-  var pres = prescriptions[index];
-  if (!pres) return;
-  
-  document.getElementById('prescriptionIndex').value = index;
-  document.getElementById('prescriptionModalTitle').textContent = 'Edit Medication';
-  document.getElementById('medicationName').value = pres.name || '';
-  document.getElementById('medicationDosage').value = pres.dosage || '';
-  document.getElementById('medicationFrequency').value = pres.frequency || '';
-  document.getElementById('medicationDuration').value = pres.duration || '';
-  document.getElementById('medicationRefills').value = pres.refills || 0;
-  document.getElementById('medicationInstructions').value = pres.instructions || '';
-  
-  var modal = document.getElementById('prescriptionModal');
-  modal.classList.add('active');
+function editPrescription(prescriptionId) {
+  fetch(API_BASE + '/doctor/medications/' + prescriptionId, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success && data.medication) {
+      var med = data.medication;
+      document.getElementById('prescriptionId').value = med.id;
+      document.getElementById('prescriptionPatientId').value = med.patient_id;
+      document.getElementById('medicationName').value = med.medicationName || '';
+      document.getElementById('medicationDosage').value = med.dosage || '';
+      document.getElementById('medicationFrequency').value = med.frequency || '';
+      document.getElementById('medicationDuration').value = med.duration || '';
+      document.getElementById('medicationRefills').value = med.refillsRemaining || 0;
+      document.getElementById('medicationInstructions').value = med.instructions || '';
+      document.getElementById('prescriptionModalTitle').textContent = 'Edit Medication';
+      
+      var modal = document.getElementById('prescriptionModal');
+      modal.classList.add('active');
+    }
+  })
+  .catch(function(err) { console.error('Error loading prescription for edit:', err); });
 }
 
 // Save prescription from modal
 function savePrescription() {
+  var patientId = document.getElementById('prescriptionPatientId').value;
   var name = document.getElementById('medicationName').value.trim();
   var dosage = document.getElementById('medicationDosage').value.trim();
   var frequency = document.getElementById('medicationFrequency').value;
   
+  if (!patientId) {
+    alert('Please select a patient');
+    return;
+  }
   if (!name || !dosage || !frequency) {
     alert('Please fill in medication name, dosage, and frequency');
     return;
   }
   
-  var index = parseInt(document.getElementById('prescriptionIndex').value);
-  var prescription = {
-    name: name,
+  var prescriptionData = {
+    patient_id: parseInt(patientId),
+    medication_name: name,
     dosage: dosage,
     frequency: frequency,
     duration: document.getElementById('medicationDuration').value.trim(),
-    refills: parseInt(document.getElementById('medicationRefills').value) || 0,
-    instructions: document.getElementById('medicationInstructions').value.trim()
+    refills_remaining: parseInt(document.getElementById('medicationRefills').value) || 0,
+    instructions: document.getElementById('medicationInstructions').value.trim(),
+    prescribed_date: new Date().toISOString().split('T')[0]
   };
   
-  if (index >= 0) {
-    prescriptions[index] = prescription;
-  } else {
-    prescriptions.push(prescription);
+  var prescriptionId = document.getElementById('prescriptionId').value;
+  var url = API_BASE + '/doctor/medications';
+  var method = 'POST';
+  
+  if (prescriptionId) {
+    url = API_BASE + '/doctor/medications/' + prescriptionId;
+    method = 'PUT';
   }
   
-  renderPrescriptions();
-  closePrescriptionModal();
+  fetch(url, {
+    method: method,
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(prescriptionData)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      alert(prescriptionId ? 'Prescription updated successfully!' : 'Prescription created successfully!');
+      closePrescriptionModal();
+      loadPrescriptions();
+      if (typeof loadDoctorRoundChecks === 'function') loadDoctorRoundChecks();
+    } else {
+      alert('Failed to save prescription: ' + data.message);
+    }
+  })
+  .catch(function(err) { 
+    console.error('Error saving prescription:', err);
+    alert('Error saving prescription');
+  });
 }
 
 // Remove prescription
@@ -741,6 +843,12 @@ function getFrequencyLabel(frequency) {
 function closePrescriptionModal() {
   var modal = document.getElementById('prescriptionModal');
   modal.classList.remove('active');
+  
+  setTimeout(function() {
+    document.getElementById('prescriptionForm').reset();
+    document.getElementById('prescriptionId').value = '';
+    document.getElementById('prescriptionIndex').value = '-1';
+  }, 300);
 }
 
 // ================== TEST REFERRALS FUNCTIONS ==================
@@ -1136,10 +1244,17 @@ function showExaminationModal(exam) {
 function loadPrescriptions() {
   var searchInput = document.getElementById('prescriptionSearchInput');
   var statusFilter = document.getElementById('prescriptionStatusFilter');
+  var patientFilter = document.getElementById('prescriptionPatientFilter');
   var searchTerm = searchInput ? searchInput.value : '';
   var status = statusFilter ? statusFilter.value : '';
-  
-  fetch(API_BASE + '/medications?search=' + encodeURIComponent(searchTerm) + '&status=' + status, {
+  var patientId = patientFilter ? patientFilter.value : '';
+
+  var url = API_BASE + '/doctor/medications?search=' + encodeURIComponent(searchTerm) + '&status=' + encodeURIComponent(status);
+  if (patientId) {
+    url += '&patient_id=' + encodeURIComponent(patientId);
+  }
+
+  fetch(url, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
   })
@@ -1171,13 +1286,13 @@ function renderPrescriptionsList(prescriptions) {
     var statusClass = pres.status === 'active' ? 'confirmed' : (pres.status === 'completed' ? 'followup' : 'pending');
     html += '<div class="appointment-item" onclick="viewPrescriptionDetails(' + pres.id + ')" style="cursor: pointer;">';
     html += '<div class="appointment-info">';
-    html += '<p class="patient-name">' + (pres.medication_name || 'Medication') + ' ' + (pres.dosage || '')+ '</p>';
-    html += '<span class="appointment-time">For: ' + (pres.patient_name || 'Patient') + ' | ' + (pres.frequency || '') + '</span>';
+    html += '<p class="patient-name">' + (pres.medicationName || 'Medication') + ' ' + (pres.dosage || '')+ '</p>';
+    html += '<span class="appointment-time">For: ' + (pres.patient_name || pres.patient?.name || 'Patient') + ' | ' + (getFrequencyLabel(pres.frequency) || '') + '</span>';
     html += '</div>';
     html += '<div class="appointment-actions">';
     html += '<span class="appointment-badge ' + statusClass + '">' + capitalizeFirst(pres.status) + '</span>';
-    if (pres.refills_remaining > 0) {
-      html += '<span class="appointment-badge checkup">' + pres.refills_remaining + ' refills</span>';
+    if (pres.refillsRemaining > 0) {
+      html += '<span class="appointment-badge checkup">' + pres.refillsRemaining + ' refills</span>';
     }
     html += '</div>';
     html += '</div>';
@@ -1194,7 +1309,7 @@ function showPrescriptionsError() {
 }
 
 function viewPrescriptionDetails(prescriptionId) {
-  fetch(API_BASE + '/medications/' + prescriptionId, {
+  fetch(API_BASE + '/doctor/medications/' + prescriptionId, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
   })
@@ -1212,22 +1327,26 @@ function showPrescriptionDetailsModal(pres) {
   if (!container) return;
   
   var statusClass = pres.status === 'active' ? 'confirmed' : (pres.status === 'completed' ? 'followup' : 'pending');
+  var patientName = pres.patient_name || (pres.patient && pres.patient.name) || 'N/A';
+  var doctorName = pres.doctor_name || (pres.doctor && pres.doctor.name) || 'N/A';
   
   container.innerHTML = `
     <div style="padding: 16px; background: #f8fafc; border-radius: 10px; margin-bottom: 16px;">
-      <h4 style="font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">${pres.medication_name || 'Medication'}</h4>
+      <h4 style="font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 12px;">${pres.medicationName || 'Medication'}</h4>
       <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Dosage:</strong> ${pres.dosage || 'N/A'}</p>
       <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Frequency:</strong> ${getFrequencyLabel(pres.frequency)}</p>
       <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Duration:</strong> ${pres.duration || 'N/A'}</p>
-      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Patient:</strong> ${pres.patient_name || 'N/A'}</p>
+      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Patient:</strong> ${patientName}</p>
+      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Doctor:</strong> ${doctorName}</p>
       <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Status:</strong> <span class="appointment-badge ${statusClass}">${capitalizeFirst(pres.status)}</span></p>
-      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Refills Remaining:</strong> ${pres.refills_remaining || 0}</p>
+      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Refills Remaining:</strong> ${pres.refillsRemaining || 0}</p>
+      <p style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>Prescribed Date:</strong> ${pres.prescribedDate ? new Date(pres.prescribedDate).toLocaleDateString('en-GB') : 'N/A'}</p>
       <p style="font-size: 14px; color: #64748b;"><strong>Instructions:</strong> ${pres.instructions || 'None'}</p>
     </div>
     <div style="display: flex; gap: 12px;">
       ${pres.status === 'active' ? '<button onclick="renewPrescription(' + pres.id + ')" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1;">Renew</button>' : ''}
-      ${pres.refills_remaining > 0 ? '<button onclick="addRefill(' + pres.id + ')" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1;">Add Refill</button>' : ''}
-      ${pres.status === 'active' ? '<button onclick="cancelPrescription(' + pres.id + ')" style="padding: 10px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1;">Cancel</button>' : ''}
+      ${pres.refillsRemaining > 0 ? '<button onclick="addRefill(' + pres.id + ')" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1;">Add Refill</button>' : ''}
+      ${pres.status === 'active' ? '<button onclick="stopPrescription(' + pres.id + ')" style="padding: 10px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1;">Stop</button>' : ''}
     </div>
   `;
 }
@@ -1235,7 +1354,7 @@ function showPrescriptionDetailsModal(pres) {
 function renewPrescription(prescriptionId) {
   if (!confirm('Renew this prescription with the same details?')) return;
   
-  fetch(API_BASE + '/' + prescriptionId + '/renew', {
+  fetch(API_BASE + '/doctor/medications/' + prescriptionId + '/renew', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
@@ -1255,7 +1374,7 @@ function renewPrescription(prescriptionId) {
 function addRefill(prescriptionId) {
   if (!confirm('Add a refill to this prescription?')) return;
   
-  fetch(API_BASE + '/medications/' + prescriptionId + '/refill', {
+  fetch(API_BASE + '/doctor/medications/' + prescriptionId + '/refill', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
@@ -1276,9 +1395,13 @@ function addRefill(prescriptionId) {
 }
 
 function cancelPrescription(prescriptionId) {
-  if (!confirm('Cancel this prescription?')) return;
+  stopPrescription(prescriptionId);
+}
+
+function stopPrescription(prescriptionId) {
+  if (!confirm('Stop this prescription?')) return;
   
-  fetch(API_BASE + '/medications/' + prescriptionId + '/cancel', {
+  fetch(API_BASE + '/doctor/medications/' + prescriptionId + '/cancel', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
@@ -1286,13 +1409,16 @@ function cancelPrescription(prescriptionId) {
   .then(function(res) { return res.json(); })
   .then(function(data) {
     if (data.success) {
-      alert('Prescription cancelled successfully!');
+      alert('Prescription stopped successfully!');
       loadPrescriptions();
+      if (document.getElementById('prescriptionDetails')) {
+        viewPrescriptionDetails(prescriptionId);
+      }
     } else {
-      alert('Failed to cancel prescription: ' + data.message);
+      alert('Failed to stop prescription: ' + data.message);
     }
   })
-  .catch(function(err) { console.error('Error cancelling prescription:', err); });
+  .catch(function(err) { console.error('Error stopping prescription:', err); });
 }
 
 // Reports Tab Functions

@@ -1014,7 +1014,9 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         a.admission_date,
         a.status as admission_status,
         a.admitting_diagnosis,
-        du.name as doctor_name
+        du.name as doctor_name,
+        (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
+        (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date
       FROM users u
       LEFT JOIN admissions a ON u.id = a.patient_id AND a.status = 'admitted'
       LEFT JOIN doctors d ON a.doctor_id = d.id
@@ -1061,6 +1063,8 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         admissionStatus: p.admission_status,
         admittingDiagnosis: p.admitting_diagnosis,
         doctorName: p.doctor_name,
+        latestDiagnosis: p.latest_diagnosis,
+        latestDiagnosisDate: p.latest_diagnosis_date,
         status: p.admission_id ? 'admitted' : 'non-admitted'
       })),
       total: countResult[0].total

@@ -43,6 +43,40 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      height: 100vh;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar.open {
+      transform: translateX(0);
+    }
+    
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #64748b;
+    }
+    
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
     }
     
     .sidebar-header {
@@ -108,6 +142,7 @@
     /* Main Content */
     .main-content {
       flex: 1;
+      margin-left: 260px;
       padding: 24px;
       overflow-y: auto;
     }
@@ -161,6 +196,124 @@
     .card-title {
       font-size: 16px;
       font-weight: 600;
+    }
+    
+    /* Notification Dropdown */
+    .notification-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 360px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 300;
+      max-height: 480px;
+      overflow: hidden;
+    }
+    
+    .notification-dropdown.show {
+      display: block;
+    }
+    
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .notification-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    
+    .notification-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #64748b;
+      line-height: 1;
+    }
+    
+    .notification-close:hover {
+      color: #0f172a;
+    }
+    
+    .notification-list {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    
+    .notification-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .notification-item:hover {
+      background: #f8fafc;
+    }
+    
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+    
+    .notification-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .notification-icon.appointment { background: #dbeafe; color: #2563eb; }
+    .notification-icon.message { background: #d1fae5; color: #059669; }
+    .notification-icon.admission { background: #fee2e2; color: #dc2626; }
+    .notification-icon.test { background: #fef3c7; color: #d97706; }
+    .notification-icon.default { background: #f1f5f9; color: #475569; }
+    
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .notification-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    
+    .notification-desc {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    
+    .notification-time {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    
+    .notification-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
     }
     
     /* Stats */
@@ -445,18 +598,27 @@
       animation: spin 1s linear infinite;
     }
     
-    @keyframes spin {
+     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-toggle { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar-close { display: block; }
+      .main-content { margin-left: 0; }
     }
   </style>
 </head>
-<body>
-  <div class="dashboard-container">
+ <body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="dashboard-container">
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
         <div class="sidebar-logo"> <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></div>
-        <div class="sidebar-title">rediacare Clinics</div>
+        <div class="sidebar-title">rediacare</div>
       </div>
       <div class="sidebar-menu">
         <a class="menu-item active" data-tab="register">
@@ -475,6 +637,10 @@
           <i class="fas fa-file-invoice-dollar"></i>
           Billing & Invoices
         </a>
+        <a class="menu-item" data-tab="appointments">
+          <i class="fas fa-calendar-check"></i>
+          Appointments
+        </a>
       </div>
       <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
         <a class="menu-item" href="sign-in.html" onclick="handleLogout()">
@@ -488,274 +654,412 @@
     <div class="main-content">
       <div class="header">
         <h1 class="header-title">Customer Care Dashboard</h1>
-        <div class="header-user">
-          <span id="userName">Loading...</span>
-          <div class="user-avatar" id="userAvatar">CC</div>
+        <div class="header-user" style="display: flex; align-items: center; gap: 12px;">
+          <div class="header-icons" style="display: flex; gap: 8px;">
+            <button class="header-icon-btn" title="Notifications" id="notificationBtn" onclick="toggleNotificationDropdown()" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #f8f9fa; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb; transition: all 0.2s ease; position: relative;">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge" id="notificationBadge" style="display: none; position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; background: #dc2626; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 0 4px;"></span>
+            </button>
+            
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notificationDropdown">
+              <div class="notification-header">
+                <h3>Notifications</h3>
+                <button class="notification-close" onclick="toggleNotificationDropdown()">&times;</button>
+              </div>
+              <div class="notification-list" id="notificationList">
+                <div class="notification-empty">Loading...</div>
+              </div>
+            </div>
+            <!-- <button class="header-icon-btn" title="Messages" id="messageBtn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #f8f9fa; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb; transition: all 0.2s ease; position: relative;">
+              <i class="fas fa-envelope"></i>
+              <span class="notification-badge" id="messageBadge" style="display: none; position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; background: #dc2626; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 0 4px;"></span>
+            </button> -->
+          </div>
+          <div class="user-dropdown" style="position: relative;">
+            <button class="user-btn" onclick="toggleUserDropdown()" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: #2563eb; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;" id="userDropdownBtn">CC</button>
+            <div class="dropdown-menu" style="position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px; min-width: 160px; display: none; z-index: 10;">
+              <div class="dropdown-header" style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+                <div class="name" id="ccUserName" style="font-weight: 600; color: #0f172a;">CC</div>
+                <div class="email" id="ccUserEmail" style="font-size: 12px; color: #64748b;"></div>
+              </div>
+              <div class="dropdown-divider" style="height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
+              <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;" style="display: block; padding: 8px 16px; color: #334155; text-decoration: none; font-size: 14px;"><i class="fas fa-user" style="margin-right: 8px;"></i> Profile</a>
+              <div class="dropdown-divider" style="height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
+              <a href="sign-in.html" class="dropdown-item" onclick="handleLogout(); return false;" style="display: block; padding: 8px 16px; color: #334155; text-decoration: none; font-size: 14px;"><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout</a>
+         </div>
+          </div>
         </div>
       </div>
-
+      
       <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Today's Registrations</div>
-          <div class="stat-value" id="todayCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Pending Tests</div>
-          <div class="stat-value" id="pendingCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Doctor Referrals</div>
-          <div class="stat-value" id="referralCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Walk-in Patients</div>
-          <div class="stat-value" id="walkinCount">0</div>
-        </div>
-      </div>
+       <div class="stats-grid">
+         <div class="stat-card">
+           <div class="stat-label">Today's Registrations</div>
+           <div class="stat-value" id="todayCount">0</div>
+         </div>
+         <div class="stat-card">
+           <div class="stat-label">Pending Tests</div>
+           <div class="stat-value" id="pendingCount">0</div>
+         </div>
+         <div class="stat-card">
+           <div class="stat-label">Doctor Referrals</div>
+           <div class="stat-value" id="referralCount">0</div>
+         </div>
+         <div class="stat-card">
+           <div class="stat-label">Walk-in Patients</div>
+           <div class="stat-value" id="walkinCount">0</div>
+         </div>
+       </div>
 
-      <!-- Tab: Register Patient -->
-      <div class="tab-pane active" id="register">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Register New Patient</h3>
-          </div>
-          <form id="registerForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label>First Name *</label>
-                <input type="text" id="firstName" required>
-              </div>
-              <div class="form-group">
-                <label>Last Name *</label>
-                <input type="text" id="lastName" required>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Date of Birth</label>
-                <input type="date" id="dateOfBirth">
-              </div>
-              <div class="form-group">
-                <label>Gender</label>
-                <select id="gender">
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Phone Number *</label>
-                <input type="tel" id="phone" required>
-              </div>
-              <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="email">
-              </div>
-            </div>
-            <div class="form-row single">
-              <div class="form-group">
-                <label>Address</label>
-                <textarea id="address" rows="2"></textarea>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Test Type *</label>
-                <select id="testType" required>
-                  <option value="">Select Test Type</option>
-                  <option value="blood">Blood Test</option>
-                  <option value="urine">Urine Test</option>
-                  <option value="stool">Stool Test</option>
-                  <option value="xray">X-Ray</option>
-                  <option value="ultrasound">Ultrasound</option>
-                  <option value="ct">CT Scan</option>
-                  <option value="mri">MRI</option>
-                  <option value="ecg">ECG</option>
-                  <option value="echo">Echocardiogram</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Specific Test Name *</label>
-                <input type="text" id="testName" placeholder="e.g., Complete Blood Count" required>
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
-              <button type="submit" class="btn btn-primary">Register Patient</button>
-            </div>
-          </form>
-        </div>
-      </div>
+       <!-- Tab: Register Patient -->
+       <div class="tab-pane active" id="register">
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">Register New Patient</h3>
+           </div>
+           <form id="registerForm">
+             <div class="form-row">
+               <div class="form-group">
+                 <label>First Name *</label>
+                 <input type="text" id="firstName" required>
+               </div>
+               <div class="form-group">
+                 <label>Last Name *</label>
+                 <input type="text" id="lastName" required>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Date of Birth</label>
+                 <input type="date" id="dateOfBirth">
+               </div>
+               <div class="form-group">
+                 <label>Gender</label>
+                 <select id="gender">
+                   <option value="">Select</option>
+                   <option value="male">Male</option>
+                   <option value="female">Female</option>
+                   <option value="other">Other</option>
+                 </select>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Phone Number *</label>
+                 <input type="tel" id="phone" required>
+               </div>
+               <div class="form-group">
+                 <label>Email Address</label>
+                 <input type="email" id="email">
+               </div>
+             </div>
+             <div class="form-row single">
+               <div class="form-group">
+                 <label>Address</label>
+                 <textarea id="address" rows="2"></textarea>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Test Type *</label>
+                 <select id="testType" required>
+                   <option value="">Select Test Type</option>
+                   <option value="blood">Blood Test</option>
+                   <option value="urine">Urine Test</option>
+                   <option value="stool">Stool Test</option>
+                   <option value="xray">X-Ray</option>
+                   <option value="ultrasound">Ultrasound</option>
+                   <option value="ct">CT Scan</option>
+                   <option value="mri">MRI</option>
+                   <option value="ecg">ECG</option>
+                   <option value="echo">Echocardiogram</option>
+                   <option value="other">Other</option>
+                 </select>
+               </div>
+               <div class="form-group">
+                 <label>Specific Test Name *</label>
+                 <input type="text" id="testName" placeholder="e.g., Complete Blood Count" required>
+               </div>
+             </div>
+             <div style="text-align: right;">
+               <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+               <button type="submit" class="btn btn-primary">Register Patient</button>
+             </div>
+           </form>
+         </div>
+       </div>
 
-      <!-- Tab: Test Referrals -->
-      <div class="tab-pane" id="test-referrals">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">All Test Referrals</h3>
-          </div>
-          <div class="search-bar">
-            <input type="text" id="referralSearch" placeholder="Search by patient, test, or doctor...">
-            <select id="referralStatusFilter">
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-            </select>
-            <button class="btn btn-primary" onclick="loadTestReferrals()">Search</button>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Test</th>
-                  <th>Type</th>
-                  <th>Doctor</th>
-                  <th>Urgency</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody id="referralsTable">
-                <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+       <!-- Tab: Test Referrals -->
+       <div class="tab-pane" id="test-referrals">
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">All Test Referrals</h3>
+           </div>
+           <div class="search-bar">
+             <input type="text" id="referralSearch" placeholder="Search by patient, test, or doctor...">
+             <select id="referralStatusFilter">
+               <option value="">All Status</option>
+               <option value="pending">Pending</option>
+               <option value="completed">Completed</option>
+             </select>
+             <button class="btn btn-primary" onclick="loadTestReferrals()">Search</button>
+           </div>
+           <div class="table-container">
+             <table>
+               <thead>
+                 <tr>
+                   <th>Patient</th>
+                   <th>Test</th>
+                   <th>Type</th>
+                   <th>Doctor</th>
+                   <th>Urgency</th>
+                   <th>Status</th>
+                   <th>Date</th>
+                 </tr>
+               </thead>
+               <tbody id="referralsTable">
+                 <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
+               </tbody>
+             </table>
+           </div>
+         </div>
+       </div>
 
-      <!-- Tab: Walk-in Patients -->
-      <div class="tab-pane" id="walkins">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Registered Walk-in Patients</h3>
-          </div>
-          <div class="search-bar">
-            <input type="text" id="walkinSearch" placeholder="Search by name, phone, or email...">
-            <select id="walkinStatusFilter">
-              <option value="">All Status</option>
-              <option value="registered">Registered</option>
-              <option value="sample_collected">Sample Collected</option>
-              <option value="testing">Testing</option>
-              <option value="completed">Completed</option>
-            </select>
-            <button class="btn btn-primary" onclick="loadWalkins()">Search</button>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Contact</th>
-                  <th>Test</th>
-                  <th>Status</th>
-                  <th>Registered</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="walkinsTable">
-                <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+       <!-- Tab: Walk-in Patients -->
+       <div class="tab-pane" id="walkins">
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">Registered Walk-in Patients</h3>
+           </div>
+           <div class="search-bar">
+             <input type="text" id="walkinSearch" placeholder="Search by name, phone, or email...">
+             <select id="walkinStatusFilter">
+               <option value="">All Status</option>
+               <option value="registered">Registered</option>
+               <option value="sample_collected">Sample Collected</option>
+               <option value="testing">Testing</option>
+               <option value="completed">Completed</option>
+             </select>
+             <button class="btn btn-primary" onclick="loadWalkins()">Search</button>
+           </div>
+           <div class="table-container">
+             <table>
+               <thead>
+                 <tr>
+                   <th>Name</th>
+                   <th>Contact</th>
+                   <th>Test</th>
+                   <th>Status</th>
+                   <th>Registered</th>
+                   <th>Actions</th>
+                 </tr>
+               </thead>
+               <tbody id="walkinsTable">
+                 <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+               </tbody>
+             </table>
+           </div>
+         </div>
+       </div>
 
-      <!-- Tab: Billing & Invoices -->
-      <div class="tab-pane" id="billing">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Generate Invoice</h3>
-          </div>
-          <form id="invoiceForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Patient *</label>
-                <select id="invoicePatient" required>
-                  <option value="">Select Patient</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Due Date *</label>
-                <input type="date" id="invoiceDueDate" required>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Services *</label>
-                <select id="invoiceServices" multiple style="height: 120px;">
-                  <option value="">Loading services...</option>
-                </select>
-                <small style="color: var(--text-secondary);">Hold Ctrl to select multiple services</small>
-              </div>
-              <div class="form-group">
-                <label>Payment Method</label>
-                <select id="invoicePaymentMethod">
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="transfer">Bank Transfer</option>
-                  <option value="insurance">Insurance</option>
-                </select>
-                <label style="margin-top: 12px;">Notes</label>
-                <textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea>
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <button type="button" class="btn btn-secondary" onclick="resetInvoiceForm()">Reset</button>
-              <button type="submit" class="btn btn-primary">Generate Invoice</button>
-            </div>
-          </form>
-        </div>
+       <!-- Tab: Billing & Invoices -->
+       <div class="tab-pane" id="billing">
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">Generate Invoice</h3>
+           </div>
+           <form id="invoiceForm">
+               <div class="form-row">
+               <div class="form-group">
+                 <label>Patient *</label>
+                 <select id="invoicePatient" required onchange="loadPatientServices()">
+                   <option value="">Select Patient</option>
+                 </select>
+               </div>
+               <div class="form-group">
+                 <label>Due Date *</label>
+                 <input type="date" id="invoiceDueDate" required>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group" style="flex: 1;">
+                 <label>Services *</label>
+                 <div id="invoiceServicesContainer" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; max-height: 240px; overflow-y: auto;">
+                   <p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>
+                 </div>
+               </div>
+               <div class="form-group">
+                 <label>Payment Method</label>
+                 <select id="invoicePaymentMethod">
+                   <option value="cash">Cash</option>
+                   <option value="card">Card</option>
+                   <option value="transfer">Bank Transfer</option>
+                   <option value="insurance">Insurance</option>
+                 </select>
+                 <label style="margin-top: 12px; display: block;">Notes</label>
+                 <textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea>
+               </div>
+             </div>
+             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+               <div>
+                 <div style="font-size: 14px; color: #64748b;">Subtotal</div>
+                 <div style="font-size: 14px; color: #64748b;">Tax (0%)</div>
+               </div>
+               <div style="text-align: right;">
+                 <div id="invoiceSubtotal" style="font-size: 16px; font-weight: 600; color: #0f172a;">₦0.00</div>
+                 <div style="font-size: 14px; color: #64748b;">₦0.00</div>
+               </div>
+             </div>
+             <div class="form-group" style="margin-top: 0;">
+               <label>Total Amount</label>
+               <input type="text" id="invoiceTotal" style="font-size: 20px; font-weight: 700; text-align: right;" value="₦0.00" readonly>
+             </div>
+             <div style="text-align: right;">
+               <button type="button" class="btn btn-secondary" onclick="resetInvoiceForm()">Reset</button>
+               <button type="submit" class="btn btn-primary">Generate Invoice</button>
+             </div>
+           </form>
+         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Recent Invoices</h3>
-          </div>
-          <div class="search-bar">
-            <input type="text" id="invoiceSearch" placeholder="Search by invoice number or patient...">
-            <select id="invoiceStatusFilter">
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-            </select>
-            <button class="btn btn-primary" onclick="loadInvoices()">Search</button>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Invoice #</th>
-                  <th>Patient</th>
-                  <th>Date</th>
-                  <th>Due Date</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="invoicesTable">
-                <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">Recent Invoices</h3>
+           </div>
+           <div class="search-bar">
+             <input type="text" id="invoiceSearch" placeholder="Search by invoice number or patient...">
+             <select id="invoiceStatusFilter">
+               <option value="">All Status</option>
+               <option value="pending">Pending</option>
+               <option value="paid">Paid</option>
+               <option value="overdue">Overdue</option>
+             </select>
+             <button class="btn btn-primary" onclick="loadInvoices()">Search</button>
+           </div>
+           <div class="table-container">
+             <table>
+               <thead>
+                 <tr>
+                   <th>Invoice #</th>
+                   <th>Patient</th>
+                   <th>Date</th>
+                   <th>Due Date</th>
+                   <th>Total</th>
+                   <th>Status</th>
+                   <th>Actions</th>
+                 </tr>
+               </thead>
+               <tbody id="invoicesTable">
+                 <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
+               </tbody>
+             </table>
+           </div>
+         </div>
+       </div>
+
+       <!-- Tab: Appointments -->
+       <div class="tab-pane" id="appointments">
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">Register Appointment</h3>
+           </div>
+           <form id="appointmentForm">
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Patient *</label>
+                 <select id="appointmentPatient" required>
+                   <option value="">Select Patient</option>
+                 </select>
+               </div>
+               <div class="form-group">
+                 <label>Doctor *</label>
+                 <select id="appointmentDoctor" required>
+                   <option value="">Select Doctor</option>
+                 </select>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Date *</label>
+                 <input type="date" id="appointmentDate" required>
+               </div>
+               <div class="form-group">
+                 <label>Time *</label>
+                 <input type="time" id="appointmentTime" required>
+               </div>
+             </div>
+             <div class="form-row">
+               <div class="form-group">
+                 <label>Reason</label>
+                 <input type="text" id="appointmentReason" placeholder="Reason for appointment">
+               </div>
+               <div class="form-group">
+                 <label>Location</label>
+                 <input type="text" id="appointmentLocation" placeholder="Clinic, Room, etc.">
+               </div>
+             </div>
+             <div style="text-align: right;">
+               <button type="button" class="btn btn-secondary" onclick="resetAppointmentForm()">Reset</button>
+               <button type="submit" class="btn btn-primary">Register Appointment</button>
+             </div>
+           </form>
+         </div>
+
+         <div class="card">
+           <div class="card-header">
+             <h3 class="card-title">All Appointments</h3>
+           </div>
+           <div class="search-bar">
+             <input type="text" id="appointmentSearch" placeholder="Search by patient or doctor name...">
+             <select id="appointmentStatusFilter">
+               <option value="">All Status</option>
+               <option value="scheduled">Scheduled</option>
+               <option value="confirmed">Confirmed</option>
+               <option value="completed">Completed</option>
+               <option value="cancelled">Cancelled</option>
+               <option value="no_show">No Show</option>
+             </select>
+             <button class="btn btn-secondary" onclick="loadAppointments()" style="margin-left: 8px;">Search</button>
+           </div>
+           <div class="table-responsive">
+             <table class="table">
+               <thead>
+                 <tr>
+                   <th>#</th>
+                   <th>Patient</th>
+                   <th>Doctor</th>
+                   <th>Date</th>
+                   <th>Time</th>
+                   <th>Status</th>
+                   <th>Reason</th>
+                   <th>Actions</th>
+                 </tr>
+               </thead>
+               <tbody id="appointmentsTable">
+                 <tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>
+               </tbody>
+             </table>
+           </div>
+         </div>
+       </div>
     </div>
-  </div>
+
 
   <script>
     // API Base URL
     const API_BASE = '/api';
     
     // Current user data
-    let currentUser = null;
-    
-    // Check authentication
+     let currentUser = null;
+     
+     function toggleSidebar() {
+       const sidebar = document.querySelector('.sidebar');
+       if (sidebar) {
+         sidebar.classList.toggle('open');
+       }
+     }
+     
+     // Check authentication
     document.addEventListener('DOMContentLoaded', async function() {
       await checkAuthentication();
     });
@@ -788,9 +1092,14 @@
           return;
         }
         
-        // Update UI
-        document.getElementById('userName').textContent = currentUser.name;
-        document.getElementById('userAvatar').textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'CC';
+        // Update UI - only update elements that exist in the DOM
+        const ccUserNameEl = document.getElementById('ccUserName');
+        if (ccUserNameEl) ccUserNameEl.textContent = currentUser.name;
+        const ccUserEmailEl = document.getElementById('ccUserEmail');
+        if (ccUserEmailEl) ccUserEmailEl.textContent = currentUser.email || '';
+        const userDropdownBtnEl = document.getElementById('userDropdownBtn');
+        if (userDropdownBtnEl) userDropdownBtnEl.textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'CC';
+        loadNotificationCounts();
         
         // Load initial data
         loadDashboardStats();
@@ -798,7 +1107,20 @@
         console.error('Auth check failed:', error);
         window.location.href = 'sign-in.html';
       }
-    }
+     }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      const notifDropdown = document.getElementById('notificationDropdown');
+      if (notifDropdown && notifDropdown.classList.contains('show') && !notifDropdown.contains(e.target) && e.target.id !== 'notificationBtn' && !e.target.closest('#notificationBtn')) {
+        notifDropdown.classList.remove('show');
+      }
+      
+      const userDropdown = document.querySelector('.user-dropdown .dropdown-menu');
+      if (userDropdown && userDropdown.style.display === 'block' && !userDropdown.contains(e.target) && e.target.id !== 'userDropdownBtn' && !e.target.closest('#userDropdownBtn')) {
+        userDropdown.style.display = 'none';
+      }
+    });
     
     // Tab navigation
     document.querySelectorAll('.menu-item').forEach(item => {
@@ -818,9 +1140,12 @@
         if (tabId === 'test-referrals') loadTestReferrals();
         if (tabId === 'walkins') loadWalkins();
         if (tabId === 'billing') {
-          loadBillingServices();
           loadPatientsForInvoice();
           loadInvoices();
+        }
+        if (tabId === 'appointments') {
+          loadAppointmentSelects();
+          loadAppointments();
         }
       });
     });
@@ -1007,25 +1332,76 @@
 
     // ==================== BILLING FUNCTIONS ====================
 
-    async function loadBillingServices() {
-      const select = document.getElementById('invoiceServices');
-      if (!select) return;
-      
+    async function loadPatientServices() {
+      const patientId = document.getElementById('invoicePatient').value;
+      const container = document.getElementById('invoiceServicesContainer');
+
+      if (!patientId) {
+        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+        return;
+      }
+
       try {
-        const response = await fetch(`${API_BASE}/billing/services`, {
+        const response = await fetch(`${API_BASE}/billing/patient/${patientId}/services`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
-        
-        if (data.success) {
-          select.innerHTML = data.services.map(s => 
-            `<option value="${s.id}">${escapeHtml(s.name)} - ₦${parseFloat(s.price).toFixed(2)}</option>`
-          ).join('');
+
+        if (data.success && data.services && data.services.length > 0) {
+          const categories = {};
+          data.services.forEach(service => {
+            if (!categories[service.category]) {
+              categories[service.category] = [];
+            }
+            categories[service.category].push(service);
+          });
+
+          const categoryOrder = ['General Services', 'Medical Test', 'Surgery', 'Endoscopy'];
+
+          container.innerHTML = categoryOrder.map(category => {
+            if (!categories[category]) return '';
+            return `
+              <div style="margin-bottom: 16px;">
+                <details style="border: 1px solid #e2e8f0; border-radius: 8px;">
+                  <summary style="font-weight: 600; color: #0f172a; padding: 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; list-style: none;">
+                    ${escapeHtml(category)} (${categories[category].length} services)
+                  </summary>
+                  <div style="padding: 8px;">
+                    ${categories[category].map(service => `
+                      <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 1px solid #e2e8f0;">
+                        <input type="checkbox" class="service-checkbox" data-id="${service.id}" data-price="${service.price}" onchange="calculateInvoiceTotal()">
+                        <div style="flex: 1;">
+                          <div style="font-weight: 500; color: #0f172a;">${escapeHtml(service.name)}</div>
+                          <div style="font-size: 12px; color: #64748b;">${escapeHtml(service.description || '')}</div>
+                        </div>
+                        <span>₦${parseFloat(service.price).toLocaleString()}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </details>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = '<p style="color: #64748b; font-size: 14px;">No services available for this patient</p>';
         }
       } catch (error) {
-        console.error('Error loading services:', error);
+        console.error('Error loading patient services:', error);
+        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading services</p>';
       }
+    }
+
+    function calculateInvoiceTotal() {
+      const checkboxes = document.querySelectorAll('.service-checkbox:checked');
+      let total = 0;
+
+      checkboxes.forEach(cb => {
+        total += parseFloat(cb.dataset.price);
+      });
+
+      document.getElementById('invoiceSubtotal').textContent = '₦' + total.toLocaleString();
+      document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString();
     }
 
     async function loadPatientsForInvoice() {
@@ -1057,8 +1433,7 @@
       const dueDate = document.getElementById('invoiceDueDate').value;
       const paymentMethod = document.getElementById('invoicePaymentMethod').value;
       const notes = document.getElementById('invoiceNotes').value;
-      const serviceSelect = document.getElementById('invoiceServices');
-      const serviceIds = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+      const serviceIds = Array.from(document.querySelectorAll('.service-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
       
       if (!patientId || !dueDate || serviceIds.length === 0) {
         alert('Please select a patient, due date, and at least one service');
@@ -1096,6 +1471,14 @@
 
     function resetInvoiceForm() {
       document.getElementById('invoiceForm').reset();
+      const container = document.getElementById('invoiceServicesContainer');
+      if (container) {
+        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+      }
+      const subtotalEl = document.getElementById('invoiceSubtotal');
+      if (subtotalEl) subtotalEl.textContent = '₦0.00';
+      const totalEl = document.getElementById('invoiceTotal');
+      if (totalEl) totalEl.value = '₦0.00';
     }
 
     async function loadInvoices() {
@@ -1180,6 +1563,372 @@
       if (!str) return '';
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
+
+    // Load notification and message counts
+    async function loadNotificationCounts() {
+      try {
+        const response = await fetch(`${API_BASE}/messages/unread-count-generic`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          const msgBadge = document.getElementById('messageBadge');
+          const notifBadge = document.getElementById('notificationBadge');
+          if (msgBadge) {
+            if (data.unreadMessages > 0) { msgBadge.style.display = 'inline-flex'; msgBadge.textContent = data.unreadMessages > 99 ? '99+' : data.unreadMessages; }
+            else { msgBadge.style.display = 'none'; }
+          }
+          if (notifBadge) {
+            if (data.unreadNotifications > 0) { notifBadge.style.display = 'inline-flex'; notifBadge.textContent = data.unreadNotifications > 99 ? '99+' : data.unreadNotifications; }
+            else { notifBadge.style.display = 'none'; }
+          }
+        }
+      } catch (error) { console.error('Error loading notification counts:', error); }
+    }
+    
+    function toggleNotificationDropdown() {
+      const dropdown = document.getElementById('notificationDropdown');
+      if (!dropdown) return;
+      
+      const isVisible = dropdown.classList.contains('show');
+      if (isVisible) {
+        dropdown.classList.remove('show');
+      } else {
+        dropdown.classList.add('show');
+        loadNotifications();
+      }
+    }
+    
+    async function loadNotifications() {
+      const container = document.getElementById('notificationList');
+      if (!container) return;
+      
+      container.innerHTML = '<div class="notification-empty">Loading notifications...</div>';
+      
+      try {
+        const [referralsRes, walkinsRes] = await Promise.all([
+          fetch(`${API_BASE}/customer-care/test-referrals?status=pending`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }).catch(() => ({ ok: false })),
+          fetch(`${API_BASE}/customer-care/walkin-patients`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }).catch(() => ({ ok: false }))
+        ]);
+        
+        const notifications = [];
+        
+        if (referralsRes.ok) {
+          const data = await referralsRes.json();
+          if (data.success && data.referrals && data.referrals.length > 0) {
+            data.referrals.slice(0, 10).forEach(ref => {
+              notifications.push({
+                type: 'test',
+                icon: 'fa-file-medical',
+                title: 'Test Referral',
+                desc: `${ref.patient_name || 'Patient'} - ${ref.test_name || ref.test_type || 'Test'}`,
+                time: ref.created_at
+              });
+            });
+          }
+        }
+        
+        if (walkinsRes.ok) {
+          const data = await walkinsRes.json();
+          if (data.success && data.patients && data.patients.length > 0) {
+            const today = new Date().toISOString().split('T')[0];
+            data.patients.filter(p => p.registration_date && p.registration_date.startsWith(today)).forEach(p => {
+              notifications.push({
+                type: 'walkin',
+                icon: 'fa-user-injured',
+                title: 'Walk-in Patient',
+                desc: `${p.name || 'Patient'} - ${p.test_type || 'Test'}`,
+                time: p.registration_date
+              });
+            });
+          }
+        }
+        
+        notifications.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+        
+        if (notifications.length === 0) {
+          container.innerHTML = '<div class="notification-empty">No new notifications</div>';
+          return;
+        }
+        
+        container.innerHTML = notifications.slice(0, 20).map(n => `
+          <div class="notification-item" onclick="handleNotificationClick('${n.type}')">
+            <div class="notification-icon ${n.type}">
+              <i class="fas ${n.icon}"></i>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">${escapeHtml(n.title || 'Notification')}</div>
+              <div class="notification-desc">${escapeHtml(n.desc || '')}</div>
+              <div class="notification-time">${n.time ? new Date(n.time).toLocaleDateString() : ''}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+      }
+    }
+    
+    function handleNotificationClick(type) {
+      const dropdown = document.getElementById('notificationDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+      
+      if (type === 'test') {
+        document.querySelectorAll('.menu-item[data-tab]').forEach(m => m.classList.remove('active'));
+        document.querySelector('[data-tab="test-referrals"]')?.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById('test-referrals')?.classList.add('active');
+        loadTestReferrals();
+      } else if (type === 'walkin') {
+        document.querySelectorAll('.menu-item[data-tab]').forEach(m => m.classList.remove('active'));
+        document.querySelector('[data-tab="walkins"]')?.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById('walkins')?.classList.add('active');
+        loadWalkins();
+      }
+    }
+
+    // Profile modal functions
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '-';
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+          : (firstName?.substring(0, 2).toUpperCase() || 'CC');
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'customer_care').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Toggle user dropdown
+    function toggleUserDropdown() {
+      const dropdown = document.querySelector('.user-dropdown .dropdown-menu');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+
+    // Appointment functions
+    function loadAppointmentSelects() {
+      loadPatientsForAppointment();
+      loadDoctorsForAppointment();
+    }
+
+    function resetAppointmentForm() {
+      document.getElementById('appointmentForm').reset();
+    }
+
+    async function loadPatientsForAppointment() {
+      const select = document.getElementById('appointmentPatient');
+      if (!select) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/admin/users?role=patient&limit=100`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const options = data.users.map(u =>
+            `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
+          ).join('');
+          select.innerHTML = '<option value="">Select Patient</option>' + options;
+        }
+      } catch (error) {
+        console.error('Error loading patients for appointment:', error);
+      }
+    }
+
+    async function loadDoctorsForAppointment() {
+      const select = document.getElementById('appointmentDoctor');
+      if (!select) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/doctors`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const options = data.doctors.map(d =>
+            `<option value="${d.id}">${escapeHtml(d.name)} - ${escapeHtml(d.specialization || 'General')}</option>`
+          ).join('');
+          select.innerHTML = '<option value="">Select Doctor</option>' + options;
+        }
+      } catch (error) {
+        console.error('Error loading doctors for appointment:', error);
+      }
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const patientId = document.getElementById('appointmentPatient').value;
+      const doctorId = document.getElementById('appointmentDoctor').value;
+      const date = document.getElementById('appointmentDate').value;
+      const time = document.getElementById('appointmentTime').value;
+      const reason = document.getElementById('appointmentReason').value;
+      const location = document.getElementById('appointmentLocation').value;
+
+      if (!patientId || !doctorId || !date || !time) {
+        alert('Please select a patient, doctor, date, and time');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/customer-care/appointments`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: patientId,
+            doctor_id: doctorId,
+            appointment_date: date,
+            appointment_time: time,
+            reason: reason,
+            location: location
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Appointment registered successfully!');
+          resetAppointmentForm();
+          loadAppointments();
+        } else {
+          alert(data.message || 'Failed to register appointment');
+        }
+      } catch (error) {
+        console.error('Error registering appointment:', error);
+        alert('Failed to register appointment');
+      }
+    });
+
+    async function loadAppointments() {
+      const tbody = document.getElementById('appointmentsTable');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>';
+
+      const search = document.getElementById('appointmentSearch').value;
+      const status = document.getElementById('appointmentStatusFilter').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/customer-care/appointments?limit=50`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          let appointments = data.appointments || [];
+
+          if (search) {
+            const q = search.toLowerCase();
+            appointments = appointments.filter(a =>
+              (a.patient?.name || '').toLowerCase().includes(q) ||
+              (a.doctor?.name || '').toLowerCase().includes(q)
+            );
+          }
+
+          if (status) {
+            appointments = appointments.filter(a => a.status === status);
+          }
+
+          if (appointments.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">No appointments found</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = appointments.map(a => `
+            <tr>
+              <td>${a.id}</td>
+              <td>${escapeHtml(a.patient?.name || 'N/A')}</td>
+              <td>${escapeHtml(a.doctor?.name || 'N/A')}<br><small style="color: #64748b;">${escapeHtml(a.doctor?.specialization || '')}</small></td>
+              <td>${a.date ? new Date(a.date).toLocaleDateString() : 'N/A'}</td>
+              <td>${a.time || 'N/A'}</td>
+              <td><span class="badge badge-${a.status === 'completed' ? 'completed' : a.status === 'cancelled' ? 'inactive' : a.status === 'no_show' ? 'inactive' : 'active'}">${a.status || 'scheduled'}</span></td>
+              <td>${escapeHtml(a.reason || '')}</td>
+              <td>
+                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="viewAppointment(${a.id})">View</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #dc2626;">Error loading appointments</td></tr>';
+      }
+    }
+
+    function viewAppointment(id) {
+      alert('Appointment ID: ' + id);
+    }
   </script>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+        <button type="button" onclick="closeProfileModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">CC</div>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Email Address</label>
+          <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Role</label>
+          <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Member Since</label>
+          <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

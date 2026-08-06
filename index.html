@@ -29,6 +29,22 @@
         <link rel="stylesheet" href="assets/css/main.css">
         <!-- style css -->
         <link rel="stylesheet" href="style.css">
+        <!-- notification styles -->
+        <style>
+        .header-icons .header-icon-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: #f8f9fa; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 16px;
+            color: #2563eb; transition: all 0.2s ease; position: relative;
+        }
+        .header-icons .header-icon-btn:hover { background: #e0e7ff; color: #1d4ed8; }
+        .notification-badge {
+            position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px;
+            background: #dc2626; color: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 600; padding: 0 4px;
+        }
+        </style>
     </head>
 
     <body>
@@ -146,7 +162,7 @@
                     <!-- offcanvas contact end -->
                     <!-- offcanvas button wapper start -->
                     <div class="offcanvas-button-wapper"> 
-                        <a href="https://prediacareclinics.com/sign-in.html" class="theme-button style-1" aria-label="Book Appointment">
+                        <a href="http://localhost:5000/sign-in.html" class="theme-button style-1" aria-label="Book Appointment">
                             <span data-text="Book Appointment">Book Appointment</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </a>
@@ -336,7 +352,20 @@
                                                 <a href="tel:123446788">+2348140032892</a>
                                             </div>
                                         </div>
-                                        <!-- header sidebar -->
+                                        <!-- header icons -->
+                                        <!-- <div class="header-icons d-flex align-items-center gap-3">
+                                           
+                                            <button type="button" class="header-icon-btn position-relative" id="notificationBtn">
+                                                <i class="fas fa-bell"></i>
+                                                <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                                            </button>
+                                           
+                                            <button type="button" class="header-icon-btn position-relative" id="messageBtn">
+                                                <i class="fas fa-envelope"></i>
+                                                <span class="notification-badge" id="messageBadge" style="display: none;"></span>
+                                            </button>
+                                        </div> -->
+                                         <!-- header sidebar -->
                                         <div class="header-sidebar">
                                             <a class="sidebar-toggler color-one" data-bs-toggle="offcanvas" href="#offcanvas-sidebar" aria-label="sidebar toggler" role="button" aria-controls="offcanvas-sidebar">
                                                 <span></span>
@@ -819,7 +848,7 @@
                                                      medicine. Our team of specialists works collaboratively to deliver comprehensive treatment plans 
                                                      tailored to each patient's unique needs.
                                                 </p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="http://localhost:5000/services-details.html" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -842,7 +871,7 @@
                                                 <p>The Pediatrics department at our clinic is dedicated to providing exceptional care in the field of pediatrics 
                                                     medicine. Our team of specialists works collaboratively to deliver
                                                     comprehensive treatment plans tailored to each patient's unique needs.</p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="services-details.html" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -867,7 +896,7 @@
                                                     medicine. Our team of specialists works collaboratively to deliver 
                                                     comprehensive treatment plans tailored to each patient's unique needs.
                                                 </p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="services-details.html" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -882,7 +911,7 @@
                                             </div>
                                             <div class="service-icon">
                                                 <figure>
-                                                    <img src="assets/images/services/icon-service-3-4.png" alt="icon service four">
+                                                    <img src="assets/images/services/Neurology.png" alt="icon service four">
                                                 </figure>
                                             </div>
                                             <div class="service-content">
@@ -892,7 +921,7 @@
                                                     medicine. Our team of specialists works collaboratively to deliver 
                                                     comprehensive treatment plans tailored to each patient's unique needs.
                                                 </p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="services-details.html" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -916,7 +945,7 @@
                                                     The Orthopedics department at our clinic is dedicated to providing exceptional care in the field of orthopedics medicine. Our team of specialists works 
                                                     collaboratively to deliver comprehensive treatment plans tailored to each patient's unique needs.
                                                 </p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="#" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -937,7 +966,7 @@
                                             <div class="service-content">
                                                 <h3><a href="services-details.html">Endocrinology</a></h3>
                                                 <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</p>
-                                                <a href="services-details.html" class="read-more-btn">More Details</a>
+                                                <!-- <a href="#" class="read-more-btn">More Details</a> -->
                                             </div>
                                         </div>
                                         <!-- service item end -->
@@ -1092,17 +1121,17 @@
                                                         <!-- opening hours start -->
                                                         <div class="opening-hours">
                                                             <p>
-                                                                <span>Monday - Friday</span>
-                                                                <span>8:00am - 10:00pm</span>
+                                                                <span>Monday - Sunday</span>
+                                                                <span>24hrs</span>
                                                             </p>
-                                                            <p>
+                                                            <!-- <p>
                                                                 <span>Saturday</span>
                                                                 <span>8:00am - 12:00pm</span>
                                                             </p>
                                                             <p>
                                                                 <span>Sunday</span>
                                                                 <span>Closed</span>
-                                                            </p>
+                                                            </p> -->
                                                         </div>
                                                         <!-- opening hours end -->
                                                     </div>
@@ -2072,11 +2101,11 @@
                                        </div>
                                     
                                     <div class="cta-button-wapper">
-                                        <a href="https://prediacareclinics.com/sign-in.html" class="theme-button style-4" aria-label="Book Appointment">
+                                        <a href="http://localhost:5000/sign-in.html" class="theme-button style-4" aria-label="Book Appointment">
                                             <span data-text="Book Appointment">Book Appointment</span>
                                             <i class="fa-solid fa-calendar-days"></i>
                                         </a>
-                                        <a href="https://prediacareclinics.com/services.html" class="theme-button style-5" aria-label="Explore More">
+                                        <a href="http://localhost:5000/services.html" class="theme-button style-5" aria-label="Explore More">
                                             <span data-text="Explore More">Explore More</span>
                                             <i class="fa-solid fa-arrow-right"></i>
                                         </a>
@@ -2336,7 +2365,7 @@
                                                 <li>
                                                     <p>
                                                         <i class="fa-solid fa-clock"></i>
-                                                        Mon - Fri 24hr
+                                                        Mon - Sun 24hr
                                                     </p>
                                                 </li>
                                             </ul>
@@ -2399,5 +2428,82 @@
         <script src="assets/js/SmoothScroll.js"></script>
         <!-- main Js -->
         <script src="assets/js/main.js"></script>
+        <script>
+        const API_BASE = '/api';
+
+        async function loadNotificationCounts() {
+          try {
+            const response = await fetch(`${API_BASE}/messages/unread-count-generic`, {
+              credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+              const msgBadge = document.getElementById('messageBadge');
+              const notifBadge = document.getElementById('notificationBadge');
+
+              if (data.unreadMessages > 0 && msgBadge) {
+                msgBadge.style.display = 'inline-flex';
+                msgBadge.textContent = data.unreadMessages > 99 ? '99+' : data.unreadMessages;
+              }
+              if (data.unreadNotifications > 0 && notifBadge) {
+                notifBadge.style.display = 'inline-flex';
+                notifBadge.textContent = data.unreadNotifications > 99 ? '99+' : data.unreadNotifications;
+              }
+            }
+          } catch (error) {
+            console.error('Error loading notification counts:', error);
+          }
+        }
+
+        function redirectToMessages() {
+          const dashboardMap = {
+            patient: 'patient-dashboard.html',
+            doctor: 'doctor-dashboard.html',
+            staff: 'staff-dashboard.html',
+            nurse: 'nurse-dashboard.html',
+            admin: 'admin-dashboard.html',
+            customer_care: 'customer-care-dashboard.html'
+          };
+          fetch(`${API_BASE}/auth/user`, { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+              if (data.success && dashboardMap[data.user.role]) {
+                window.location.href = dashboardMap[data.user.role];
+              } else {
+                window.location.href = 'sign-in.html';
+              }
+            })
+            .catch(() => window.location.href = 'sign-in.html');
+        }
+
+        function redirectToNotifications() {
+          const dashboardMap = {
+            patient: 'patient-dashboard.html',
+            doctor: 'doctor-dashboard.html',
+            staff: 'staff-dashboard.html',
+            nurse: 'nurse-dashboard.html',
+            admin: 'admin-dashboard.html',
+            customer_care: 'customer-care-dashboard.html'
+          };
+          fetch(`${API_BASE}/auth/user`, { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => {
+              if (data.success && dashboardMap[data.user.role]) {
+                window.location.href = dashboardMap[data.user.role];
+              } else {
+                window.location.href = 'sign-in.html';
+              }
+            })
+            .catch(() => window.location.href = 'sign-in.html');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          loadNotificationCounts();
+          const msgBtn = document.getElementById('messageBtn');
+          const notifBtn = document.getElementById('notificationBtn');
+          if (msgBtn) msgBtn.addEventListener('click', redirectToMessages);
+          if (notifBtn) notifBtn.addEventListener('click', redirectToNotifications);
+        });
+        </script>
     </body>
 </html>

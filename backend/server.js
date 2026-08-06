@@ -23,6 +23,7 @@ const staffRoutes = require('./routes/staff');
 const customerCareRoutes = require('./routes/customer-care');
 const diagnosticRoutes = require('./routes/diagnostic');
 const healthTipsRoutes = require('./routes/health-tips');
+const newsletterRoutes = require('./routes/newsletter');
 const pharmacyRoutes = require('./routes/pharmacy');
 const billingRoutes = require('./routes/billing');
 
@@ -97,7 +98,8 @@ app.use((req, res, next) => {
     '/api/customer-care',
     '/api/diagnostic',
     '/api/pharmacy',
-    '/api/billing'
+    '/api/billing',
+    '/api/newsletter'
   ];
   if (csrfExemptPaths.some(path => req.path.startsWith(path))) {
     return next();
@@ -234,6 +236,9 @@ app.use('/api/pharmacy', pharmacyRoutes);
 // Billing routes
 app.use('/api/billing', billingRoutes);
 
+// Newsletter / Health Newspaper routes (public)
+app.use('/api/newsletter', newsletterRoutes);
+
 // Middleware to check authentication
 const checkAuth = (req, res, next) => {
   if (!req.session.userId) {
@@ -279,6 +284,14 @@ app.get('/pharmacist-dashboard.html', checkRole(['pharmacist', 'admin']), (req, 
 
 app.get('/nurse-dashboard.html', checkRole(['staff','admin','nurse']), (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'nurse-dashboard.html'));
+});
+
+app.get('/customer-care-dashboard.html', checkRole(['customer_care', 'admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'customer-care-dashboard.html'));
+});
+
+app.get('/diagnostic-dashboard.html', checkRole(['diagnostic', 'admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'diagnostic-dashboard.html'));
 });
 // Health check
 app.get('/api/health', (req, res) => {

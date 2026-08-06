@@ -102,13 +102,14 @@ router.get('/dashboard-stats', requireAdmin, async (req, res) => {
 /**
  * GET /api/admin/users
  * Get all users (doctors, staff, patients, admins)
+ * Requires VIEW_ALL_USERS permission (allows customer_care, staff, etc. to view users)
  */
-router.get('/users', requireAdmin, async (req, res) => {
+router.get('/users', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
   try {
-    const { role, search, limit = 50, offset = 0 } = req.query;
+    const { role, search, patient_status, limit = 50, offset = 0 } = req.query;
     
     let query = `
-      SELECT id, name, email, role, created_at, is_active FROM users WHERE 1=1
+      SELECT id, name, email, role, is_active, patient_status, created_at FROM users WHERE 1=1
     `;
     const params = [];
     
@@ -120,6 +121,11 @@ router.get('/users', requireAdmin, async (req, res) => {
     if (search) {
       query += ' AND (name LIKE ? OR email LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    if (patient_status && patient_status !== 'all') {
+      query += ' AND patient_status = ?';
+      params.push(patient_status);
     }
     
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
@@ -138,6 +144,10 @@ router.get('/users', requireAdmin, async (req, res) => {
     if (search) {
       countQuery += ' AND (name LIKE ? OR email LIKE ?)';
       countParams.push(`%${search}%`, `%${search}%`);
+    }
+    if (patient_status && patient_status !== 'all') {
+      countQuery += ' AND patient_status = ?';
+      countParams.push(patient_status);
     }
     const [countResult] = await connection.execute(countQuery, countParams);
     
@@ -166,7 +176,7 @@ router.get('/users/:id', requireAdmin, async (req, res) => {
     const connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
-      SELECT id, name, email, role, created_at, is_active FROM users WHERE id = ?
+      SELECT id, name, email, role, created_at, is_active, patient_status FROM users WHERE id = ?
     `, [id]);
     
     if (users.length === 0) {
@@ -200,7 +210,7 @@ router.get('/users/:id', requireAdmin, async (req, res) => {
 // Create a new user with a role (doctor or staff only)
 router.post('/create-user', requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, specialization, experience_years } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ success: false, message: 'name, email, password and role are required' });
@@ -228,7 +238,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
     if (role === 'doctor') {
       await connection.execute(
         'INSERT INTO doctors (user_id, specialization, qualification, experience_years, consultation_fee, bio) VALUES (?, ?, ?, ?, ?, ?)',
-        [result.insertId, 'General Medicine', '', 0, 0.00, '']
+        [result.insertId, specialization || 'General Medicine', '', experience_years || 0, 0.00, '']
       );
     }
 
@@ -1210,6 +1220,272 @@ router.get('/user-permissions/:id', requireAdmin, async (req, res) => {
     res.json({ success: true, role: user.role, overrides: userOverrides, effectivePermissions: effective });
   } catch (err) {
     console.error('Error fetching user permissions:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/admin/discharged-patients
+ * Get all discharged patients with admission/discharge details
+ */
+router.get('/discharged-patients', requireAdmin, async (req, res) => {
+  try {
+    const { search, limit = 50, offset = 0 } = req.query;
+
+    let query = `
+      SELECT
+        a.id as admission_id,
+        a.patient_id,
+        u.name as patient_name,
+        u.email as patient_email,
+        u.phone as patient_phone,
+        d.name as doctor_name,
+        a.room_number,
+        a.bed_number,
+        a.reason_for_admission,
+        a.admitting_diagnosis,
+        a.admission_date,
+        a.discharge_date,
+        a.discharge_data,
+        a.status,
+        a.notes,
+        a.created_at
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.status = 'discharged'
+    `;
+    const params = [];
+
+    if (search) {
+      query += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern);
+    }
+
+    query += ` ORDER BY a.discharge_date DESC LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit), parseInt(offset));
+
+    const connection = await pool.getConnection();
+    const [rows] = await connection.execute(query, params);
+
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      WHERE a.status = 'discharged'
+    `;
+    const countParams = [];
+    if (search) {
+      countQuery += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
+      const searchPattern = `%${search}%`;
+      countParams.push(searchPattern, searchPattern);
+    }
+    const [countResult] = await connection.execute(countQuery, countParams);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      patients: rows.map(p => ({
+        admission_id: p.admission_id,
+        patient_id: p.patient_id,
+        patient_name: p.patient_name,
+        patient_email: p.patient_email,
+        patient_phone: p.patient_phone,
+        doctor_name: p.doctor_name,
+        room_number: p.room_number,
+        bed_number: p.bed_number,
+        reason_for_admission: p.reason_for_admission,
+        admitting_diagnosis: p.admitting_diagnosis,
+        admission_date: p.admission_date,
+        discharge_date: p.discharge_date,
+        discharge_data: p.discharge_data,
+        status: p.status,
+        notes: p.notes,
+        created_at: p.created_at
+      })),
+      total: countResult[0].total,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (err) {
+    console.error('Error fetching discharged patients:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/admin/patients/:id/discharge-history
+ * Get full discharge history for a specific patient
+ */
+router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.execute(`
+      SELECT
+        a.id as admission_id,
+        a.patient_id,
+        u.name as patient_name,
+        u.email as patient_email,
+        u.phone as patient_phone,
+        u.patient_status,
+        d.name as doctor_name,
+        d.specialization,
+        a.room_number,
+        a.bed_number,
+        a.admission_type,
+        a.reason_for_admission,
+        a.admitting_diagnosis,
+        a.admission_date,
+        a.discharge_date,
+        a.discharge_data,
+        a.status,
+        a.notes,
+        a.created_at,
+        a.updated_at
+      FROM admissions a
+      JOIN users u ON a.patient_id = u.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.patient_id = ?
+      ORDER BY a.admission_date DESC
+    `, [id]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      patient: rows[0] || null,
+      admissions: rows.map(a => ({
+        admission_id: a.admission_id,
+        patient_id: a.patient_id,
+        patient_name: a.patient_name,
+        patient_email: a.patient_email,
+        patient_phone: a.patient_phone,
+        patient_status: a.patient_status,
+        doctor_name: a.doctor_name,
+        specialization: a.specialization,
+        room_number: a.room_number,
+        bed_number: a.bed_number,
+        admission_type: a.admission_type,
+        reason_for_admission: a.reason_for_admission,
+        admitting_diagnosis: a.admitting_diagnosis,
+        admission_date: a.admission_date,
+        discharge_date: a.discharge_date,
+        discharge_data: a.discharge_data,
+        status: a.status,
+        notes: a.notes,
+        created_at: a.created_at,
+        updated_at: a.updated_at
+      }))
+    });
+  } catch (err) {
+    console.error('Error fetching patient discharge history:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/admin/patients/:id/history
+ * Get full activity history for any patient (including discharged)
+ */
+router.get('/patients/:id/history', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    const [patients] = await connection.execute(`
+      SELECT id, name, email, phone, address, created_at, patient_status, is_active
+      FROM users WHERE id = ? AND role = 'patient'
+    `, [id]);
+
+    if (patients.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    const patient = patients[0];
+
+    const [appointments] = await connection.execute(`
+      SELECT id, appointment_date, appointment_time, status, reason, notes, created_at
+      FROM appointments
+      WHERE patient_id = ?
+      ORDER BY appointment_date DESC
+      LIMIT 20
+    `, [id]);
+
+    const [admissions] = await connection.execute(`
+      SELECT
+        a.id, a.admission_type, a.admission_date, a.discharge_date,
+        a.room_number, a.bed_number, a.reason_for_admission,
+        a.admitting_diagnosis, a.discharge_data, a.status, a.notes, a.created_at,
+        d.name as doctor_name
+      FROM admissions a
+      LEFT JOIN doctors doc ON a.doctor_id = doc.id
+      LEFT JOIN users d ON doc.user_id = d.id
+      WHERE a.patient_id = ?
+      ORDER BY a.admission_date DESC
+      LIMIT 20
+    `, [id]);
+
+    const [medications] = await connection.execute(`
+      SELECT m.id, m.medication_name, m.dosage, m.frequency, m.duration, m.instructions,
+             m.status, m.prescribed_date, u.name as doctor_name
+      FROM medications m
+      JOIN doctors d ON m.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE m.patient_id = ?
+      ORDER BY m.prescribed_date DESC
+      LIMIT 20
+    `, [id]);
+
+    const [examinations] = await connection.execute(`
+      SELECT id, examination_date, vital_signs, chief_complaint, examination_notes,
+             findings, diagnosis, treatment_plan, status
+      FROM examinations
+      WHERE patient_id = ?
+      ORDER BY examination_date DESC
+      LIMIT 20
+    `, [id]);
+
+    const [testReferrals] = await connection.execute(`
+      SELECT tr.id, tr.test_type, tr.test_name, tr.urgency, tr.status, tr.created_at,
+             u.name as doctor_name
+      FROM test_referrals tr
+      JOIN doctors d ON tr.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE tr.patient_id = ?
+      ORDER BY tr.created_at DESC
+      LIMIT 20
+    `, [id]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      patient: {
+        id: patient.id,
+        name: patient.name,
+        email: patient.email,
+        phone: patient.phone,
+        address: patient.address,
+        createdAt: patient.created_at,
+        patientStatus: patient.patient_status,
+        isActive: patient.is_active
+      },
+      appointments: appointments,
+      admissions: admissions.map(a => ({
+        ...a,
+        dischargeData: a.discharge_data ? (typeof a.discharge_data === 'string' ? JSON.parse(a.discharge_data) : a.discharge_data) : null
+      })),
+      medications: medications,
+      examinations: examinations,
+      testReferrals: testReferrals
+    });
+  } catch (err) {
+    console.error('Error fetching patient history:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
