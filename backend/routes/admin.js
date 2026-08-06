@@ -1239,7 +1239,7 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
         u.name as patient_name,
         u.email as patient_email,
         u.phone as patient_phone,
-        d.name as doctor_name,
+        doc_user.name as doctor_name,
         a.room_number,
         a.bed_number,
         a.reason_for_admission,
@@ -1253,6 +1253,7 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
       FROM admissions a
       JOIN users u ON a.patient_id = u.id
       LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN users doc_user ON d.user_id = doc_user.id
       WHERE a.status = 'discharged'
     `;
     const params = [];
@@ -1332,8 +1333,8 @@ router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => 
         u.email as patient_email,
         u.phone as patient_phone,
         u.patient_status,
-        d.name as doctor_name,
-        d.specialization,
+        doc_user.name as doctor_name,
+        doc.specialization,
         a.room_number,
         a.bed_number,
         a.admission_type,
@@ -1349,6 +1350,7 @@ router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => 
       FROM admissions a
       JOIN users u ON a.patient_id = u.id
       LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN users doc_user ON d.user_id = doc_user.id
       WHERE a.patient_id = ?
       ORDER BY a.admission_date DESC
     `, [id]);
