@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "build": "echo 'No build step required'",
     "weekly-newsletter": "node scripts/send-weekly-newsletter.js"
   },
   "keywords": [
