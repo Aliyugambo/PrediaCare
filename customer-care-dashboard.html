@@ -621,25 +621,21 @@
         <div class="sidebar-title">rediacare</div>
       </div>
       <div class="sidebar-menu">
-        <a class="menu-item active" data-tab="register">
-          <i class="fas fa-user-plus"></i>
-          Register Patient
+        <a class="menu-item" data-tab="appointments">
+          <i class="fas fa-calendar-check"></i>
+          Appointments
+        </a>
+        <a class="menu-item active" data-tab="walkins">
+          <i class="fas fa-users"></i>
+          Walk-in Patients
         </a>
         <a class="menu-item" data-tab="test-referrals">
           <i class="fas fa-flask"></i>
-          Test Referrals
-        </a>
-        <a class="menu-item" data-tab="walkins">
-          <i class="fas fa-users"></i>
-          Walk-in Patients
+          Test Request
         </a>
         <a class="menu-item" data-tab="billing">
           <i class="fas fa-file-invoice-dollar"></i>
           Billing & Invoices
-        </a>
-        <a class="menu-item" data-tab="appointments">
-          <i class="fas fa-calendar-check"></i>
-          Appointments
         </a>
       </div>
       <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
@@ -712,156 +708,117 @@
          </div>
        </div>
 
-       <!-- Tab: Register Patient -->
-       <div class="tab-pane active" id="register">
-         <div class="card">
-           <div class="card-header">
-             <h3 class="card-title">Register New Patient</h3>
-           </div>
-           <form id="registerForm">
-             <div class="form-row">
-               <div class="form-group">
-                 <label>First Name *</label>
-                 <input type="text" id="firstName" required>
-               </div>
-               <div class="form-group">
-                 <label>Last Name *</label>
-                 <input type="text" id="lastName" required>
-               </div>
-             </div>
-             <div class="form-row">
-               <div class="form-group">
-                 <label>Date of Birth</label>
-                 <input type="date" id="dateOfBirth">
-               </div>
-               <div class="form-group">
-                 <label>Gender</label>
-                 <select id="gender">
-                   <option value="">Select</option>
-                   <option value="male">Male</option>
-                   <option value="female">Female</option>
-                   <option value="other">Other</option>
-                 </select>
-               </div>
-             </div>
-             <div class="form-row">
-               <div class="form-group">
-                 <label>Phone Number *</label>
-                 <input type="tel" id="phone" required>
-               </div>
-               <div class="form-group">
-                 <label>Email Address</label>
-                 <input type="email" id="email">
-               </div>
-             </div>
-             <div class="form-row single">
-               <div class="form-group">
-                 <label>Address</label>
-                 <textarea id="address" rows="2"></textarea>
-               </div>
-             </div>
-             <div class="form-row">
-               <div class="form-group">
-                 <label>Test Type *</label>
-                 <select id="testType" required>
-                   <option value="">Select Test Type</option>
-                   <option value="blood">Blood Test</option>
-                   <option value="urine">Urine Test</option>
-                   <option value="stool">Stool Test</option>
-                   <option value="xray">X-Ray</option>
-                   <option value="ultrasound">Ultrasound</option>
-                   <option value="ct">CT Scan</option>
-                   <option value="mri">MRI</option>
-                   <option value="ecg">ECG</option>
-                   <option value="echo">Echocardiogram</option>
-                   <option value="other">Other</option>
-                 </select>
-               </div>
-               <div class="form-group">
-                 <label>Specific Test Name *</label>
-                 <input type="text" id="testName" placeholder="e.g., Complete Blood Count" required>
-               </div>
-             </div>
-             <div style="text-align: right;">
-               <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
-               <button type="submit" class="btn btn-primary">Register Patient</button>
-             </div>
-           </form>
-         </div>
-       </div>
+        <!-- Tab: Walk-in Patients -->
+        <div class="tab-pane active" id="walkins">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Register New Patient</h3>
+            </div>
+            <form id="registerForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>First Name *</label>
+                  <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                  <label>Last Name *</label>
+                  <input type="text" id="lastName" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <input type="date" id="dateOfBirth">
+                </div>
+                <div class="form-group">
+                  <label>Gender</label>
+                  <select id="gender">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Phone Number *</label>
+                  <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" id="email">
+                </div>
+              </div>
+              <div class="form-row single">
+                <div class="form-group">
+                  <label>Address</label>
+                  <textarea id="address" rows="2"></textarea>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Test Type *</label>
+                  <select id="testType" required>
+                    <option value="">Select Test Type</option>
+                    <option value="blood">Blood Test</option>
+                    <option value="urine">Urine Test</option>
+                    <option value="stool">Stool Test</option>
+                    <option value="xray">X-Ray</option>
+                    <option value="ultrasound">Ultrasound</option>
+                    <option value="ct">CT Scan</option>
+                    <option value="mri">MRI</option>
+                    <option value="ecg">ECG</option>
+                    <option value="echo">Echocardiogram</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Specific Test Name *</label>
+                  <input type="text" id="testName" placeholder="e.g., Complete Blood Count" required>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                <button type="submit" class="btn btn-primary">Register Patient</button>
+              </div>
+            </form>
+          </div>
 
-       <!-- Tab: Test Referrals -->
-       <div class="tab-pane" id="test-referrals">
-         <div class="card">
-           <div class="card-header">
-             <h3 class="card-title">All Test Referrals</h3>
-           </div>
-           <div class="search-bar">
-             <input type="text" id="referralSearch" placeholder="Search by patient, test, or doctor...">
-             <select id="referralStatusFilter">
-               <option value="">All Status</option>
-               <option value="pending">Pending</option>
-               <option value="completed">Completed</option>
-             </select>
-             <button class="btn btn-primary" onclick="loadTestReferrals()">Search</button>
-           </div>
-           <div class="table-container">
-             <table>
-               <thead>
-                 <tr>
-                   <th>Patient</th>
-                   <th>Test</th>
-                   <th>Type</th>
-                   <th>Doctor</th>
-                   <th>Urgency</th>
-                   <th>Status</th>
-                   <th>Date</th>
-                 </tr>
-               </thead>
-               <tbody id="referralsTable">
-                 <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
-               </tbody>
-             </table>
-           </div>
-         </div>
-       </div>
-
-       <!-- Tab: Walk-in Patients -->
-       <div class="tab-pane" id="walkins">
-         <div class="card">
-           <div class="card-header">
-             <h3 class="card-title">Registered Walk-in Patients</h3>
-           </div>
-           <div class="search-bar">
-             <input type="text" id="walkinSearch" placeholder="Search by name, phone, or email...">
-             <select id="walkinStatusFilter">
-               <option value="">All Status</option>
-               <option value="registered">Registered</option>
-               <option value="sample_collected">Sample Collected</option>
-               <option value="testing">Testing</option>
-               <option value="completed">Completed</option>
-             </select>
-             <button class="btn btn-primary" onclick="loadWalkins()">Search</button>
-           </div>
-           <div class="table-container">
-             <table>
-               <thead>
-                 <tr>
-                   <th>Name</th>
-                   <th>Contact</th>
-                   <th>Test</th>
-                   <th>Status</th>
-                   <th>Registered</th>
-                   <th>Actions</th>
-                 </tr>
-               </thead>
-               <tbody id="walkinsTable">
-                 <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
-               </tbody>
-             </table>
-           </div>
-         </div>
-       </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Registered Walk-in Patients</h3>
+            </div>
+            <div class="search-bar">
+              <input type="text" id="walkinSearch" placeholder="Search by name, phone, or email...">
+              <select id="walkinStatusFilter">
+                <option value="">All Status</option>
+                <option value="registered">Registered</option>
+                <option value="sample_collected">Sample Collected</option>
+                <option value="testing">Testing</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button class="btn btn-primary" onclick="loadWalkins()">Search</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Test</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="walkinsTable">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
        <!-- Tab: Billing & Invoices -->
        <div class="tab-pane" id="billing">
@@ -889,6 +846,28 @@
                    <p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>
                  </div>
                </div>
+               <div class="form-group" style="flex: 1;">
+                 <label>Medications</label>
+                 <div id="invoiceMedicationsContainer" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; max-height: 240px; overflow-y: auto;">
+                   <p style="color: #64748b; font-size: 14px;">Select a patient to load available medications</p>
+                 </div>
+               </div>
+             </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+                <div>
+                  <div style="font-size: 14px; color: #64748b;">Subtotal</div>
+                  <div style="font-size: 14px; color: #64748b;">Tax (<span id="invoiceTaxRate">5</span>%)</div>
+                </div>
+                <div style="text-align: right;">
+                  <div id="invoiceSubtotal" style="font-size: 16px; font-weight: 600; color: #0f172a;">₦0.00</div>
+                  <div id="invoiceTaxAmount" style="font-size: 14px; color: #64748b;">₦0.00</div>
+                </div>
+              </div>
+             <div class="form-group" style="margin-top: 0;">
+               <label>Total Amount</label>
+               <input type="text" id="invoiceTotal" style="font-size: 20px; font-weight: 700; text-align: right;" value="₦0.00" readonly>
+             </div>
+             <div class="form-row">
                <div class="form-group">
                  <label>Payment Method</label>
                  <select id="invoicePaymentMethod">
@@ -897,23 +876,11 @@
                    <option value="transfer">Bank Transfer</option>
                    <option value="insurance">Insurance</option>
                  </select>
-                 <label style="margin-top: 12px; display: block;">Notes</label>
-                 <textarea id="invoiceNotes" rows="3" placeholder="Optional notes"></textarea>
                </div>
-             </div>
-             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 8px;">
-               <div>
-                 <div style="font-size: 14px; color: #64748b;">Subtotal</div>
-                 <div style="font-size: 14px; color: #64748b;">Tax (0%)</div>
+               <div class="form-group">
+                 <label>Notes</label>
+                 <textarea id="invoiceNotes" rows="2" placeholder="Optional notes"></textarea>
                </div>
-               <div style="text-align: right;">
-                 <div id="invoiceSubtotal" style="font-size: 16px; font-weight: 600; color: #0f172a;">₦0.00</div>
-                 <div style="font-size: 14px; color: #64748b;">₦0.00</div>
-               </div>
-             </div>
-             <div class="form-group" style="margin-top: 0;">
-               <label>Total Amount</label>
-               <input type="text" id="invoiceTotal" style="font-size: 20px; font-weight: 700; text-align: right;" value="₦0.00" readonly>
              </div>
              <div style="text-align: right;">
                <button type="button" class="btn btn-secondary" onclick="resetInvoiceForm()">Reset</button>
@@ -1103,6 +1070,7 @@
         
         // Load initial data
         loadDashboardStats();
+        loadWalkins();
       } catch (error) {
         console.error('Auth check failed:', error);
         window.location.href = 'sign-in.html';
@@ -1334,13 +1302,16 @@
 
     async function loadPatientServices() {
       const patientId = document.getElementById('invoicePatient').value;
-      const container = document.getElementById('invoiceServicesContainer');
+      const servicesContainer = document.getElementById('invoiceServicesContainer');
+      const medicationsContainer = document.getElementById('invoiceMedicationsContainer');
 
       if (!patientId) {
-        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+        if (servicesContainer) servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+        if (medicationsContainer) medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available medications</p>';
         return;
       }
 
+      // Load services
       try {
         const response = await fetch(`${API_BASE}/billing/patient/${patientId}/services`, {
           credentials: 'include',
@@ -1359,7 +1330,7 @@
 
           const categoryOrder = ['General Services', 'Medical Test', 'Surgery', 'Endoscopy'];
 
-          container.innerHTML = categoryOrder.map(category => {
+          servicesContainer.innerHTML = categoryOrder.map(category => {
             if (!categories[category]) return '';
             return `
               <div style="margin-bottom: 16px;">
@@ -1375,7 +1346,7 @@
                           <div style="font-weight: 500; color: #0f172a;">${escapeHtml(service.name)}</div>
                           <div style="font-size: 12px; color: #64748b;">${escapeHtml(service.description || '')}</div>
                         </div>
-                        <span>₦${parseFloat(service.price).toLocaleString()}</span>
+                         <span>₦${parseFloat(service.price).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                       </div>
                     `).join('')}
                   </div>
@@ -1384,24 +1355,63 @@
             `;
           }).join('');
         } else {
-          container.innerHTML = '<p style="color: #64748b; font-size: 14px;">No services available for this patient</p>';
+          servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">No services available for this patient</p>';
         }
       } catch (error) {
         console.error('Error loading patient services:', error);
-        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading services</p>';
+        servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading services</p>';
+      }
+
+      // Load medications
+      try {
+        const medResponse = await fetch(`${API_BASE}/billing/patient/${patientId}/medications`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const medData = await medResponse.json();
+
+        if (medData.success && medData.medications && medData.medications.length > 0) {
+          medicationsContainer.innerHTML = medData.medications.map(med => `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 1px solid #e2e8f0;">
+              <input type="checkbox" class="medication-checkbox" data-id="${med.id}" data-price="${med.price}" onchange="calculateInvoiceTotal()">
+              <div style="flex: 1;">
+                <div style="font-weight: 500; color: #0f172a;">${escapeHtml(med.name)}</div>
+                <div style="font-size: 12px; color: #64748b;">${escapeHtml(med.dosage || '')} ${med.frequency ? '• ' + escapeHtml(med.frequency) : ''} ${med.duration ? '• ' + escapeHtml(med.duration) : ''}</div>
+              </div>
+              <span>₦${parseFloat(med.price).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            </div>
+          `).join('');
+        } else {
+          medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">No active medications for this patient</p>';
+        }
+      } catch (error) {
+        console.error('Error loading patient medications:', error);
+        medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading medications</p>';
       }
     }
 
-    function calculateInvoiceTotal() {
-      const checkboxes = document.querySelectorAll('.service-checkbox:checked');
-      let total = 0;
+    const TAX_RATE = 0.05;
 
-      checkboxes.forEach(cb => {
-        total += parseFloat(cb.dataset.price);
+    function calculateInvoiceTotal() {
+      let subtotal = 0;
+
+      document.querySelectorAll('.service-checkbox:checked').forEach(cb => {
+        subtotal += parseFloat(cb.dataset.price);
       });
 
-      document.getElementById('invoiceSubtotal').textContent = '₦' + total.toLocaleString();
-      document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString();
+      document.querySelectorAll('.medication-checkbox:checked').forEach(cb => {
+        subtotal += parseFloat(cb.dataset.price);
+      });
+
+      const taxAmount = subtotal * TAX_RATE;
+      const total = subtotal + taxAmount;
+
+      document.getElementById('invoiceSubtotal').textContent = '₦' + subtotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      const taxRateEl = document.getElementById('invoiceTaxRate');
+      if (taxRateEl) taxRateEl.textContent = String(TAX_RATE * 100);
+      const taxAmountEl = document.getElementById('invoiceTaxAmount');
+      if (taxAmountEl) taxAmountEl.textContent = '₦' + taxAmount.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     async function loadPatientsForInvoice() {
@@ -1434,9 +1444,10 @@
       const paymentMethod = document.getElementById('invoicePaymentMethod').value;
       const notes = document.getElementById('invoiceNotes').value;
       const serviceIds = Array.from(document.querySelectorAll('.service-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
+      const medicationIds = Array.from(document.querySelectorAll('.medication-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
       
-      if (!patientId || !dueDate || serviceIds.length === 0) {
-        alert('Please select a patient, due date, and at least one service');
+      if (!patientId || !dueDate || (serviceIds.length === 0 && medicationIds.length === 0)) {
+        alert('Please select a patient, due date, and at least one service or medication');
         return;
       }
       
@@ -1450,6 +1461,7 @@
             due_date: dueDate,
             payment_method: paymentMethod,
             service_ids: serviceIds,
+            medication_ids: medicationIds,
             notes: notes
           })
         });
@@ -1471,12 +1483,18 @@
 
     function resetInvoiceForm() {
       document.getElementById('invoiceForm').reset();
-      const container = document.getElementById('invoiceServicesContainer');
-      if (container) {
-        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+      const servicesContainer = document.getElementById('invoiceServicesContainer');
+      if (servicesContainer) {
+        servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+      }
+      const medicationsContainer = document.getElementById('invoiceMedicationsContainer');
+      if (medicationsContainer) {
+        medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available medications</p>';
       }
       const subtotalEl = document.getElementById('invoiceSubtotal');
       if (subtotalEl) subtotalEl.textContent = '₦0.00';
+      const taxAmountEl = document.getElementById('invoiceTaxAmount');
+      if (taxAmountEl) taxAmountEl.textContent = '₦0.00';
       const totalEl = document.getElementById('invoiceTotal');
       if (totalEl) totalEl.value = '₦0.00';
     }
@@ -1513,7 +1531,7 @@
               <td>${escapeHtml(inv.patient?.name || 'N/A')}</td>
               <td>${new Date(inv.invoice_date).toLocaleDateString()}</td>
               <td>${new Date(inv.due_date).toLocaleDateString()}</td>
-              <td><strong>₦${parseFloat(inv.total_amount).toFixed(2)}</strong></td>
+              <td><strong>₦${parseFloat(inv.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
               <td><span class="badge badge-${inv.status === 'paid' ? 'completed' : inv.status === 'overdue' ? 'pending' : 'pending'}">${capitalize(inv.status)}</span></td>
               <td>
                 <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="downloadInvoice(${inv.id})">
@@ -1746,20 +1764,48 @@
       if (!select) return;
 
       try {
-        const response = await fetch(`${API_BASE}/admin/users?role=patient&limit=100`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
+        const [patientsRes, appointmentsRes] = await Promise.all([
+          fetch(`${API_BASE}/admin/users?role=patient&limit=100`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }),
+          fetch(`${API_BASE}/customer-care/appointments?limit=200`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          })
+        ]);
 
-        if (data.success) {
-          const options = data.users.map(u =>
-            `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
-          ).join('');
-          select.innerHTML = '<option value="">Select Patient</option>' + options;
+        const patientsData = await patientsRes.json();
+        const appointmentsData = await appointmentsRes.json();
+
+        let patients = [];
+        if (patientsData.success) {
+          patients = patientsData.users || [];
         }
+
+        const bookedPatientIds = new Set();
+        if (appointmentsData.success && appointmentsData.appointments) {
+          appointmentsData.appointments.forEach(a => {
+            if (a.status === 'scheduled' || a.status === 'confirmed') {
+              bookedPatientIds.add(String(a.patient?.id));
+            }
+          });
+        }
+
+        const availablePatients = patients.filter(p => !bookedPatientIds.has(String(p.id)));
+
+        if (availablePatients.length === 0) {
+          select.innerHTML = '<option value="">No patients available for booking</option>';
+          return;
+        }
+
+        const options = availablePatients.map(u =>
+          `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
+        ).join('');
+        select.innerHTML = '<option value="">Select Patient</option>' + options;
       } catch (error) {
         console.error('Error loading patients for appointment:', error);
+        select.innerHTML = '<option value="">Error loading patients</option>';
       }
     }
 

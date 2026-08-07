@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const { checkPermission, PERMISSIONS } = require('../config/permissions');
+const { sendAppointmentNotificationToDoctor } = require('../config/email');
 
 // GET all test referrals (both doctor referrals and walk-ins)
 router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_ALL_TEST_REFERRALS), async (req, res) => {
@@ -399,7 +400,7 @@ router.post('/appointments', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), asyn
 
     // Verify doctor exists and is active
     const [doctors] = await connection.execute(`
-      SELECT d.id, d.available_days, d.available_time_start, d.available_time_end, u.name as doctor_name
+      SELECT d.id, d.available_days, d.available_time_start, d.available_time_end, u.name as doctor_name, u.email as doctor_email
       FROM doctors d
       JOIN users u ON d.user_id = u.id
       WHERE d.id = ? AND d.is_active = TRUE
@@ -491,14 +492,37 @@ router.post('/appointments', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), asyn
       VALUES (?, ?, ?, ?, 'scheduled', ?, ?)
     `, [patient_id, doctor_id, appointment_date, appointment_time, reason || null, location || null]);
 
+    const appointmentId = result.insertId;
+
+    // Fetch patient and doctor details for email notification
+    const [patientRows] = await connection.execute(`
+      SELECT u.name, u.email FROM users u WHERE u.id = ?
+    `, [patient_id]);
+
     connection.release();
 
-    console.log(`✅ Appointment booked by customer_care: id=${result.insertId} patient=${patient_id} doctor=${doctor_id} date=${appointment_date}`);
+    console.log(`✅ Appointment booked by customer_care: id=${appointmentId} patient=${patient_id} doctor=${doctor_id} date=${appointment_date}`);
+
+    // Send email notification to doctor
+    const patient = patientRows[0] || { name: 'Patient', email: '' };
+    const doctorUser = { name: doctor.doctor_name, email: doctor.doctor_email || '' };
+
+    if (doctorUser.email) {
+      sendAppointmentNotificationToDoctor(
+        doctorUser,
+        patient,
+        appointment_date,
+        appointment_time,
+        reason
+      ).catch(err => console.error('📧 Failed to send doctor appointment email:', err));
+    } else {
+      console.warn('📧 Doctor email not found, skipping notification');
+    }
 
     res.json({
       success: true,
       message: 'Appointment booked successfully',
-      appointmentId: result.insertId
+      appointmentId: appointmentId
     });
   } catch (err) {
     console.error('Error booking appointment:', err);

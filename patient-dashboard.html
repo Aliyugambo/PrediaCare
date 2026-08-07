@@ -2559,6 +2559,18 @@
         // Load all dashboard data from database
         await loadAllDashboardData();
         
+        // Poll for medication updates every 30 seconds
+        setInterval(async function() {
+          try {
+            await loadMedications();
+            renderMedicationsTab();
+            renderMedicationReminders();
+            renderStats();
+          } catch (error) {
+            console.error('Error refreshing medications:', error);
+          }
+        }, 30000);
+        
       } catch (error) {
         console.error('Authentication check failed:', error);
         showToast('error', 'Connection Error', 'Unable to connect to server. Please ensure the backend is running.');
@@ -2872,13 +2884,15 @@
         // Handle both demo data format and database format
         const medName = med.medicationName || med.medication_name || med.name || 'Medication';
         const dosage = med.dosage || med.dosageAmount || 'As prescribed';
-        const freq = med.frequency || med.freq || 'As directed';
+        const freq = getFrequencyLabel(med.frequency || med.freq);
+        const duration = med.duration || 'As directed';
+        const durationText = duration && !isNaN(duration) ? duration + ' days' : duration;
         
         return `
           <div class="medication-item">
             <div class="medication-info">
               <p class="medication-name">${medName}</p>
-              <span class="medication-details">${freq}</span>
+              <span class="medication-details">${freq} • ${durationText}</span>
               <span class="medication-dosage">${dosage}</span>
             </div>
           </div>
@@ -3023,7 +3037,9 @@
           // Handle both demo data format and database format
           const medName = med.medicationName || med.medication_name || med.name || 'Medication';
           const dosage = med.dosage || med.dosageAmount || 'As prescribed';
-          const freq = med.frequency || med.freq || 'As directed';
+          const freq = getFrequencyLabel(med.frequency || med.freq);
+          const duration = med.duration || 'As directed';
+          const durationText = duration && !isNaN(duration) ? duration + ' days' : duration;
           const instructions = med.instructions || med.notes || '';
           const doctorName = med.doctor?.name || med.doctorName || med.prescribedBy || 'Doctor';
           
@@ -3031,8 +3047,8 @@
             <div class="medication-item">
               <div class="medication-info">
                 <p class="medication-name">${medName}</p>
-                <span class="medication-details">For: ${doctorName} • ${instructions || freq}</span>
-                <span class="medication-dosage">${dosage} - ${freq}</span>
+                <span class="medication-details">By Dr: ${doctorName} • ${instructions || freq}</span>
+                <span class="medication-dosage">${dosage} - ${freq} • ${durationText}</span>
               </div>
               <div class="medication-status">${capitalizeFirst(med.status)}</div>
             </div>
@@ -3753,6 +3769,21 @@ const hr = vitalData?.heartRate || '--';
       // additional UI not needed since details are inside the option text
     }
 
+    // Get human-readable frequency label
+    function getFrequencyLabel(frequency) {
+      var labels = {
+        'once_daily': 'Once Daily',
+        'twice_daily': 'Twice Daily',
+        'three_times_daily': '3x Daily',
+        'four_times_daily': '4x Daily',
+        'as_needed': 'As Needed',
+        'at_night': 'At Night',
+        'before_meals': 'Before Meals',
+        'after_meals': 'After Meals'
+      };
+      return labels[frequency] || frequency || 'As directed';
+    }
+
     // Tab switching
     function switchTab(tabName) {
       // Update tab buttons
@@ -3771,6 +3802,17 @@ const hr = vitalData?.heartRate || '--';
       const targetPane = document.getElementById(tabName);
       if (targetPane) {
         targetPane.classList.add('active');
+      }
+      
+      // Refresh medications tab when switching to it
+      if (tabName === 'medications') {
+        loadMedications().then(function() {
+          renderMedicationsTab();
+          renderMedicationReminders();
+          renderStats();
+        }).catch(function(error) {
+          console.error('Error refreshing medications on tab switch:', error);
+        });
       }
     }
 

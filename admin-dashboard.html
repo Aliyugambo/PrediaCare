@@ -1562,7 +1562,7 @@
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon purple"><i class="fas fa-dollar-sign"></i></div>
+              <div class="stat-icon purple"><i class="fas fa-naira-sign"></i></div>
               <div class="stat-info">
                 <h4>Stock Value</h4>
                 <div class="value" id="pharmacyStatStockValue">₦0</div>
@@ -1970,7 +1970,7 @@
             <input type="text" class="form-control" id="medicineStrength" placeholder="e.g. 500mg">
           </div>
           <div class="form-group">
-            <label class="form-label">Unit Price ($) *</label>
+            <label class="form-label">Unit Price (₦) *</label>
             <input type="number" step="0.01" min="0" class="form-control" id="medicineUnitPrice" placeholder="0.00">
           </div>
           <div class="form-group">
@@ -2164,14 +2164,21 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label class="form-label">Medications</label>
+          <div id="invoiceMedicationsContainer" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto;">
+            <p style="color: #64748b; font-size: 14px;">Select a patient to load available medications</p>
+          </div>
+        </div>
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 8px;">
           <div>
             <div style="font-size: 14px; color: #64748b;">Subtotal</div>
-            <div style="font-size: 14px; color: #64748b;">Tax (0%)</div>
+            <div style="font-size: 14px; color: #64748b;">Tax (<span id="invoiceTaxRate">5</span>%)</div>
           </div>
           <div style="text-align: right;">
             <div id="invoiceSubtotal" style="font-size: 16px; font-weight: 600; color: #0f172a;">₦0.00</div>
-            <div style="font-size: 14px; color: #64748b;">₦0.00</div>
+            <div id="invoiceTaxAmount" style="font-size: 14px; color: #64748b;">₦0.00</div>
           </div>
         </div>
 
@@ -3470,7 +3477,7 @@ if (data.success) {
           document.getElementById('pharmacyStatLowStock').textContent = stats.lowStock || 0;
           document.getElementById('pharmacyStatExpired').textContent = stats.expiredMedicines || 0;
           document.getElementById('pharmacyStatExpiringSoon').textContent = stats.expiringSoon || 0;
-          document.getElementById('pharmacyStatStockValue').textContent = '₦' + (stats.totalStockValue || 0).toLocaleString();
+           document.getElementById('pharmacyStatStockValue').textContent = '₦' + parseFloat(stats.totalStockValue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
           document.getElementById('pharmacyStatCategories').textContent = stats.categories || 0;
           document.getElementById('pharmacyStatTodaySales').textContent = stats.todaySales || 0;
         }
@@ -3544,7 +3551,7 @@ if (data.success) {
             </td>
             <td>${escapeHtml(m.category)}</td>
             <td>${escapeHtml(m.strength || '-')} ${escapeHtml(m.dosageForm || '')}</td>
-            <td>$${parseFloat(m.unitPrice).toFixed(2)}</td>
+            <td>₦${parseFloat(m.unitPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td>
               <span style="color: ${isLowStock ? '#dc2626' : '#059669'}; font-weight: 600;">
                 ${m.stockQuantity}
@@ -3635,7 +3642,7 @@ if (data.success) {
           document.getElementById('viewMedicineCategory').textContent = m.category || 'N/A';
           document.getElementById('viewMedicineDosageForm').textContent = m.dosageForm || 'N/A';
           document.getElementById('viewMedicineStrength').textContent = m.strength || 'N/A';
-          document.getElementById('viewMedicineUnitPrice').textContent = '₦' + parseFloat(m.unitPrice || 0).toFixed(2);
+           document.getElementById('viewMedicineUnitPrice').textContent = '₦' + parseFloat(m.unitPrice || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
           document.getElementById('viewMedicineStockQuantity').textContent = m.stockQuantity || 0;
           document.getElementById('viewMedicineReorderLevel').textContent = m.reorderLevel || 0;
           document.getElementById('viewMedicineSupplier').textContent = m.supplier || 'N/A';
@@ -4490,11 +4497,11 @@ function editUser(userId) {
           document.getElementById('billingStatPaid').textContent = stats.paidInvoices || 0;
           document.getElementById('billingStatPending').textContent = stats.pendingInvoices || 0;
           document.getElementById('billingStatOverdue').textContent = stats.overdueInvoices || 0;
-          document.getElementById('billingStatExpected').textContent = '₦' + (stats.expectedRevenue || 0).toLocaleString();
-          document.getElementById('billingStatInflow').textContent = '₦' + (stats.inflowRevenue || 0).toLocaleString();
-          document.getElementById('billingStatMonthly').textContent = '₦' + (stats.monthlyRevenue || 0).toLocaleString();
-          document.getElementById('billingStatYearly').textContent = '₦' + (stats.yearlyRevenue || 0).toLocaleString();
-          document.getElementById('billingStatAggregate').textContent = '₦' + (stats.aggregateRevenue || 0).toLocaleString();
+           document.getElementById('billingStatExpected').textContent = '₦' + parseFloat(stats.expectedRevenue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           document.getElementById('billingStatInflow').textContent = '₦' + parseFloat(stats.inflowRevenue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           document.getElementById('billingStatMonthly').textContent = '₦' + parseFloat(stats.monthlyRevenue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           document.getElementById('billingStatYearly').textContent = '₦' + parseFloat(stats.yearlyRevenue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           document.getElementById('billingStatAggregate').textContent = '₦' + parseFloat(stats.aggregateRevenue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
       } catch (error) {
         console.error('Error loading billing stats:', error);
@@ -4552,7 +4559,7 @@ function editUser(userId) {
               </div>
             </td>
             <td>${escapeHtml(inv.services_summary || '-')}</td>
-            <td><strong>₦${parseFloat(inv.total_amount || 0).toFixed(2)}</strong></td>
+            <td><strong>₦${parseFloat(inv.total_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
             <td>${dueDate}</td>
             <td><span class="badge ${statusBadge}">${capitalize(inv.status)}</span></td>
             <td>
@@ -4716,13 +4723,16 @@ function editUser(userId) {
 
     async function loadPatientServices() {
       const patientId = document.getElementById('invoicePatient').value;
-      const container = document.getElementById('invoiceServicesContainer');
+      const servicesContainer = document.getElementById('invoiceServicesContainer');
+      const medicationsContainer = document.getElementById('invoiceMedicationsContainer');
 
       if (!patientId) {
-        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+        if (servicesContainer) servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available services</p>';
+        if (medicationsContainer) medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Select a patient to load available medications</p>';
         return;
       }
 
+      // Load services
       try {
         const response = await fetch(`${API_BASE}/billing/patient/${patientId}/services`, {
           credentials: 'include'
@@ -4743,7 +4753,7 @@ function editUser(userId) {
           // Define category order
           const categoryOrder = ['General Services', 'Medical Test', 'Surgery', 'Endoscopy'];
 
-          container.innerHTML = categoryOrder.map(category => {
+          servicesContainer.innerHTML = categoryOrder.map(category => {
             if (!categories[category]) return '';
             return `
               <div style="margin-bottom: 16px;">
@@ -4759,7 +4769,7 @@ function editUser(userId) {
                           <div style="font-weight: 500; color: #0f172a;">${escapeHtml(service.name)}</div>
                           <div style="font-size: 12px; color: #64748b;">${escapeHtml(service.description || '')}</div>
                         </div>
-                        ₦${parseFloat(service.price).toLocaleString()}
+                         ₦${parseFloat(service.price).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                       </div>
                     `).join('')}
                   </div>
@@ -4768,24 +4778,63 @@ function editUser(userId) {
             `;
           }).join('');
         } else {
-          container.innerHTML = '<p style="color: #64748b; font-size: 14px;">No pending services for this patient</p>';
+          servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">No pending services for this patient</p>';
         }
       } catch (error) {
         console.error('Error loading patient services:', error);
-        container.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading services</p>';
+        servicesContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading services</p>';
+      }
+
+      // Load medications
+      try {
+        const medResponse = await fetch(`${API_BASE}/billing/patient/${patientId}/medications`, {
+          credentials: 'include'
+        });
+
+        const medData = await medResponse.json();
+
+        if (medData.success && medData.medications && medData.medications.length > 0) {
+          medicationsContainer.innerHTML = medData.medications.map(med => `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 1px solid #e2e8f0;">
+              <input type="checkbox" class="medication-checkbox" data-id="${med.id}" data-price="${med.price}" onchange="calculateInvoiceTotal()">
+              <div style="flex: 1;">
+                <div style="font-weight: 500; color: #0f172a;">${escapeHtml(med.name)}</div>
+                <div style="font-size: 12px; color: #64748b;">${escapeHtml(med.dosage || '')} ${med.frequency ? '• ' + escapeHtml(med.frequency) : ''} ${med.duration ? '• ' + escapeHtml(med.duration) : ''}</div>
+              </div>
+              <span>₦${parseFloat(med.price).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            </div>
+          `).join('');
+        } else {
+          medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">No active medications for this patient</p>';
+        }
+      } catch (error) {
+        console.error('Error loading patient medications:', error);
+        medicationsContainer.innerHTML = '<p style="color: #64748b; font-size: 14px;">Error loading medications</p>';
       }
     }
 
-    function calculateInvoiceTotal() {
-      const checkboxes = document.querySelectorAll('.service-checkbox:checked');
-      let total = 0;
+    const TAX_RATE = 0.05;
 
-      checkboxes.forEach(cb => {
-        total += parseFloat(cb.dataset.price);
+    function calculateInvoiceTotal() {
+      let subtotal = 0;
+
+      document.querySelectorAll('.service-checkbox:checked').forEach(cb => {
+        subtotal += parseFloat(cb.dataset.price);
       });
 
-document.getElementById('invoiceSubtotal').textContent = '₦' + total.toLocaleString();
-document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString();
+      document.querySelectorAll('.medication-checkbox:checked').forEach(cb => {
+        subtotal += parseFloat(cb.dataset.price);
+      });
+
+      const taxAmount = subtotal * TAX_RATE;
+      const total = subtotal + taxAmount;
+
+      document.getElementById('invoiceSubtotal').textContent = '₦' + subtotal.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      const taxRateEl = document.getElementById('invoiceTaxRate');
+      if (taxRateEl) taxRateEl.textContent = String(TAX_RATE * 100);
+      const taxAmountEl = document.getElementById('invoiceTaxAmount');
+      if (taxAmountEl) taxAmountEl.textContent = '₦' + taxAmount.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     async function createInvoice() {
@@ -4805,8 +4854,13 @@ document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString();
         selectedServices.push(parseInt(cb.dataset.id));
       });
 
-      if (selectedServices.length === 0) {
-        alert('Please select at least one service');
+      const selectedMedications = [];
+      document.querySelectorAll('.medication-checkbox:checked').forEach(cb => {
+        selectedMedications.push(parseInt(cb.dataset.id));
+      });
+
+      if (selectedServices.length === 0 && selectedMedications.length === 0) {
+        alert('Please select at least one service or medication');
         return;
       }
 
@@ -4824,6 +4878,7 @@ document.getElementById('invoiceTotal').value = '₦' + total.toLocaleString();
             due_date,
             payment_method,
             service_ids: selectedServices,
+            medication_ids: selectedMedications,
             notes
           })
         });

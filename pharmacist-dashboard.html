@@ -68,6 +68,7 @@
     .badge-active { background: #d1fae5; color: #059669; }
     .badge-inactive { background: #fee2e2; color: #dc2626; }
     .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
     .badge-completed { background: #d1fae5; color: #059669; }
 
     /* Buttons */
@@ -171,7 +172,7 @@
           <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
           <div class="logo-icon">
             <i class="fas fa-pills"> <img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></i></div>
-          <h1>rediacare<span>Clinics</span></h1>
+          <h1>rediacare<span>care</span></h1>
         </div>
 
       <nav class="nav">
@@ -188,6 +189,10 @@
           <a href="#" class="nav-item" data-section="dispense">
             <i class="fas fa-cash-register"></i>
             <span>Dispense Medicine</span>
+          </a>
+          <a href="#" class="nav-item" data-section="discharge">
+            <i class="fas fa-file-medical"></i>
+            <span>Discharge Prescriptions</span>
           </a>
           <a href="#" class="nav-item" data-section="sales">
             <i class="fas fa-receipt"></i>
@@ -277,10 +282,10 @@
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+              <div class="stat-icon green"><i class="fas fa-naira-sign"></i></div>
               <div class="stat-info">
                 <h4>Today's Revenue</h4>
-                <div class="value" id="statTodayRevenue">$0</div>
+                <div class="value" id="statTodayRevenue">₦0</div>
               </div>
             </div>
           </div>
@@ -409,12 +414,85 @@
               <div style="padding: 16px 24px;">
                 <div class="cart-total">
                   <span class="cart-total-label">Total Amount</span>
-                  <span class="cart-total-value" id="cartTotal">$0.00</span>
+                  <span class="cart-total-value" id="cartTotal">₦0.00</span>
                 </div>
                 <button class="btn btn-success" style="width: 100%; margin-top: 12px; justify-content: center; padding: 14px;" onclick="processDispense()">
                   <i class="fas fa-check-circle"></i> Complete Dispense
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Discharge Prescriptions Section -->
+        <div id="section-discharge" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3>Discharge Prescriptions</h3>
+              <div class="filters">
+                <select id="dischargeStatusFilter" onchange="loadDischargeMedications()">
+                  <option value="pending">Pending</option>
+                  <option value="dispensed">Dispensed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="all">All</option>
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="loadDischargeMedications()">
+                  <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Amount</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dischargeTable">
+                  <tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Discharge Dispense Cart -->
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <h3>Discharge Dispense Cart</h3>
+              <button class="btn btn-sm btn-danger" onclick="clearDischargeCart()"><i class="fas fa-trash"></i> Clear</button>
+            </div>
+            <div style="padding: 16px 24px;">
+              <div class="form-group">
+                <label class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="dischargeCustomerName" placeholder="Enter patient name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Customer Phone</label>
+                <input type="text" class="form-control" id="dischargeCustomerPhone" placeholder="Enter phone number (optional)">
+              </div>
+            </div>
+            <div id="dischargeCartItems" style="padding: 0 24px; max-height: 300px; overflow-y: auto;">
+              <div class="empty-state" style="padding: 20px;">
+                <i class="fas fa-shopping-cart" style="font-size: 24px;"></i>
+                <h4>Cart is empty</h4>
+                <p>Click "Add to Cart" on pending discharge medications</p>
+              </div>
+            </div>
+            <div style="padding: 16px 24px;">
+              <div class="cart-total">
+                <span class="cart-total-label">Total Amount</span>
+                <span class="cart-total-value" id="dischargeCartTotal">₦0.00</span>
+              </div>
+              <button class="btn btn-success" style="width: 100%; margin-top: 12px; justify-content: center; padding: 14px;" onclick="processDischargeDispense()">
+                <i class="fas fa-check-circle"></i> Complete Discharge Dispense
+              </button>
             </div>
           </div>
         </div>
@@ -517,13 +595,14 @@
       document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
       document.getElementById(`section-${section}`).style.display = 'block';
 
-      const titles = { dashboard: 'Dashboard', inventory: 'Medicine Inventory', dispense: 'Dispense Medicine', sales: 'Sales History' };
+      const titles = { dashboard: 'Dashboard', inventory: 'Medicine Inventory', dispense: 'Dispense Medicine', discharge: 'Discharge Prescriptions', sales: 'Sales History' };
       document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
 
       switch(section) {
         case 'dashboard': loadDashboardStats(); loadLowStockAlerts(); break;
         case 'inventory': loadInventory(); break;
         case 'dispense': break;
+        case 'discharge': loadDischargeMedications(); break;
         case 'sales': loadSales(); break;
       }
     }
@@ -540,7 +619,7 @@
           document.getElementById('statLowStock').textContent = s.lowStock || 0;
           document.getElementById('statExpired').textContent = s.expiredMedicines || 0;
           document.getElementById('statTodaySales').textContent = s.todaySales || 0;
-          document.getElementById('statTodayRevenue').textContent = '$' + (s.todaySalesAmount || 0).toLocaleString();
+           document.getElementById('statTodayRevenue').textContent = '₦' + parseFloat(s.todaySalesAmount || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
       } catch (error) {
         console.error('Error loading stats:', error);
@@ -616,7 +695,7 @@
             <td><strong>${escapeHtml(m.medicineName)}</strong>${m.genericName ? `<br><span style="font-size: 12px; color: #64748b;">${escapeHtml(m.genericName)}</span>` : ''}</td>
             <td>${escapeHtml(m.category)}</td>
             <td>${escapeHtml(m.strength || '-')} ${escapeHtml(m.dosageForm || '')}</td>
-            <td>$${parseFloat(m.unitPrice).toFixed(2)}</td>
+            <td>₦${parseFloat(m.unitPrice).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td><span style="color: ${lowStock ? '#dc2626' : '#059669'}; font-weight: 600;">${m.stockQuantity}</span>${lowStock ? ' <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>' : ''}</td>
             <td><span style="color: ${expired ? '#dc2626' : 'inherit'};">${m.expiryDate ? new Date(m.expiryDate).toLocaleDateString() : 'N/A'}</span>${expired ? ' <span class="badge badge-inactive">Expired</span>' : ''}</td>
             <td><span class="badge ${statusBadge}">${capitalize(m.status)}</span></td>
@@ -669,7 +748,7 @@
                       ${outOfStock ? ' | <span style="color: #dc2626;">Out of Stock</span>' : ''}
                     </div>
                   </div>
-                  <div style="font-weight: 700; color: #059669; font-size: 16px;">$${parseFloat(m.unitPrice).toFixed(2)}</div>
+                  <div style="font-weight: 700; color: #059669; font-size: 16px;">₦${parseFloat(m.unitPrice).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 </div>
               `;
             }).join('');
@@ -727,7 +806,7 @@
       const container = document.getElementById('cartItems');
       if (cart.length === 0) {
         container.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="fas fa-shopping-cart" style="font-size: 24px;"></i><h4>Cart is empty</h4></div>';
-        document.getElementById('cartTotal').textContent = '$0.00';
+        document.getElementById('cartTotal').textContent = '₦0.00';
         return;
       }
 
@@ -735,20 +814,20 @@
         <div class="cart-item">
           <div class="cart-item-info">
             <div class="cart-item-name">${escapeHtml(item.name)}</div>
-            <div class="cart-item-details">${escapeHtml(item.strength)} ${escapeHtml(item.form)} | $${item.price.toFixed(2)} each</div>
+            <div class="cart-item-details">${escapeHtml(item.strength)} ${escapeHtml(item.form)} | ₦${item.price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})} each</div>
           </div>
           <div class="cart-item-qty">
             <button class="btn btn-sm btn-icon" onclick="updateCartQty(${item.id}, ${item.quantity - 1})">-</button>
             <input type="number" value="${item.quantity}" min="1" max="${item.maxStock}" onchange="updateCartQty(${item.id}, this.value)">
             <button class="btn btn-sm btn-icon" onclick="updateCartQty(${item.id}, ${item.quantity + 1})">+</button>
           </div>
-          <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+          <div class="cart-item-price">₦${(item.price * item.quantity).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
           <button class="cart-item-remove" onclick="removeFromCart(${item.id})"><i class="fas fa-times"></i></button>
         </div>
       `).join('');
 
       const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+      document.getElementById('cartTotal').textContent = '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     // Process Dispense
@@ -762,7 +841,7 @@
       const customerPhone = document.getElementById('customerPhone').value.trim();
       const notes = document.getElementById('dispenseNotes').value.trim();
 
-      if (!confirm(`Dispense ${cart.length} item(s) for $${cart.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(2)}?`)) return;
+      if (!confirm(`Dispense ${cart.length} item(s) for ₦${cart.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}?`)) return;
 
       try {
         let successCount = 0;
@@ -828,8 +907,8 @@
           <td><strong>${escapeHtml(s.medicineName)}</strong></td>
           <td>${escapeHtml(s.patientName)}</td>
           <td>${s.quantity}</td>
-          <td>$${parseFloat(s.unitPrice).toFixed(2)}</td>
-          <td><strong style="color: #059669;">$${parseFloat(s.totalPrice).toFixed(2)}</strong></td>
+          <td>₦${parseFloat(s.unitPrice).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td><strong style="color: #059669;">₦${parseFloat(s.totalPrice).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
           <td>${new Date(s.saleDate).toLocaleDateString()} ${new Date(s.saleDate).toLocaleTimeString()}</td>
           <td>${escapeHtml(s.soldBy || 'N/A')}</td>
         </tr>
@@ -856,6 +935,267 @@
     // Utils
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
     function capitalize(str) { if (!str) return ''; return str.charAt(0).toUpperCase() + str.slice(1); }
+
+    // ==================== DISCHARGE MEDICATIONS ====================
+
+    let dischargeCart = [];
+
+    async function loadDischargeMedications() {
+      const tbody = document.getElementById('dischargeTable');
+      if (!tbody) return;
+
+      const statusFilter = document.getElementById('dischargeStatusFilter');
+      const status = statusFilter ? statusFilter.value : 'pending';
+
+      tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+
+      try {
+        let url = `${API_BASE}/pharmacy/discharge-medications?status=${encodeURIComponent(status)}`;
+        const response = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+        const data = await response.json();
+
+        if (!data.success) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: #dc2626;">Error loading discharge medications</td></tr>';
+          return;
+        }
+
+        const items = data.dischargeMedications || [];
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: #64748b;">No discharge medications found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = items.map(item => `
+          <tr>
+            <td><strong>${escapeHtml(item.patientName)}</strong><br><span style="font-size: 12px; color: #64748b;">Admission: ${item.admissionId}</span></td>
+            <td>${escapeHtml(item.medicineName)}</td>
+            <td>${escapeHtml(item.dosage || 'N/A')}</td>
+            <td>${escapeHtml(item.frequency || 'N/A')}</td>
+            <td>${escapeHtml(item.amount || 'N/A')}</td>
+            <td>${item.endDate ? new Date(item.endDate).toLocaleDateString() : 'N/A'}</td>
+            <td><span class="badge ${item.status === 'pending' ? 'badge-pending' : item.status === 'dispensed' ? 'badge-active' : item.status === 'not_available' ? 'badge-warning' : 'badge-inactive'}">${capitalize(item.status)}</span></td>
+            <td>
+              ${item.status === 'pending' ? `
+                <button class="btn btn-sm btn-success" onclick="showDischargeDispenseModal(${item.id}, '${escapeHtml(item.medicineName)}')" style="margin-right: 4px;">
+                  <i class="fas fa-check"></i> Add to Cart
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="markDischargeNotAvailable(${item.id})" style="margin-right: 4px;" title="Mark as Not Available">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="cancelDischargeMedication(${item.id})">
+                  <i class="fas fa-times"></i>
+                </button>
+              ` : '<span style="color: #64748b; font-size: 12px;">Completed</span>'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading discharge medications:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: #dc2626;">Error loading discharge medications</td></tr>';
+      }
+    }
+
+    function showDischargeDispenseModal(dischargeMedicationId, medicineName) {
+      const search = prompt('Search medicine in inventory for: ' + medicineName + '\n\nEnter medicine name to search (or leave blank to mark as not available):');
+      
+      if (search === null) return;
+      
+      if (!search || !search.trim()) {
+        if (!confirm('No inventory medicine selected. Mark this discharge medication as NOT AVAILABLE?')) return;
+        markDischargeNotAvailable(dischargeMedicationId);
+        return;
+      }
+      
+      fetch(`${API_BASE}/pharmacy/medicines?search=${encodeURIComponent(search.trim())}&status=active&limit=5`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.medicines.length > 0) {
+            const med = data.medicines[0];
+            const qty = prompt(`Found: ${med.medicineName}\nStock: ${med.stockQuantity}\nPrice: ₦${parseFloat(med.unit_price).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n\nEnter quantity to dispense:`);
+            if (qty === null) return;
+            if (!qty || isNaN(qty) || parseInt(qty) <= 0) {
+              alert('Please enter a valid quantity');
+              return;
+            }
+            addDischargeToCart(dischargeMedicationId, med.id, med.medicineName, med.strength, med.dosage_form, parseFloat(med.unit_price), med.stockQuantity, parseInt(qty));
+          } else {
+            if (!confirm('Medicine not found in inventory. Mark this discharge medication as NOT AVAILABLE?')) return;
+            markDischargeNotAvailable(dischargeMedicationId);
+          }
+        })
+        .catch(err => {
+          console.error('Error searching medicine:', err);
+          alert('Error searching inventory');
+        });
+    }
+
+    function addDischargeToCart(dischargeMedicationId, medicineId, name, strength, form, price, maxStock, quantity) {
+      const existing = dischargeCart.find(item => item.dischargeMedicationId === dischargeMedicationId);
+      if (existing) {
+        existing.quantity = quantity;
+        existing.medicineId = medicineId;
+        existing.price = price;
+      } else {
+        dischargeCart.push({
+          dischargeMedicationId,
+          medicineId,
+          name,
+          strength: strength || '',
+          form: form || '',
+          price,
+          maxStock,
+          quantity
+        });
+      }
+      renderDischargeCart();
+    }
+
+    function removeDischargeFromCart(dischargeMedicationId) {
+      dischargeCart = dischargeCart.filter(item => item.dischargeMedicationId !== dischargeMedicationId);
+      renderDischargeCart();
+    }
+
+    function clearDischargeCart() {
+      dischargeCart = [];
+      renderDischargeCart();
+    }
+
+    function renderDischargeCart() {
+      const container = document.getElementById('dischargeCartItems');
+      if (!container) return;
+
+      if (dischargeCart.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="fas fa-shopping-cart" style="font-size: 24px;"></i><h4>Cart is empty</h4><p>Click "Add to Cart" on pending discharge medications</p></div>';
+        document.getElementById('dischargeCartTotal').textContent = '₦0.00';
+        return;
+      }
+
+      container.innerHTML = dischargeCart.map(item => `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <div class="cart-item-details">${escapeHtml(item.strength)} ${escapeHtml(item.form)} | ₦${item.price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})} each</div>
+          </div>
+          <div class="cart-item-qty">
+            <button class="btn btn-sm btn-icon" onclick="updateDischargeCartQty(${item.dischargeMedicationId}, ${item.quantity - 1})">-</button>
+            <input type="number" value="${item.quantity}" min="1" max="${item.maxStock}" onchange="updateDischargeCartQty(${item.dischargeMedicationId}, this.value)">
+            <button class="btn btn-sm btn-icon" onclick="updateDischargeCartQty(${item.dischargeMedicationId}, ${item.quantity + 1})">+</button>
+          </div>
+          <div class="cart-item-price">₦${(item.price * item.quantity).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          <button class="cart-item-remove" onclick="removeDischargeFromCart(${item.dischargeMedicationId})"><i class="fas fa-times"></i></button>
+        </div>
+      `).join('');
+
+      const total = dischargeCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      document.getElementById('dischargeCartTotal').textContent = '₦' + total.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function updateDischargeCartQty(dischargeMedicationId, value) {
+      const item = dischargeCart.find(i => i.dischargeMedicationId === dischargeMedicationId);
+      if (item) {
+        const qty = parseInt(value) || 1;
+        item.quantity = Math.max(1, Math.min(qty, item.maxStock));
+        renderDischargeCart();
+      }
+    }
+
+    async function processDischargeDispense() {
+      if (dischargeCart.length === 0) {
+        alert('Cart is empty. Add discharge medications to dispense.');
+        return;
+      }
+
+      const customerName = document.getElementById('dischargeCustomerName').value.trim();
+      const customerPhone = document.getElementById('dischargeCustomerPhone').value.trim();
+
+      if (!confirm(`Dispense ${dischargeCart.length} discharge medication(s) for ₦${dischargeCart.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}?`)) return;
+
+      try {
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const item of dischargeCart) {
+          try {
+            const response = await fetch(`${API_BASE}/pharmacy/discharge-medications/${item.dischargeMedicationId}/dispense`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                medicine_id: item.medicineId,
+                quantity: item.quantity,
+                customer_name: customerName || null,
+                customer_phone: customerPhone || null
+              })
+            });
+
+            const data = await response.json();
+            if (data.success) successCount++;
+            else failCount++;
+          } catch (err) {
+            console.error('Error dispensing item:', err);
+            failCount++;
+          }
+        }
+
+        alert(`Discharge dispense complete! ${successCount} succeeded, ${failCount} failed.`);
+        clearDischargeCart();
+        document.getElementById('dischargeCustomerName').value = '';
+        document.getElementById('dischargeCustomerPhone').value = '';
+        loadDischargeMedications();
+        loadDashboardStats();
+        loadLowStockAlerts();
+      } catch (error) {
+        console.error('Error processing discharge dispense:', error);
+        alert('Error processing discharge dispense');
+      }
+    }
+
+    async function markDischargeNotAvailable(dischargeMedicationId) {
+      try {
+        const response = await fetch(`${API_BASE}/pharmacy/discharge-medications/${dischargeMedicationId}/cancel`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: 'Medicine not available in inventory', status: 'not_available' })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Discharge medication marked as not available');
+          removeDischargeFromCart(dischargeMedicationId);
+          renderDischargeCart();
+          loadDischargeMedications();
+        } else {
+          alert(data.message || 'Failed to update discharge medication');
+        }
+      } catch (error) {
+        console.error('Error marking discharge medication as not available:', error);
+        alert('Error updating discharge medication');
+      }
+    }
+
+    async function cancelDischargeMedication(dischargeMedicationId) {
+      if (!confirm('Are you sure you want to cancel this discharge medication?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/pharmacy/discharge-medications/${dischargeMedicationId}/cancel`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Discharge medication cancelled');
+          loadDischargeMedications();
+        } else {
+          alert(data.message || 'Failed to cancel discharge medication');
+        }
+      } catch (error) {
+        console.error('Error cancelling discharge medication:', error);
+        alert('Error cancelling discharge medication');
+      }
+    }
 
     // Load notification and message counts
     async function loadNotificationCounts() {

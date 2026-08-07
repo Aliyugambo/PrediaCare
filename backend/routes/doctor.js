@@ -1882,6 +1882,13 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
         'UPDATE users SET patient_status = ? WHERE id = ?',
         ['discharged', dischargeData.patient_id]
       );
+
+      await connection.execute(
+        `UPDATE round_checks
+         SET status = 'discharged', updated_at = NOW()
+         WHERE patient_id = ? AND admission_id = ? AND status = 'ongoing'`,
+        [dischargeData.patient_id, id]
+      );
     }
 
     connection.release();
@@ -1937,47 +1944,98 @@ router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_A
     const margin = 50;
     const contentWidth = pageWidth - margin * 2;
 
-    try {
-      const logoPath = path.join(__dirname, '../../assets/images/logo/logo.png');
-      if (fs.existsSync(logoPath)) {
-        doc.image(logoPath, margin, 30, { width: 60 });
-      }
-    } catch (e) {}
-
-    doc
-      .fontSize(20)
-      .fillColor('#dc2626')
-      .text('DISCHARGE SUMMARY', margin + 70, 35);
-
-    doc
-      .fontSize(10)
-      .fillColor('#6b7280')
-      .text(`Generated on ${new Date().toLocaleString('en-GB')}`, margin + 70, 55);
-
-    doc.moveDown(2);
-
-    const fieldGap = 18;
-
-function addSectionTitle(title) {
-      doc
-        .fontSize(12)
-        .fillColor('#991b1b')
-        .text(title, margin, doc.y);
-      doc
-        .rect(margin, doc.y + 2, contentWidth, 1)
-        .fill('#fecaca');
-      doc.moveDown(0.5);
+    const logoPath = path.join(__dirname, '../../assets/images/logo/logo.png');
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, margin, 28, { width: 50 });
     }
 
-    function addField(label, value, x, y) {
+    doc
+      .fontSize(18)
+      .fillColor('#b91c1c')
+      .text('DISCHARGE SUMMARY', { width: contentWidth, align: 'right' });
+
+    doc
+      .fontSize(9)
+      .fillColor('#6b7280')
+      .text('No. 48, Arsenal Street, Suncity Estate, Galadimawa, Abuja. RC 8004554.', { width: contentWidth, align: 'right' });
+
+    doc
+      .fontSize(8)
+      .fillColor('#9ca3af')
+      .text(`Generated on ${new Date().toLocaleString('en-GB')}`, { width: contentWidth, align: 'right' });
+
+    doc.moveDown(0.6);
+
+    function drawLine(y, color) {
+      doc.strokeColor(color || '#e5e7eb').lineWidth(1).moveTo(margin, y).lineTo(margin + contentWidth, y).stroke();
+    }
+
+    function sectionHeader(title) {
+      doc.moveDown(0.5);
+      doc
+        .fontSize(12)
+        .fillColor('#7f1d1d')
+        .text(title.toUpperCase(), { width: contentWidth });
+
+      drawLine(doc.y, '#fecaca');
+      doc.moveDown(0.4);
+    }
+
+    function fieldRow(label, value) {
       doc
         .fontSize(9)
-        .fillColor('#6b7280')
-        .text(label, x, y);
+        .fillColor('#374151')
+        .text(label + ':', margin, doc.y);
+
       doc
         .fontSize(10)
         .fillColor('#111827')
-        .text(value || 'N/A', x, y + 12);
+        .text(value || 'N/A', margin + 110, doc.y, { width: contentWidth - 110 });
+
+      doc.moveDown(0.6);
+    }
+
+    function infoRow(leftLabel, leftValue, rightLabel, rightValue) {
+      const leftX = margin;
+      const rightX = margin + contentWidth / 2 + 10;
+      const leftWidth = contentWidth / 2 - 20;
+      const rightWidth = contentWidth / 2 - 20;
+
+      doc
+        .fontSize(9)
+        .fillColor('#374151')
+        .text(leftLabel + ':', leftX, doc.y);
+
+      doc
+        .fontSize(9)
+        .fillColor('#374151')
+        .text(rightLabel + ':', rightX, doc.y);
+
+      doc
+        .fontSize(10)
+        .fillColor('#111827')
+        .text(leftValue || 'N/A', leftX + 90, doc.y, { width: leftWidth - 90 });
+
+      doc
+        .fontSize(10)
+        .fillColor('#111827')
+        .text(rightValue || 'N/A', rightX + 95, doc.y, { width: rightWidth - 95 });
+
+      doc.moveDown(0.7);
+    }
+
+    function textBlock(label, value) {
+      doc
+        .fontSize(9)
+        .fillColor('#374151')
+        .text(label + ':', margin, doc.y);
+
+      doc
+        .fontSize(10)
+        .fillColor('#111827')
+        .text(value || 'N/A', margin, doc.y + 12, { width: contentWidth, align: 'left' });
+
+      doc.moveDown(0.8);
     }
 
     const patientName = dischargeData.patient_name || admission.patient_name || 'N/A';
@@ -1998,75 +2056,86 @@ function addSectionTitle(title) {
     const address = dischargeData.address || 'N/A';
     const phone = dischargeData.phone || admission.phone || 'N/A';
     const email = dischargeData.email || admission.patient_email || 'N/A';
-    const medication = dischargeData.medication || 'N/A';
-    const dosage = dischargeData.dosage || 'N/A';
-    const amount = dischargeData.amount || 'N/A';
-    const frequency = dischargeData.frequency || 'N/A';
-    const medEndDate = dischargeData.end_date || 'N/A';
-    const medNotes = dischargeData.notes || 'N/A';
+    const medications = Array.isArray(dischargeData.medications) ? dischargeData.medications : [];
 
-    addSectionTitle('Patient Information');
-    addField('Patient Name', patientName, margin, doc.y);
-    addField('Patient ID', `#${patientId}`, margin + contentWidth / 3, doc.y - 12);
-    addField('Date Admitted', dateAdmitted, margin + contentWidth / 3 * 2, doc.y - 12);
-    doc.y += fieldGap;
-    addField('Address', address, margin, doc.y);
-    addField('Phone', phone, margin + contentWidth / 3, doc.y);
-    addField('Email', email, margin + contentWidth / 3 * 2, doc.y);
-    doc.y += fieldGap + 10;
+    sectionHeader('Patient Information');
+    infoRow('Patient Name', patientName, 'Patient ID', `#${patientId}`);
+    infoRow('Date Admitted', dateAdmitted, 'Phone', phone);
+    textBlock('Address', address);
+    infoRow('Email', email, '', '');
 
-    addSectionTitle('Discharge Details');
-    addField('Date of Discharge', dateDischarge, margin, doc.y);
-    addField('Date of Next Checkup', nextCheckup, margin + contentWidth / 3, doc.y);
-    const statusDisplay = patientStatus.charAt(0).toUpperCase() + patientStatus.slice(1);
-    addField('Patient Status', statusDisplay, margin + contentWidth / 3 * 2, doc.y);
-    doc.y += fieldGap;
-    addField('Physician Approval', physician, margin, doc.y);
-    addField('Signature Date', signatureDate, margin + contentWidth / 3, doc.y);
-    addField('Signature', signature, margin + contentWidth / 3 * 2, doc.y);
-    doc.y += fieldGap + 10;
+    sectionHeader('Discharge Details');
+    infoRow('Date of Discharge', dateDischarge, 'Next Checkup', nextCheckup);
+    infoRow('Patient Status', patientStatus.charAt(0).toUpperCase() + patientStatus.slice(1), 'Physician Approval', physician);
+    infoRow('Signature Date', signatureDate, 'Signature', signature);
 
-    addSectionTitle('Clinical Information');
-    addField('Reason for Admission', reasonAdmission, margin, doc.y);
-    addField('Diagnosis at Admission', diagnosisAdmission, margin + contentWidth / 3, doc.y);
-    doc.y += fieldGap;
-    addField('Treatment Summary', treatmentSummary, margin, doc.y);
-    addField('Reason for Discharge', reasonDischarge, margin + contentWidth / 3, doc.y);
-    doc.y += fieldGap;
-    addField('Diagnosis at Discharge', diagnosisDischarge, margin, doc.y);
-    addField('Further Treatment Plan', furtherPlan, margin + contentWidth / 3, doc.y);
-    doc.y += fieldGap + 10;
+    sectionHeader('Clinical Information');
+    textBlock('Reason for Admission', reasonAdmission);
+    textBlock('Diagnosis at Admission', diagnosisAdmission);
+    textBlock('Treatment Summary', treatmentSummary);
+    textBlock('Reason for Discharge', reasonDischarge);
+    textBlock('Diagnosis at Discharge', diagnosisDischarge);
+    textBlock('Further Treatment Plan', furtherPlan);
 
-    addSectionTitle('Medication');
-    addField('Medication Name', medication, margin, doc.y);
-    addField('Dosage', dosage, margin + contentWidth / 3, doc.y);
-    addField('Frequency', frequency, margin + contentWidth / 3 * 2, doc.y);
-    doc.y += fieldGap;
-    addField('Amount', amount, margin, doc.y);
-    addField('End Date', medEndDate, margin + contentWidth / 3, doc.y);
-    addField('Notes', medNotes, margin + contentWidth / 3 * 2, doc.y);
-    doc.y += fieldGap + 10;
+    sectionHeader('Medications');
+    if (medications.length === 0) {
+      doc.fontSize(10).fillColor('#6b7280').text('N/A', margin, doc.y);
+      doc.moveDown(0.6);
+    } else {
+      const startY = doc.y;
+      const headers = ['Medication Name', 'Dosage', 'Frequency', 'Amount', 'End Date', 'Notes'];
+      const colX = [margin, margin + 140, margin + 210, margin + 270, margin + 320, margin + 370];
+      const colW = [140, 70, 60, 50, 50, contentWidth - 370];
 
-    doc
-      .rect(margin, doc.y, contentWidth, 40)
-      .fill('#f9f9f9')
-      .stroke('#e5e7eb');
+      doc.rect(margin, doc.y, contentWidth, 22).fill('#f3f4f6');
+      doc.y += 2;
+      doc.fontSize(9).fillColor('#374151');
+      headers.forEach((h, i) => {
+        doc.text(h, colX[i] + 4, doc.y, { width: colW[i] - 8 });
+      });
+      doc.y += 18;
 
-    doc
-      .fontSize(10)
-      .fillColor('#374151')
-      .text('Signature: ___________________', margin + 10, doc.y + 20);
+      medications.forEach((med, idx) => {
+        if (doc.y > doc.page.height - 80) {
+          doc.addPage();
+        }
 
-    doc
-      .fontSize(10)
-      .fillColor('#374151')
-      .text(`Date: ${signatureDate}`, margin + contentWidth / 2, doc.y + 20);
+        doc.rect(margin, doc.y, contentWidth, 20).fill('#ffffff');
+        if (idx % 2 === 0) {
+          doc.rect(margin, doc.y, contentWidth, 20).fill('#f9fafb');
+        }
+        doc.y += 3;
 
-    doc.y = doc.page.height - 50;
-    doc
-      .fontSize(9)
-      .fillColor('#9ca3af')
-      .text('This document was generated electronically and is valid without physical signature.', margin, doc.y);
+        const values = [
+          med.name || 'N/A',
+          med.dosage || 'N/A',
+          med.frequency || 'N/A',
+          med.amount || 'N/A',
+          med.end_date || 'N/A',
+          med.notes || 'N/A'
+        ];
+
+        values.forEach((val, i) => {
+          doc.fontSize(9).fillColor('#111827').text(val, colX[i] + 4, doc.y, { width: colW[i] - 8 });
+        });
+
+        doc.y += 18;
+      });
+    }
+
+    doc.moveDown(1);
+    drawLine(doc.y, '#e5e7eb');
+    doc.moveDown(0.6);
+
+    doc.fontSize(10).fillColor('#374151').text('Signature: ___________________', margin, doc.y);
+    doc.fontSize(10).fillColor('#374151').text(`Date: ${signatureDate}`, margin + contentWidth / 2, doc.y, { width: contentWidth / 2, align: 'right' });
+    doc.moveDown(0.8);
+
+    doc.y = Math.max(doc.y, doc.page.height - 55);
+    drawLine(doc.y);
+    doc.moveDown(0.4);
+
+    doc.fontSize(8).fillColor('#9ca3af').text('Email address: Predicareclincisonsult@gmail.com | Mobile number: 08140032892.', margin, doc.y, { width: contentWidth, align: 'center' });
 
     doc.end();
 
@@ -2594,6 +2663,34 @@ router.post('/medications/:id/renew', checkPermission(PERMISSIONS.PRESCRIBE_MEDI
   } catch (error) {
     console.error('Error renewing medication:', error);
     res.status(500).json({ success: false, message: 'Failed to renew prescription' });
+  }
+});
+
+/**
+ * DELETE /api/doctor/medications/:id
+ * Delete a prescription
+ * Permission: PRESCRIBE_MEDICATION (doctor)
+ */
+router.delete('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
+  try {
+    const doctorId = req.session.doctorId;
+    const { id } = req.params;
+
+    const connection = await pool.getConnection();
+    const [result] = await connection.execute(
+      'DELETE FROM medications WHERE id = ? AND doctor_id = ?',
+      [id, doctorId]
+    );
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Medication not found or access denied' });
+    }
+
+    res.json({ success: true, message: 'Prescription deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting medication:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete prescription' });
   }
 });
 

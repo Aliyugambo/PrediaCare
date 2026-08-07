@@ -255,27 +255,39 @@ async function initializeDatabase() {
 
     // Create medications table (prescriptions)
     await connection.execute(`
-      CREATE TABLE IF NOT EXISTS medications (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        patient_id INT NOT NULL,
-        doctor_id INT NOT NULL,
-        appointment_id INT DEFAULT NULL,
-        medication_name VARCHAR(255) NOT NULL,
-        dosage VARCHAR(100) NOT NULL,
-        frequency VARCHAR(100) NOT NULL,
-        duration VARCHAR(100),
-        instructions TEXT,
-        refills_remaining INT DEFAULT 0,
-        status ENUM('active', 'completed', 'stopped') DEFAULT 'active',
-        prescribed_date DATE NOT NULL,
-        expiry_date DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
-      )
-    `);
-    console.log('Medications table created or already exists');
+       CREATE TABLE IF NOT EXISTS medications (
+         id INT AUTO_INCREMENT PRIMARY KEY,
+         patient_id INT NOT NULL,
+         doctor_id INT NOT NULL,
+         appointment_id INT DEFAULT NULL,
+         medication_name VARCHAR(255) NOT NULL,
+         dosage VARCHAR(100) NOT NULL,
+         frequency VARCHAR(100) NOT NULL,
+         duration VARCHAR(100),
+         instructions TEXT,
+         refills_remaining INT DEFAULT 0,
+         status ENUM('active', 'completed', 'stopped') DEFAULT 'active',
+         prescribed_date DATE NOT NULL,
+         expiry_date DATE,
+         unit_price DECIMAL(10,2) DEFAULT 0.00,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+         FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+         FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+       )
+     `);
+     console.log('Medications table created or already exists');
+
+     // Ensure medications has unit_price column
+     try {
+       const [cols] = await connection.execute("SHOW COLUMNS FROM medications LIKE 'unit_price'");
+       if (!cols || cols.length === 0) {
+         await connection.execute("ALTER TABLE medications ADD COLUMN unit_price DECIMAL(10,2) DEFAULT 0.00 AFTER expiry_date");
+         console.log('Added unit_price column to medications table');
+       }
+     } catch (e) {
+       console.log('Error checking unit_price column:', e.message);
+     }
 
     // Create health_summaries table (patient health records)
     await connection.execute(`
@@ -421,6 +433,17 @@ async function initializeDatabase() {
       console.log('drug_chat column check:', e.message);
     }
 
+    // Ensure round_checks status ENUM includes 'discharged'
+    try {
+      const [colsStatus] = await connection.execute("SHOW COLUMNS FROM round_checks LIKE 'status'");
+      if (colsStatus && colsStatus.length > 0) {
+        await connection.execute("ALTER TABLE round_checks MODIFY COLUMN status ENUM('ongoing', 'resolved', 'escalated', 'discharged') DEFAULT 'ongoing'");
+        console.log('Updated round_checks status ENUM to include discharged');
+      }
+    } catch (e) {
+      console.log('round_checks status ENUM update:', e.message);
+    }
+
     // Ensure sessions table exists for express-mysql-session
     try {
       await connection.execute(`
@@ -548,6 +571,42 @@ async function initializeDatabase() {
     `);
     console.log('Pharmacy sales table created or already exists');
 
+    // Create discharge_medications table (pharmacy queue for discharged patient medications)
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS discharge_medications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        admission_id INT NOT NULL,
+        patient_id INT NOT NULL,
+        patient_name VARCHAR(255) NOT NULL,
+        medicine_name VARCHAR(255) NOT NULL,
+        dosage VARCHAR(255),
+        frequency VARCHAR(255),
+        amount VARCHAR(255),
+        end_date DATE,
+        notes TEXT,
+        status ENUM('pending', 'dispensed', 'cancelled', 'not_available') DEFAULT 'pending',
+        dispensed_by INT,
+        dispensed_at DATETIME,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (dispensed_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Discharge medications table created or already exists');
+
+    // Ensure discharge_medications has not_available status
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM discharge_medications LIKE 'status'");
+      if (cols && cols.length > 0) {
+        await connection.execute("ALTER TABLE discharge_medications MODIFY COLUMN status ENUM('pending', 'dispensed', 'cancelled', 'not_available') DEFAULT 'pending'");
+        console.log('Updated discharge_medications status to include not_available');
+      }
+    } catch (e) {
+      console.log('Error updating discharge_medications status:', e.message);
+    }
+
     // Ensure pharmacy_sales has customer_name and customer_phone columns
     try {
       const [cols1] = await connection.execute("SHOW COLUMNS FROM pharmacy_sales LIKE 'customer_name'");
@@ -646,6 +705,7 @@ async function initializeDatabase() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         invoice_id INT NOT NULL,
         service_id INT,
+        medication_id INT,
         service_name VARCHAR(255) NOT NULL,
         description TEXT,
         quantity INT NOT NULL DEFAULT 1,
@@ -653,10 +713,23 @@ async function initializeDatabase() {
         total_price DECIMAL(10, 2) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (invoice_id) REFERENCES billing_invoices(id) ON DELETE CASCADE,
-        FOREIGN KEY (service_id) REFERENCES billing_services(id) ON DELETE SET NULL
+        FOREIGN KEY (service_id) REFERENCES billing_services(id) ON DELETE SET NULL,
+        FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE SET NULL
       )
     `);
     console.log('Billing invoice items table created or already exists');
+
+    // Ensure billing_invoice_items has medication_id column
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM billing_invoice_items LIKE 'medication_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE billing_invoice_items ADD COLUMN medication_id INT DEFAULT NULL AFTER service_id");
+        await connection.execute("ALTER TABLE billing_invoice_items ADD CONSTRAINT fk_billing_invoice_items_medication FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE SET NULL");
+        console.log('Added medication_id column to billing_invoice_items table');
+      }
+    } catch (e) {
+      console.log('Error checking medication_id column:', e.message);
+    }
 
     // Create billing_payments table (payment history)
     await connection.execute(`

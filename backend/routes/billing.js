@@ -385,45 +385,65 @@ try {
   }
 } catch (e) {}
 
+const formatNGN = (amount) => `NGN ${parseFloat(amount || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
 doc
   .fontSize(22)
   .fillColor('#000')
-  .text('PREDIACARE CLINICS INVOICE', leftX + 80, headerY + 15);
+  .text('PREDIACARE CLINIC LTD', leftX + 100, headerY + 15);
 
-doc.moveDown(3);
+doc
+  .fontSize(10)
+  .fillColor('#555')
+  .text('No. 48, Arsenal Street, Suncity Estate, Galadimawa, Abuja. RC 8004554.', leftX, headerY + 45, { width: contentWidth, align: 'center' });
+
+const addressBottomY = headerY + 45 + 12;
+doc
+  .moveTo(margin, addressBottomY)
+  .lineTo(margin + contentWidth, addressBottomY)
+  .stroke();
+
+doc.moveDown(4);
 
 /* =========================
-   PATIENT & DOCTOR INFO
+   PATIENT INFO
 ========================= */
 const infoY = doc.y;
+
+const patientEmail = inv.patient_email || '';
+const patientPhone = inv.patient_phone || '';
+const patientAddress = inv.patient_address || '';
+const patientName = inv.patient_name || 'N/A';
+
+let patientLineY = infoY;
 
 doc
   .fontSize(13)
   .fillColor('#242222')
-  .text('Patient Information', leftX, infoY);
+  .text('Patient Information', leftX, patientLineY);
 
-doc
-  .fontSize(11)
-  .fillColor('#000')
-  .text(inv.patient_name || 'N/A', leftX, infoY + lineGap)
-  .text(inv.patient_phone || 'N/A', leftX, infoY + lineGap * 2)
-  .text(inv.patient_address || 'Address not available', leftX, infoY + lineGap * 3, {
+patientLineY += lineGap;
+
+if (patientName && patientName !== 'N/A') {
+  doc.fontSize(11).fillColor('#000').text(patientName, leftX, patientLineY);
+  patientLineY += lineGap;
+}
+
+if (patientEmail) {
+  doc.fontSize(11).fillColor('#000').text(patientEmail, leftX, patientLineY);
+  patientLineY += lineGap;
+}
+
+if (patientPhone) {
+  doc.fontSize(11).fillColor('#000').text(patientPhone, leftX, patientLineY);
+  patientLineY += lineGap;
+}
+
+if (patientAddress) {
+  doc.fontSize(11).fillColor('#000').text(patientAddress, leftX, patientLineY, {
     width: colWidth,
   });
-
-doc
-  .fontSize(13)
-  .fillColor('#110f0f')
-  .text("Prescribing Physician's Information", rightX, infoY);
-
-doc
-  .fontSize(11)
-  .fillColor('#000')
-  .text(inv.doctor_name || 'Dr. Anna Bride', rightX, infoY + lineGap)
-  .text(inv.doctor_phone || '(555) 505-5000', rightX, infoY + lineGap * 2)
-  .text(inv.doctor_location || 'Predia-Clinic', rightX, infoY + lineGap * 3, {
-    width: colWidth,
-  });
+}
 
 doc.moveDown(4);
 
@@ -458,7 +478,7 @@ doc.fontSize(11).fillColor('#000');
 doc.text(inv.invoice_number, margin + 10, valueY);
 doc.text(new Date(inv.invoice_date).toLocaleDateString(), margin + col4 + 10, valueY);
 doc.text(new Date(inv.due_date).toLocaleDateString(), margin + col4 * 2 + 10, valueY);
-doc.text(`NGN ${parseFloat(inv.total_amount).toFixed(2)}`, margin + col4 * 3 + 10, valueY, {
+doc.text(formatNGN(inv.total_amount), margin + col4 * 3 + 10, valueY, {
   width: col4 - 20,
   align: 'right',
 });
@@ -504,7 +524,7 @@ items.forEach((item, i) => {
   });
 
   doc.text(
-    `NGN ${parseFloat(item.total_price).toFixed(2)}`,
+    formatNGN(item.total_price),
     priceX,
     rowY + 7,
     {
@@ -554,19 +574,19 @@ const rightAlignX = totalsX + totalsWidth - 20;
 doc.fontSize(11);
 
 doc.text('SUB TOTAL', totalsX + 10, bottomY + 10);
-doc.text(`NGN ${parseFloat(inv.subtotal).toFixed(2)}`, rightAlignX - 80, bottomY + 10, {
+doc.text(formatNGN(inv.subtotal), rightAlignX - 80, bottomY + 10, {
   width: 80,
   align: 'right',
 });
 
 doc.text('TAX', totalsX + 10, bottomY + 30);
-doc.text(`NGN ${parseFloat(inv.tax_amount).toFixed(2)}`, rightAlignX - 80, bottomY + 30, {
+doc.text(formatNGN(inv.tax_amount), rightAlignX - 80, bottomY + 30, {
   width: 80,
   align: 'right',
 });
 
 doc.fontSize(13).text('TOTAL', totalsX + 10, bottomY + 60);
-doc.text(`NGN ${parseFloat(inv.total_amount).toFixed(2)}`, rightAlignX - 80, bottomY + 60, {
+doc.text(formatNGN(inv.total_amount), rightAlignX - 80, bottomY + 60, {
   width: 80,
   align: 'right',
 });
@@ -576,21 +596,29 @@ doc.moveDown(5);
 /* =========================
    FOOTER
 ========================= */
+const footerY = doc.y;
+const footerLinePadding = 8;
+
+doc
+  .moveTo(margin, footerY + footerLinePadding)
+  .lineTo(margin + contentWidth, footerY + footerLinePadding)
+  .stroke();
+
 doc
   .fontSize(10)
   .fillColor('#555')
   .text(
-    'For more information or any issues or concerns,\nemail us at invoices@prediacare.com',
+    'Email address: Predicareclincisonsult@gmail.com | Mobile number: 08140032892.',
     margin,
-    doc.y
+    footerY + footerLinePadding + 6,
+    { width: contentWidth, align: 'center' }
   );
 
-doc.text(
-  'Predia-care\nwww.predia-care.com',
-  margin,
-  doc.y,
-  { align: 'right' }
-);
+const footerBottomY = footerY + footerLinePadding + 6 + 14;
+doc
+  .moveTo(margin, footerBottomY)
+  .lineTo(margin + contentWidth, footerBottomY)
+  .stroke();
 
 doc.end();
   } catch (err) {
@@ -607,12 +635,21 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
   const connection = await pool.getConnection();
   
   try {
-    const { patient_id, invoice_date, due_date, payment_method, service_ids, notes } = req.body;
+    const { patient_id, invoice_date, due_date, payment_method, service_ids, medication_ids, notes } = req.body;
 
-    if (!patient_id || !due_date || !service_ids || service_ids.length === 0) {
+    if (!patient_id || !due_date) {
+      connection.release();
       return res.status(400).json({
         success: false,
-        message: 'patient_id, due_date, and at least one service are required'
+        message: 'patient_id and due_date are required'
+      });
+    }
+
+    if ((!service_ids || service_ids.length === 0) && (!medication_ids || medication_ids.length === 0)) {
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        message: 'At least one service or medication is required'
       });
     }
 
@@ -628,33 +665,63 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
     }
 
     // Get service details
-    const placeholders = service_ids.map(() => '?').join(',');
-    const [services] = await connection.execute(
-      `SELECT * FROM billing_services WHERE id IN (${placeholders})`,
-      service_ids
-    );
+    let items = [];
+    if (service_ids && service_ids.length > 0) {
+      const placeholders = service_ids.map(() => '?').join(',');
+      const [services] = await connection.execute(
+        `SELECT * FROM billing_services WHERE id IN (${placeholders})`,
+        service_ids
+      );
 
-    if (services.length === 0) {
-      connection.release();
-      return res.status(400).json({ success: false, message: 'No valid services found' });
+      if (services.length === 0) {
+        connection.release();
+        return res.status(400).json({ success: false, message: 'No valid services found' });
+      }
+
+      items = services.map(s => {
+        const price = parseFloat(s.unit_price);
+        return {
+          service_id: s.id,
+          medication_id: null,
+          service_name: s.service_name,
+          description: s.description,
+          quantity: 1,
+          unit_price: price,
+          total_price: price
+        };
+      });
+    }
+
+    // Get medication details
+    if (medication_ids && medication_ids.length > 0) {
+      const medPlaceholders = medication_ids.map(() => '?').join(',');
+      const [medications] = await connection.execute(
+        `SELECT * FROM medications WHERE id IN (${medPlaceholders}) AND patient_id = ?`,
+        [...medication_ids, patient_id]
+      );
+
+      medications.forEach(m => {
+        const price = parseFloat(m.unit_price || 0);
+        items.push({
+          service_id: null,
+          medication_id: m.id,
+          service_name: m.medication_name,
+          description: m.dosage + (m.frequency ? ' - ' + m.frequency : ''),
+          quantity: 1,
+          unit_price: price,
+          total_price: price
+        });
+      });
     }
 
     // Calculate totals
     let subtotal = 0;
-    const items = services.map(s => {
-      const price = parseFloat(s.unit_price);
-      subtotal += price;
-      return {
-        service_id: s.id,
-        service_name: s.service_name,
-        description: s.description,
-        quantity: 1,
-        unit_price: price,
-        total_price: price
-      };
+    items.forEach(item => {
+      subtotal += item.total_price;
     });
 
-    const taxAmount = 0; // Can be calculated based on tax rate
+    const taxRate = 0.05;
+    const taxAmount = subtotal * taxRate;
     const totalAmount = subtotal + taxAmount;
 
     await connection.beginTransaction();
@@ -685,11 +752,12 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
     for (const item of items) {
       await connection.execute(
         `INSERT INTO billing_invoice_items 
-         (invoice_id, service_id, service_name, description, quantity, unit_price, total_price)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (invoice_id, service_id, medication_id, service_name, description, quantity, unit_price, total_price)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           invoiceId,
           item.service_id,
+          item.medication_id,
           item.service_name,
           item.description,
           item.quantity,
@@ -953,6 +1021,65 @@ router.get('/patient/:id/services', checkPermission(PERMISSIONS.VIEW_BILLING), a
     });
   } catch (err) {
     console.error('Error fetching patient services:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ==================== PATIENT MEDICATIONS FOR BILLING ====================
+
+/**
+ * GET /api/billing/patient/:id/medications
+ * Get patient's medications for billing/invoice
+ */
+router.get('/patient/:id/medications', checkPermission(PERMISSIONS.VIEW_BILLING), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    const [patients] = await connection.execute(
+      'SELECT id, name, email FROM users WHERE id = ? AND role = \'patient\'',
+      [id]
+    );
+
+    if (patients.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    const [medications] = await connection.execute(`
+      SELECT m.id, m.medication_name, m.dosage, m.frequency, m.duration, m.instructions, m.status, m.prescribed_date, m.unit_price
+      FROM medications m
+      LEFT JOIN discharge_medications dm ON dm.patient_id = m.patient_id
+        AND dm.medicine_name = m.medication_name
+        AND dm.status = 'not_available'
+      WHERE m.patient_id = ? AND m.status IN ('active', 'completed')
+        AND dm.id IS NULL
+      ORDER BY m.prescribed_date DESC
+    `, [id]);
+
+    connection.release();
+
+    res.json({
+      success: true,
+      patient: {
+        id: patients[0].id,
+        name: patients[0].name,
+        email: patients[0].email
+      },
+      medications: medications.map(m => ({
+        id: m.id,
+        name: m.medication_name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        duration: m.duration,
+        instructions: m.instructions,
+        status: m.status,
+        prescribedDate: m.prescribed_date,
+        price: parseFloat(m.unit_price || 0)
+      }))
+    });
+  } catch (err) {
+    console.error('Error fetching patient medications for billing:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

@@ -487,31 +487,215 @@ router.post('/sales', checkPermission(PERMISSIONS.DISPENSE_MEDICINE), async (req
   }
 });
 
-// ==================== CATEGORIES ====================
+// ==================== DISCHARGE MEDICATIONS ====================
 
 /**
- * GET /api/pharmacy/categories
- * Get all medicine categories
+ * POST /api/pharmacy/discharge-medications
+ * Create discharge medication queue entries from doctor discharge form
+ * Permission: DISPENSE_MEDICINE (doctor/pharmacist)
  */
-router.get('/categories', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res) => {
+router.post('/discharge-medications', checkPermission(PERMISSIONS.DISPENSE_MEDICINE), async (req, res) => {
   try {
+    const { admission_id, patient_id, patient_name, medications, created_by } = req.body;
+
+    if (!admission_id || !patient_id || !patient_name || !Array.isArray(medications)) {
+      return res.status(400).json({ success: false, message: 'admission_id, patient_id, patient_name and medications array are required' });
+    }
+
     const connection = await pool.getConnection();
 
-    const [categories] = await connection.execute(
-      'SELECT DISTINCT category, COUNT(*) as medicine_count FROM pharmacy_medicines GROUP BY category ORDER BY category ASC'
-    );
+    const insertPromises = medications.map(med => {
+      return connection.execute(`
+        INSERT INTO discharge_medications (admission_id, patient_id, patient_name, medicine_name, dosage, frequency, amount, end_date, notes, status, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+      `, [
+        admission_id,
+        patient_id,
+        patient_name,
+        med.name || med.medicine_name || '',
+        med.dosage || '',
+        med.frequency || '',
+        med.amount || '',
+        med.end_date || null,
+        med.notes || '',
+        created_by || req.session.userId
+      ]);
+    });
 
+    await Promise.all(insertPromises);
+    connection.release();
+
+    res.status(201).json({ success: true, message: 'Discharge medications sent to pharmacy queue' });
+  } catch (err) {
+    console.error('Error creating discharge medications:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/pharmacy/discharge-medications
+ * Get pending discharge medications for pharmacist
+ * Permission: VIEW_PHARMACY (pharmacist)
+ */
+router.get('/discharge-medications', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res) => {
+  try {
+    const { status = 'pending', patient_id, admission_id } = req.query;
+    const connection = await pool.getConnection();
+
+    let query = `
+      SELECT dm.*, u.name as created_by_name
+      FROM discharge_medications dm
+      LEFT JOIN users u ON dm.created_by = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (status) {
+      query += ' AND dm.status = ?';
+      params.push(status);
+    }
+    if (patient_id) {
+      query += ' AND dm.patient_id = ?';
+      params.push(patient_id);
+    }
+    if (admission_id) {
+      query += ' AND dm.admission_id = ?';
+      params.push(admission_id);
+    }
+
+    query += ' ORDER BY dm.created_at DESC';
+    const [rows] = await connection.execute(query, params);
     connection.release();
 
     res.json({
       success: true,
-      categories: categories.map(c => ({
-        name: c.category,
-        medicineCount: c.medicine_count
+      dischargeMedications: rows.map(row => ({
+        id: row.id,
+        admissionId: row.admission_id,
+        patientId: row.patient_id,
+        patientName: row.patient_name,
+        medicineName: row.medicine_name,
+        dosage: row.dosage,
+        frequency: row.frequency,
+        amount: row.amount,
+        endDate: row.end_date,
+        notes: row.notes,
+        status: row.status,
+        dispensedBy: row.dispensed_by,
+        dispensedAt: row.dispensed_at,
+        createdBy: row.created_by,
+        createdByName: row.created_by_name,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
       }))
     });
   } catch (err) {
-    console.error('Error fetching categories:', err);
+    console.error('Error fetching discharge medications:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/pharmacy/discharge-medications/:id/dispense
+ * Mark discharge medication as dispensed
+ * Permission: DISPENSE_MEDICINE (pharmacist)
+ */
+router.post('/discharge-medications/:id/dispense', checkPermission(PERMISSIONS.DISPENSE_MEDICINE), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { medicine_id, quantity } = req.body;
+    const connection = await pool.getConnection();
+
+    const [existing] = await connection.execute('SELECT * FROM discharge_medications WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Discharge medication not found' });
+    }
+
+    const dischargeMed = existing[0];
+    if (dischargeMed.status === 'dispensed') {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'This medication has already been dispensed' });
+    }
+
+    await connection.execute(`
+      UPDATE discharge_medications
+      SET status = 'dispensed', dispensed_by = ?, dispensed_at = NOW(), updated_at = NOW()
+      WHERE id = ?
+    `, [req.session.userId, id]);
+
+    if (medicine_id && quantity) {
+      const unitPriceRes = await connection.execute('SELECT unit_price FROM pharmacy_medicines WHERE id = ?', [medicine_id]);
+      if (unitPriceRes[0].length > 0) {
+        const unitPrice = parseFloat(unitPriceRes[0][0].unit_price);
+        const totalPrice = unitPrice * parseInt(quantity);
+
+        await connection.execute(`
+          INSERT INTO pharmacy_sales (medicine_id, patient_id, customer_name, customer_phone, quantity, unit_price, total_price, sold_by, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          medicine_id,
+          dischargeMed.patient_id,
+          dischargeMed.patient_name,
+          null,
+          parseInt(quantity),
+          unitPrice,
+          totalPrice,
+          req.session.userId,
+          'Discharge medication dispensed'
+        ]);
+
+        await connection.execute(`
+          UPDATE pharmacy_medicines SET stock_quantity = stock_quantity - ? WHERE id = ?
+        `, [parseInt(quantity), medicine_id]);
+      }
+    }
+
+    connection.release();
+
+    res.json({ success: true, message: 'Discharge medication marked as dispensed' });
+  } catch (err) {
+    console.error('Error dispensing discharge medication:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/pharmacy/discharge-medications/:id/cancel
+ * Cancel a pending discharge medication
+ * Permission: DISPENSE_MEDICINE (pharmacist)
+ */
+router.post('/discharge-medications/:id/cancel', checkPermission(PERMISSIONS.DISPENSE_MEDICINE), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, status = 'cancelled' } = req.body;
+    const connection = await pool.getConnection();
+
+    const [existing] = await connection.execute('SELECT * FROM discharge_medications WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Discharge medication not found' });
+    }
+
+    const dischargeMed = existing[0];
+    if (dischargeMed.status !== 'pending') {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'Only pending discharge medications can be cancelled' });
+    }
+
+    const newStatus = status === 'not_available' ? 'not_available' : 'cancelled';
+
+    await connection.execute(`
+      UPDATE discharge_medications
+      SET status = ?, notes = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [newStatus, reason || dischargeMed.notes, id]);
+
+    connection.release();
+
+    res.json({ success: true, message: newStatus === 'not_available' ? 'Discharge medication marked as not available' : 'Discharge medication cancelled' });
+  } catch (err) {
+    console.error('Error cancelling discharge medication:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

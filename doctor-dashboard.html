@@ -2457,45 +2457,45 @@
               </div>
             </div>
 
-            <!-- Prescriptions Tab -->
-            <div class="tab-pane" id="prescriptions">
-              <div class="content-grid">
-                <div class="content-card">
-                  <div class="content-card-header">
-                    <h3>Active Prescriptions</h3>
-                    <p>Current prescriptions requiring attention</p>
-                  </div>
-                  <div class="content-card-body">
-                    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
-                      <select id="prescriptionPatientFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; min-width: 220px;">
-                        <option value="">All Patients</option>
-                      </select>
-                      <input type="text" id="prescriptionSearchInput" placeholder="Search prescriptions..." style="flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
-                      <select id="prescriptionStatusFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                        <option value="stopped">Stopped</option>
-                      </select>
-                      <button onclick="loadPrescriptions()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Filter</button>
-                      <button onclick="openPrescriptionModalForCurrentPatient()" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;"><i class="fas fa-plus" style="margin-right: 6px;"></i> Add Prescription</button>
-                    </div>
-                    <div class="appointment-list" id="prescriptionsList">
-                      <div class="loading"><div class="spinner"></div></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="content-card">
-                  <div class="content-card-header">
-                    <h3>Prescription Details</h3>
-                    <p>View and manage prescription</p>
-                  </div>
-                  <div class="content-card-body" id="prescriptionDetails">
-                    <p style="color: #64748b; text-align: center; padding: 40px 0;">Select a prescription to view details</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+             <!-- Prescriptions Tab -->
+             <div class="tab-pane" id="prescriptions">
+               <div class="content-grid">
+                 <div class="content-card" style="grid-column: span 1;">
+                   <div class="content-card-header">
+                     <h3>Patients</h3>
+                     <p>Select a patient to manage prescriptions</p>
+                   </div>
+                   <div class="content-card-body">
+                     <input type="text" id="prescriptionPatientSearch" placeholder="Search patients..." style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; margin-bottom: 12px;" onkeyup="loadPrescriptionPatients()">
+                     <div id="prescriptionPatientsList" style="max-height: 500px; overflow-y: auto;">
+                       <div class="loading"><div class="spinner"></div></div>
+                     </div>
+                   </div>
+                 </div>
+                 <div class="content-card" style="grid-column: span 2;">
+                   <div class="content-card-header">
+                     <h3 id="selectedPatientPrescriptionsTitle">Select a Patient</h3>
+                     <p>View and manage prescriptions for the selected patient</p>
+                   </div>
+                   <div class="content-card-body">
+                     <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                       <input type="text" id="prescriptionSearchInput" placeholder="Search prescriptions..." style="flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                       <select id="prescriptionStatusFilter" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                         <option value="">All Status</option>
+                         <option value="active">Active</option>
+                         <option value="completed">Completed</option>
+                         <option value="stopped">Stopped</option>
+                       </select>
+                       <button onclick="loadPatientPrescriptions()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Search</button>
+                       <button onclick="openPrescriptionModalForCurrentPatient()" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;"><i class="fas fa-plus" style="margin-right: 6px;"></i> Add Prescription</button>
+                     </div>
+                     <div class="appointment-list" id="prescriptionsList">
+                       <p style="color: #64748b; text-align: center; padding: 40px 0;">Select a patient to view prescriptions</p>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
 
             <!-- Reports Tab -->
             <div class="tab-pane" id="reports">
@@ -2811,7 +2811,7 @@
           <div class="form-section">
             <div class="form-section-title"><i class="fas fa-prescription"></i> Prescriptions</div>
             <div class="prescription-list" id="prescriptionList"></div>
-            <button type="button" class="add-prescription-btn" onclick="addPrescription()"><i class="fas fa-plus"></i> Add Medication</button>
+            <button type="button" class="add-prescription-btn" onclick="examAddPrescription()"><i class="fas fa-plus"></i> Add Medication</button>
           </div>
         </form>
       </div>
@@ -3291,37 +3291,13 @@
             </div>
           </div>
 
-          <div style="margin-bottom: 20px;">
-            <h5 style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Medication</h5>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-              <div class="form-group">
-                <label class="form-label">Medication Name</label>
-                <input type="text" class="form-control" id="dischargeMedication">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Dosage</label>
-                <input type="text" class="form-control" id="dischargeDosage" placeholder="e.g. 500mg">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Frequency</label>
-                <input type="text" class="form-control" id="dischargeFrequency" placeholder="e.g. 3x daily">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Amount</label>
-                <input type="text" class="form-control" id="dischargeAmount" placeholder="e.g. 30 tablets">
-              </div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
-              <div class="form-group">
-                <label class="form-label">End Date</label>
-                <input type="date" class="form-control" id="dischargeMedEndDate">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Notes</label>
-                <input type="text" class="form-control" id="dischargeMedNotes">
-              </div>
-            </div>
-          </div>
+           <div style="margin-bottom: 20px;">
+             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+               <h5 style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Medication</h5>
+               <button type="button" class="view-btn light" onclick="addDischargeMedication()" style="font-size: 12px; padding: 6px 12px;">+ Add Medication</button>
+             </div>
+             <div id="dischargeMedicationsContainer"></div>
+           </div>
 
           <div style="margin-bottom: 20px;">
             <h5 style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Physician Approval & Status</h5>
@@ -3395,12 +3371,11 @@
        const navItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
        if (navItem) navItem.classList.add('active');
        
-        if (tabId === 'examinations') {
-          if (typeof loadExaminations === 'function') loadExaminations();
-        } else if (tabId === 'prescriptions') {
-          if (typeof loadPatientsForPrescription === 'function') loadPatientsForPrescription();
-          if (typeof loadPrescriptions === 'function') loadPrescriptions();
-        } else if (tabId === 'reports') {
+         if (tabId === 'examinations') {
+           if (typeof loadExaminations === 'function') loadExaminations();
+         } else if (tabId === 'prescriptions') {
+           if (typeof loadPrescriptionPatients === 'function') loadPrescriptionPatients();
+         } else if (tabId === 'reports') {
          if (typeof initReportsTab === 'function') initReportsTab();
         } else if (tabId === 'patients') {
           if (typeof loadPatients === 'function') loadPatients();
@@ -3676,55 +3651,187 @@
     });
 
     // Discharge Form Functions
-    async function openDischargeForm(admissionId, patientId, patientName) {
-      const modal = document.getElementById('dischargeModal');
-      if (!modal) return;
-      
-      document.getElementById('dischargeAdmissionId').value = admissionId;
-      document.getElementById('dischargePatientId').value = patientId;
-      
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('dischargeDateOfDischarge').value = today;
-      document.getElementById('dischargeSignatureDate').value = today;
-      
-      try {
-        const patientRes = await fetch(`${API_BASE}/doctor/patients/${patientId}`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        
-        if (patientRes.ok) {
-          const data = await patientRes.json();
-          if (data.success && data.patient) {
-            const p = data.patient;
-            document.getElementById('dischargePatientName').value = p.name || patientName;
-            document.getElementById('dischargePatientIdDisplay').value = p.id || patientId;
-            document.getElementById('dischargeAddress').value = p.address || '';
-            document.getElementById('dischargePhone').value = p.phone || '';
-            document.getElementById('dischargeEmail').value = p.email || '';
-          }
-        }
-        
-        const admissionsRes = await fetch(`${API_BASE}/doctor/admissions?patient_id=${patientId}`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        if (admissionsRes.ok) {
-          const data = await admissionsRes.json();
-          if (data.success && data.admissions) {
-            const admission = data.admissions.find(a => a.id == admissionId);
-            if (admission) {
-              document.getElementById('dischargeDateAdmitted').value = admission.admissionDate ? new Date(admission.admissionDate).toISOString().split('T')[0] : '';
-              document.getElementById('dischargeReasonAdmission').value = admission.reason || '';
-              document.getElementById('dischargeDiagnosisAdmission').value = admission.admittingDiagnosis || '';
-            }
-          }
-        }
-        
-      } catch (error) {
-        console.error('Error loading discharge form data:', error);
-      }
-      
-      modal.style.display = 'flex';
-    }
+     async function openDischargeForm(admissionId, patientId, patientName) {
+       const modal = document.getElementById('dischargeModal');
+       if (!modal) return;
+       
+       document.getElementById('dischargeAdmissionId').value = admissionId;
+       document.getElementById('dischargePatientId').value = patientId;
+       
+       const today = new Date().toISOString().split('T')[0];
+       document.getElementById('dischargeDateOfDischarge').value = today;
+       document.getElementById('dischargeSignatureDate').value = today;
+
+       const container = document.getElementById('dischargeMedicationsContainer');
+       if (container) container.innerHTML = '';
+
+       await loadPharmacyMedicines();
+       if (container && container.children.length === 0) {
+         addDischargeMedication();
+       }
+       
+       try {
+         const patientRes = await fetch(`${API_BASE}/doctor/patients/${patientId}`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+         
+         if (patientRes.ok) {
+           const data = await patientRes.json();
+           if (data.success && data.patient) {
+             const p = data.patient;
+             document.getElementById('dischargePatientName').value = p.name || patientName;
+             document.getElementById('dischargePatientIdDisplay').value = p.id || patientId;
+             document.getElementById('dischargeAddress').value = p.address || '';
+             document.getElementById('dischargePhone').value = p.phone || '';
+             document.getElementById('dischargeEmail').value = p.email || '';
+           }
+         }
+         
+         const admissionsRes = await fetch(`${API_BASE}/doctor/admissions?patient_id=${patientId}`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+         if (admissionsRes.ok) {
+           const data = await admissionsRes.json();
+           if (data.success && data.admissions) {
+             const admission = data.admissions.find(a => a.id == admissionId);
+             if (admission) {
+               document.getElementById('dischargeDateAdmitted').value = admission.admissionDate ? new Date(admission.admissionDate).toISOString().split('T')[0] : '';
+               document.getElementById('dischargeReasonAdmission').value = admission.reason || '';
+               document.getElementById('dischargeDiagnosisAdmission').value = admission.admittingDiagnosis || '';
+             }
+           }
+         }
+         
+       } catch (error) {
+         console.error('Error loading discharge form data:', error);
+       }
+       
+       modal.style.display = 'flex';
+     }
     
     function closeDischargeModal() {
       const modal = document.getElementById('dischargeModal');
       if (modal) modal.style.display = 'none';
+    }
+
+    let dischargeMedicinesCache = [];
+
+    async function loadPharmacyMedicines() {
+      try {
+        const response = await fetch(`${API_BASE}/pharmacy/medicines?limit=200&status=active`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.success && Array.isArray(data.medicines)) {
+          dischargeMedicinesCache = data.medicines;
+        }
+      } catch (e) {
+        console.error('Failed to load pharmacy medicines for discharge form:', e);
+      }
+    }
+
+    function addDischargeMedication(data = {}) {
+      const container = document.getElementById('dischargeMedicationsContainer');
+      if (!container) return;
+
+      const medicineOptions = dischargeMedicinesCache.map(m =>
+        `<option value="${escapeHtml(m.medicineName || m.medicine_name)}" data-strength="${escapeHtml(m.strength || '')}" data-dosage="${escapeHtml(m.dosageForm || m.dosage_form || '')}" data-description="${escapeHtml(m.description || '')}">${escapeHtml(m.medicineName || m.medicine_name)}${m.strength ? ' (' + escapeHtml(m.strength) + ')' : ''}</option>`
+      ).join('');
+
+      const card = document.createElement('div');
+      card.className = 'discharge-medication-card';
+      card.style.cssText = 'border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #f8fafc;';
+      card.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;">
+          <div class="form-group">
+            <label class="form-label">Medication Name *</label>
+            <select class="form-control discharge-med-name" required>
+              <option value="">Select Medication</option>
+              <option value="__custom__">+ Custom / Not Listed</option>
+              ${medicineOptions}
+            </select>
+            <input type="text" class="form-control discharge-med-custom-name" value="${data.name || ''}" placeholder="Enter medication name" style="display: none; margin-top: 8px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dosage</label>
+            <input type="text" class="form-control discharge-med-dosage" value="${data.dosage || ''}" placeholder="e.g. 500mg">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Frequency</label>
+            <input type="text" class="form-control discharge-med-frequency" value="${data.frequency || ''}" placeholder="e.g. 3x daily">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount</label>
+            <input type="text" class="form-control discharge-med-amount" value="${data.amount || ''}" placeholder="e.g. 30 tablets">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+          <div class="form-group">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-control discharge-med-end-date" value="${data.end_date || ''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <input type="text" class="form-control discharge-med-notes" value="${data.notes || ''}" placeholder="Special instructions">
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <button type="button" class="view-btn light" onclick="removeDischargeMedication(this)" style="font-size: 12px; padding: 4px 10px; color: #dc2626; border: 1px solid #fecaca; background: #fef2f2;">Remove</button>
+        </div>
+      `;
+
+      const nameSelect = card.querySelector('.discharge-med-name');
+      const customInput = card.querySelector('.discharge-med-custom-name');
+      const dosageInput = card.querySelector('.discharge-med-dosage');
+      const notesInput = card.querySelector('.discharge-med-notes');
+
+      nameSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (this.value === '__custom__') {
+          customInput.style.display = 'block';
+          customInput.required = true;
+          dosageInput.value = '';
+          notesInput.value = '';
+        } else if (this.value) {
+          customInput.style.display = 'none';
+          customInput.required = false;
+          const strength = selectedOption.dataset.strength || '';
+          const dosageForm = selectedOption.dataset.dosage || '';
+          const description = selectedOption.dataset.description || '';
+          if (strength || dosageForm) {
+            dosageInput.value = [strength, dosageForm].filter(Boolean).join(' ');
+          }
+          if (description) {
+            notesInput.value = description;
+          }
+        } else {
+          customInput.style.display = 'none';
+          customInput.required = false;
+          dosageInput.value = '';
+          notesInput.value = '';
+        }
+      });
+
+      container.appendChild(card);
+    }
+
+    function removeDischargeMedication(btn) {
+      const card = btn.closest('.discharge-medication-card');
+      if (card) card.remove();
+    }
+
+    function getDischargeMedications() {
+      const cards = document.querySelectorAll('.discharge-medication-card');
+      return Array.from(cards).map(card => {
+        const nameSelect = card.querySelector('.discharge-med-name');
+        const customInput = card.querySelector('.discharge-med-custom-name');
+        const name = nameSelect.value === '__custom__' ? (customInput?.value || '') : (nameSelect.value || '');
+        return {
+          name,
+          dosage: card.querySelector('.discharge-med-dosage')?.value || '',
+          frequency: card.querySelector('.discharge-med-frequency')?.value || '',
+          amount: card.querySelector('.discharge-med-amount')?.value || '',
+          end_date: card.querySelector('.discharge-med-end-date')?.value || '',
+          notes: card.querySelector('.discharge-med-notes')?.value || ''
+        };
+      });
     }
     
     async function saveDischargeForm() {
@@ -3753,12 +3860,7 @@
         address: document.getElementById('dischargeAddress').value,
         phone: document.getElementById('dischargePhone').value,
         email: document.getElementById('dischargeEmail').value,
-        medication: document.getElementById('dischargeMedication').value,
-        dosage: document.getElementById('dischargeDosage').value,
-        amount: document.getElementById('dischargeAmount').value,
-        frequency: document.getElementById('dischargeFrequency').value,
-        end_date: document.getElementById('dischargeMedEndDate').value,
-        notes: document.getElementById('dischargeMedNotes').value,
+        medications: getDischargeMedications(),
         physician_approval: document.getElementById('dischargePhysician').value,
         patient_status: document.getElementById('dischargePatientStatus').value,
         date_of_signature: document.getElementById('dischargeSignatureDate').value,
@@ -3772,10 +3874,37 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dischargeData)
         });
-        
-const data = await response.json();
+        const data = await response.json();
         if (data.success) {
           showToast('success', 'Discharge Saved', 'Patient discharge form has been saved successfully');
+          
+          // Send discharge medications to pharmacy queue
+          const dischargeMedications = getDischargeMedications();
+          if (dischargeMedications && dischargeMedications.length > 0) {
+            try {
+              const pharmacyResponse = await fetch(`${API_BASE}/pharmacy/discharge-medications`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  admission_id: admissionId,
+                  patient_id: patientId,
+                  patient_name: document.getElementById('dischargePatientName').value,
+                  medications: dischargeMedications
+                })
+              });
+
+              const pharmacyData = await pharmacyResponse.json();
+              if (!pharmacyData.success) {
+                console.error('Pharmacy queue error:', pharmacyData.message);
+                showToast('error', 'Pharmacy Sync Failed', pharmacyData.message || 'Discharge medications could not be sent to pharmacy');
+              }
+            } catch (pharmacyError) {
+              console.error('Error sending discharge medications to pharmacy:', pharmacyError);
+              showToast('error', 'Pharmacy Sync Failed', 'Could not reach pharmacy service');
+            }
+          }
+          
           const admissionId = document.getElementById('dischargeAdmissionId').value;
           setTimeout(() => {
             window.open(`${API_BASE}/doctor/admissions/${admissionId}/discharge/pdf`, '_blank');
@@ -3820,12 +3949,7 @@ const data = await response.json();
       const address = document.getElementById('dischargeAddress').value;
       const phone = document.getElementById('dischargePhone').value;
       const email = document.getElementById('dischargeEmail').value;
-      const medication = document.getElementById('dischargeMedication').value;
-      const dosage = document.getElementById('dischargeDosage').value;
-      const amount = document.getElementById('dischargeAmount').value;
-      const frequency = document.getElementById('dischargeFrequency').value;
-      const medEndDate = document.getElementById('dischargeMedEndDate').value;
-      const medNotes = document.getElementById('dischargeMedNotes').value;
+      const medications = getDischargeMedications();
       
       const statusDisplay = patientStatus ? patientStatus.charAt(0).toUpperCase() + patientStatus.slice(1) : '';
       
@@ -3912,21 +4036,25 @@ const data = await response.json();
             </div>
           </div>
           
-          <div class="section">
-            <div class="section-title">Medication</div>
-            <div class="section-body">
-              <div class="row">
-                <div class="field"><div class="label">Medication Name</div><div class="value ${medication ? '' : 'empty'}">${medication || 'N/A'}</div></div>
-                <div class="field"><div class="label">Dosage</div><div class="value ${dosage ? '' : 'empty'}">${dosage || 'N/A'}</div></div>
-                <div class="field"><div class="label">Frequency</div><div class="value ${frequency ? '' : 'empty'}">${frequency || 'N/A'}</div></div>
-              </div>
-              <div class="row">
-                <div class="field"><div class="label">Amount</div><div class="value ${amount ? '' : 'empty'}">${amount || 'N/A'}</div></div>
-                <div class="field"><div class="label">End Date</div><div class="value ${medEndDate ? '' : 'empty'}">${medEndDate || 'N/A'}</div></div>
-                <div class="field"><div class="label">Notes</div><div class="value ${medNotes ? '' : 'empty'}">${medNotes || 'N/A'}</div></div>
-              </div>
-            </div>
-          </div>
+           <div class="section">
+             <div class="section-title">Medication</div>
+             <div class="section-body">
+               ${medications.length === 0 ? '<div class="row"><div class="field"><div class="value empty">N/A</div></div></div>' : medications.map((med, idx) => `
+                 <div style="margin-bottom: ${idx > 0 ? '12px' : '0'}; padding-bottom: ${idx > 0 ? '12px' : '0'}; border-bottom: ${idx > 0 ? '1px solid #e5e7eb' : 'none'};">
+                   <div class="row">
+                     <div class="field"><div class="label">Medication Name</div><div class="value">${med.name || 'N/A'}</div></div>
+                     <div class="field"><div class="label">Dosage</div><div class="value">${med.dosage || 'N/A'}</div></div>
+                     <div class="field"><div class="label">Frequency</div><div class="value">${med.frequency || 'N/A'}</div></div>
+                   </div>
+                   <div class="row">
+                     <div class="field"><div class="label">Amount</div><div class="value">${med.amount || 'N/A'}</div></div>
+                     <div class="field"><div class="label">End Date</div><div class="value">${med.end_date || 'N/A'}</div></div>
+                     <div class="field"><div class="label">Notes</div><div class="value">${med.notes || 'N/A'}</div></div>
+                   </div>
+                 </div>
+               `).join('')}
+             </div>
+           </div>
           
           <div class="section">
             <div class="section-title">Authorization</div>
@@ -5144,6 +5272,432 @@ const data = await response.json();
       }, 4000);
     }
     
+    // Prescription functions
+    let currentPrescriptionId = null;
+
+    async function loadPatientsForPrescription() {
+      const modalSelect = document.getElementById('prescriptionPatientId');
+      const filterSelect = document.getElementById('prescriptionPatientFilter');
+
+      try {
+        const response = await fetch(`${API_BASE}/admin/users?role=patient&limit=200`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const options = data.users.map(u =>
+            `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
+          ).join('');
+
+          if (modalSelect) {
+            modalSelect.innerHTML = '<option value="">Select Patient</option>' + options;
+          }
+          if (filterSelect) {
+            filterSelect.innerHTML = '<option value="">All Patients</option>' + options;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading patients for prescription:', error);
+      }
+    }
+
+    async function loadPrescriptionPatients() {
+      const container = document.getElementById('prescriptionPatientsList');
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      const searchInput = document.getElementById('prescriptionPatientSearch');
+      const search = searchInput ? searchInput.value.trim() : '';
+
+      try {
+        const response = await fetch(`${API_BASE}/doctor/medications?limit=200`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          container.innerHTML = '<div style="text-align: center; padding: 24px; color: #dc2626;">Error loading patients</div>';
+          return;
+        }
+
+        const prescriptions = data.medications || [];
+        const patientMap = new Map();
+
+        prescriptions.forEach(m => {
+          if (!m.patient) return;
+          const pid = m.patient.id;
+          if (!patientMap.has(pid)) {
+            patientMap.set(pid, {
+              id: pid,
+              name: m.patient.name,
+              count: 0,
+              activeCount: 0
+            });
+          }
+          const entry = patientMap.get(pid);
+          entry.count += 1;
+          if (m.status === 'active') entry.activeCount += 1;
+        });
+
+        let patients = Array.from(patientMap.values());
+        if (search) {
+          const q = search.toLowerCase();
+          patients = patients.filter(p => p.name.toLowerCase().includes(q));
+        }
+
+        if (patients.length === 0) {
+          container.innerHTML = '<div style="text-align: center; padding: 24px; color: #64748b;">No patients with prescriptions found</div>';
+          return;
+        }
+
+        container.innerHTML = patients.map(p => `
+          <div class="appointment-item" style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'" onclick="selectPrescriptionPatient(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+            <div style="font-weight: 600; color: #0f172a; font-size: 14px;">${escapeHtml(p.name)}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+              ${p.count} prescription${p.count !== 1 ? 's' : ''} ${p.activeCount > 0 ? `(${p.activeCount} active)` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading prescription patients:', error);
+        container.innerHTML = '<div style="text-align: center; padding: 24px; color: #dc2626;">Error loading patients</div>';
+      }
+    }
+
+    let selectedPrescriptionPatientId = null;
+
+    function selectPrescriptionPatient(patientId, patientName) {
+      selectedPrescriptionPatientId = patientId;
+      document.getElementById('selectedPatientPrescriptionsTitle').textContent = `Prescriptions - ${patientName}`;
+      loadPatientPrescriptions();
+    }
+
+    async function loadPatientPrescriptions() {
+      const container = document.getElementById('prescriptionsList');
+      if (!container) return;
+
+      if (!selectedPrescriptionPatientId) {
+        container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 40px 0;">Select a patient to view prescriptions</p>';
+        return;
+      }
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      const searchInput = document.getElementById('prescriptionSearchInput');
+      const statusFilter = document.getElementById('prescriptionStatusFilter');
+      const search = searchInput ? searchInput.value.trim() : '';
+      const status = statusFilter ? statusFilter.value : '';
+
+      let url = `${API_BASE}/doctor/medications?limit=100&patient_id=${encodeURIComponent(selectedPrescriptionPatientId)}`;
+      if (status) url += `&status=${encodeURIComponent(status)}`;
+
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          container.innerHTML = '<div style="text-align: center; padding: 24px; color: #dc2626;">Error loading prescriptions</div>';
+          return;
+        }
+
+        let prescriptions = data.medications || [];
+
+        if (search) {
+          const q = search.toLowerCase();
+          prescriptions = prescriptions.filter(m =>
+            (m.medicationName || '').toLowerCase().includes(q) ||
+            (m.instructions || '').toLowerCase().includes(q)
+          );
+        }
+
+        if (prescriptions.length === 0) {
+          container.innerHTML = '<div style="text-align: center; padding: 24px; color: #64748b;">No prescriptions found for this patient</div>';
+          return;
+        }
+
+        container.innerHTML = prescriptions.map(m => `
+          <div class="appointment-item" style="padding: 14px 16px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'" onclick="viewPrescriptionDetail(${m.id})">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 600; color: #0f172a; font-size: 14px;">${escapeHtml(m.medicationName || 'Unknown')}</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Prescribed: ${m.prescribedDate ? new Date(m.prescribedDate).toLocaleDateString() : 'N/A'}</div>
+              </div>
+              <span class="badge ${m.status === 'active' ? 'badge-active' : m.status === 'stopped' ? 'badge-inactive' : 'badge-completed'}">${capitalizeFirst(m.status || 'active')}</span>
+            </div>
+            <div style="font-size: 13px; color: #475569;">
+              <div><strong>Dosage:</strong> ${escapeHtml(m.dosage || 'N/A')} | <strong>Frequency:</strong> ${escapeHtml(m.frequency || 'N/A')}</div>
+              <div><strong>Duration:</strong> ${escapeHtml(m.duration || 'N/A')} | <strong>Refills:</strong> ${m.refillsRemaining || 0}</div>
+              ${m.instructions ? `<div style="margin-top: 4px; font-size: 12px; color: #64748b;">${escapeHtml(m.instructions)}</div>` : ''}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <button class="view-btn" onclick="event.stopPropagation(); editPrescription(${m.id})" style="padding: 6px 14px; font-size: 12px;"><i class="fas fa-edit"></i> Edit</button>
+              ${m.status === 'active' ? `<button class="view-btn" onclick="event.stopPropagation(); renewPrescription(${m.id})" style="padding: 6px 14px; font-size: 12px; background: #059669; color: white;"><i class="fas fa-sync-alt"></i> Renew</button>` : ''}
+              ${m.refillsRemaining > 0 ? `<button class="view-btn light" onclick="event.stopPropagation(); addRefill(${m.id})" style="padding: 6px 14px; font-size: 12px;"><i class="fas fa-plus-circle"></i> Refill</button>` : ''}
+              ${m.status === 'active' ? `<button class="view-btn light" onclick="event.stopPropagation(); stopPrescription(${m.id})" style="padding: 6px 14px; font-size: 12px;"><i class="fas fa-stop"></i> Stop</button>` : ''}
+              <button class="view-btn" onclick="event.stopPropagation(); deletePrescription(${m.id})" style="padding: 6px 14px; font-size: 12px; background: #dc2626; color: white;"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading prescriptions:', error);
+        container.innerHTML = '<div style="text-align: center; padding: 24px; color: #dc2626;">Error loading prescriptions</div>';
+      }
+    }
+
+    function addPrescription() {
+      const patientId = document.getElementById('examPatientId')?.value;
+      if (!patientId) {
+        alert('Please select a patient first');
+        return;
+      }
+      openPrescriptionModal(patientId, null);
+    }
+
+    function openPrescriptionModalForCurrentPatient() {
+      const patientId = selectedPrescriptionPatientId || document.getElementById('examPatientId')?.value;
+      if (!patientId) {
+        alert('Please select a patient first');
+        return;
+      }
+      openPrescriptionModal(patientId, null);
+    }
+
+    function openPrescriptionModal(patientId, prescriptionId) {
+      window._examinationMode = false;
+      currentPrescriptionId = prescriptionId || null;
+      const modal = document.getElementById('prescriptionModal');
+      const patientSelect = document.getElementById('prescriptionPatientId');
+      if (!modal || !patientSelect) return;
+
+      const ensurePatientsLoaded = async () => {
+        const hasOptions = patientSelect.options.length > 1;
+        if (!hasOptions) {
+          await loadPatientsForPrescription();
+        }
+        if (prescriptionId) {
+          document.getElementById('prescriptionModalTitle').textContent = 'Edit Prescription';
+          document.getElementById('prescriptionId').value = prescriptionId;
+          loadPrescriptionDetail(prescriptionId);
+        } else {
+          document.getElementById('prescriptionModalTitle').textContent = 'Add Prescription';
+          document.getElementById('prescriptionForm').reset();
+          document.getElementById('prescriptionId').value = '';
+          document.getElementById('prescriptionIndex').value = '-1';
+          if (patientId) {
+            patientSelect.value = patientId;
+          }
+        }
+        modal.style.display = 'flex';
+      };
+
+      ensurePatientsLoaded();
+    }
+
+    function closePrescriptionModal() {
+      const modal = document.getElementById('prescriptionModal');
+      if (modal) modal.style.display = 'none';
+      currentPrescriptionId = null;
+    }
+
+    async function loadPrescriptionDetail(id) {
+      try {
+        const response = await fetch(`${API_BASE}/doctor/medications/${id}`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success && data.medication) {
+          const m = data.medication;
+          document.getElementById('prescriptionPatientId').value = m.patient?.id || '';
+          document.getElementById('medicationName').value = m.medicationName || '';
+          document.getElementById('medicationDosage').value = m.dosage || '';
+          document.getElementById('medicationFrequency').value = m.frequency || '';
+          document.getElementById('medicationDuration').value = m.duration || '';
+          document.getElementById('medicationRefills').value = m.refillsRemaining || 0;
+          document.getElementById('medicationInstructions').value = m.instructions || '';
+        }
+      } catch (error) {
+        console.error('Error loading prescription detail:', error);
+      }
+    }
+
+    async function savePrescription() {
+      const prescriptionId = document.getElementById('prescriptionId').value;
+      const patientId = document.getElementById('prescriptionPatientId').value;
+      const medicationName = document.getElementById('medicationName').value.trim();
+      const dosage = document.getElementById('medicationDosage').value.trim();
+      const frequency = document.getElementById('medicationFrequency').value;
+      const duration = document.getElementById('medicationDuration').value.trim();
+      const refillsRemaining = parseInt(document.getElementById('medicationRefills').value) || 0;
+      const instructions = document.getElementById('medicationInstructions').value.trim();
+
+      if (!patientId || !medicationName || !dosage || !frequency) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const payload = {
+        patient_id: parseInt(patientId),
+        medication_name: medicationName,
+        dosage: dosage,
+        frequency: frequency,
+        duration: duration,
+        instructions: instructions,
+        refills_remaining: refillsRemaining
+      };
+
+      try {
+        const url = prescriptionId ? `${API_BASE}/doctor/medications/${prescriptionId}` : `${API_BASE}/doctor/medications`;
+        const method = prescriptionId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert(prescriptionId ? 'Prescription updated successfully' : 'Prescription created successfully');
+          closePrescriptionModal();
+          loadPrescriptions();
+        } else {
+          alert(data.message || 'Failed to save prescription');
+        }
+      } catch (error) {
+        console.error('Error saving prescription:', error);
+        alert('Failed to save prescription');
+      }
+    }
+
+    function editPrescription(id) {
+      openPrescriptionModal(null, id);
+    }
+
+    async function deletePrescription(id) {
+      if (!confirm('Are you sure you want to delete this prescription?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/doctor/medications/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Prescription deleted successfully');
+          loadPatientPrescriptions();
+        } else {
+          alert(data.message || 'Failed to delete prescription');
+        }
+      } catch (error) {
+        console.error('Error deleting prescription:', error);
+        alert('Failed to delete prescription');
+      }
+    }
+
+    async function stopPrescription(id) {
+      if (!confirm('Are you sure you want to stop this prescription?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/doctor/medications/${id}/cancel`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Prescription stopped successfully');
+          loadPatientPrescriptions();
+        } else {
+          alert(data.message || 'Failed to stop prescription');
+        }
+      } catch (error) {
+        console.error('Error stopping prescription:', error);
+        alert('Failed to stop prescription');
+      }
+    }
+
+    function viewPrescriptionDetail(id) {
+      const container = document.getElementById('prescriptionDetails');
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      fetch(`${API_BASE}/doctor/medications/${id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success) {
+            container.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 40px 0;">Failed to load prescription details</p>';
+            return;
+          }
+
+          const m = data.medication;
+          container.innerHTML = `
+            <div style="padding: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                  <h3 style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 0 0 4px;">${escapeHtml(m.medicationName || 'Unknown')}</h3>
+                  <p style="font-size: 14px; color: #64748b; margin: 0;">${escapeHtml(m.patient?.name || 'Unknown Patient')}</p>
+                </div>
+                <span class="badge ${m.status === 'active' ? 'badge-active' : m.status === 'stopped' ? 'badge-inactive' : 'badge-completed'}">${capitalizeFirst(m.status || 'active')}</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Dosage</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a;">${escapeHtml(m.dosage || 'N/A')}</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Frequency</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a;">${escapeHtml(m.frequency || 'N/A')}</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Duration</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a;">${escapeHtml(m.duration || 'N/A')}</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Refills Remaining</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a;">${m.refillsRemaining || 0}</div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Instructions</div>
+                <div style="font-size: 14px; color: #0f172a; padding: 12px; background: #f8fafc; border-radius: 8px;">${escapeHtml(m.instructions || 'No instructions')}</div>
+              </div>
+
+              <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                <button class="view-btn" onclick="editPrescription(${m.id})" style="padding: 10px 20px; font-size: 13px;"><i class="fas fa-edit"></i> Edit</button>
+                ${m.status === 'active' ? `<button class="view-btn light" onclick="stopPrescription(${m.id})" style="padding: 10px 20px; font-size: 13px;"><i class="fas fa-stop"></i> Stop</button>` : ''}
+                <button class="view-btn" onclick="deletePrescription(${m.id})" style="padding: 10px 20px; font-size: 13px; background: #dc2626; color: white;"><i class="fas fa-trash"></i> Delete</button>
+              </div>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error('Error loading prescription detail:', error);
+          container.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 40px 0;">Error loading prescription details</p>';
+        });
+    }
+
     // View patient profile
     function viewPatient(id) { viewPatientProfile(id); }
     function reviewResult(id) { window.location.href = `#results?id=${id}`; }

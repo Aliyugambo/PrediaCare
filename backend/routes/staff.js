@@ -1007,6 +1007,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         u.email,
         u.phone,
         u.is_active,
+        u.patient_status,
         u.created_at,
         a.id as admission_id,
         a.room_number,
@@ -1018,7 +1019,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
         (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date
       FROM users u
-      LEFT JOIN admissions a ON u.id = a.patient_id AND a.status = 'admitted'
+      LEFT JOIN admissions a ON u.id = a.patient_id AND a.status IN ('admitted', 'outpost')
       LEFT JOIN doctors d ON a.doctor_id = d.id
       LEFT JOIN users du ON d.user_id = du.id
       WHERE u.role = 'patient'
@@ -1031,9 +1032,15 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
     }
     
     if (status === 'admitted') {
-      query += ' AND a.id IS NOT NULL';
-    } else if (status === 'non-admitted') {
-      query += ' AND a.id IS NULL';
+      query += " AND a.status = 'admitted'";
+    } else if (status === 'outpost') {
+      query += " AND a.status = 'outpost'";
+    } else if (status === 'discharged') {
+      query += " AND u.patient_status = 'discharged'";
+    } else if (status === 'active') {
+      query += ' AND u.is_active = 1';
+    } else if (status === 'inactive') {
+      query += ' AND u.is_active = 0';
     }
     
     query += ' ORDER BY u.created_at DESC';
@@ -1055,6 +1062,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         email: p.email,
         phone: p.phone,
         isActive: p.is_active,
+        patientStatus: p.patient_status,
         createdAt: p.created_at,
         admissionId: p.admission_id,
         roomNumber: p.room_number,
@@ -1065,7 +1073,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         doctorName: p.doctor_name,
         latestDiagnosis: p.latest_diagnosis,
         latestDiagnosisDate: p.latest_diagnosis_date,
-        status: p.admission_id ? 'admitted' : 'non-admitted'
+        status: p.patient_status || (p.admission_id ? 'admitted' : 'active')
       })),
       total: countResult[0].total
     });
