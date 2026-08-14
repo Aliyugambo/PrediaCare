@@ -1325,7 +1325,7 @@ router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => 
         u.phone as patient_phone,
         u.patient_status,
         doc_user.name as doctor_name,
-        doc.specialization,
+        d.specialization,
         a.room_number,
         a.bed_number,
         a.admission_type,
