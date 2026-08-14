@@ -108,7 +108,7 @@ router.get('/medicines', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req,
       query += ' AND expiry_date < CURDATE()';
     }
 
-    query += ' ORDER BY medicine_name ASC LIMIT ? OFFSET ?';
+    query += ` ORDER BY medicine_name ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const connection = await pool.getConnection();
@@ -386,7 +386,7 @@ router.get('/sales', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res
       LEFT JOIN users u_patient ON ps.patient_id = u_patient.id
       LEFT JOIN users u_staff ON ps.sold_by = u_staff.id
       ORDER BY ps.sale_date DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [limit, offset]);
 
     const [countResult] = await connection.execute('SELECT COUNT(*) as total FROM pharmacy_sales');

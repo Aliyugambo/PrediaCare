@@ -45,7 +45,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, res) => {
       params.push(status);
     }
     
-    query += ' ORDER BY r.result_date DESC, r.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY r.result_date DESC, r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -134,7 +134,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, re
       JOIN doctors d ON r.doctor_id = d.id
       JOIN users u_doctor ON d.user_id = u_doctor.id
       WHERE r.patient_id = ?
-      ORDER BY r.created_at DESC LIMIT ? OFFSET ?
+      ORDER BY r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, parseInt(limit), parseInt(offset)]);
     
     // Get count
@@ -423,7 +423,7 @@ router.get('/by-type/:type', checkPermission(PERMISSIONS.VIEW_RESULTS), async (r
       JOIN users u ON d.user_id = u.id
       WHERE r.patient_id = ? AND r.test_type = ?
       ORDER BY r.result_date DESC, r.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, type, parseInt(limit), parseInt(offset)]);
     
     const [countResult] = await connection.execute(`

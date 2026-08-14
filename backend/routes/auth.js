@@ -121,7 +121,7 @@ router.post('/login', authLimiter, async (req, res) => {
     }
 
     // Validate role (include admin so admins can authenticate)
-    if (!['patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse'].includes(role)) {
+    if (!['patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse', 'bloodbank'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
@@ -223,8 +223,10 @@ router.post('/login', authLimiter, async (req, res) => {
       redirectUrl = '/customer-care-dashboard.html';
     } else if (user.role === 'diagnostic') {
       redirectUrl = '/diagnostic-dashboard.html';
-    } else if (user.role === 'pharmacist') {
+     } else if (user.role === 'pharmacist') {
       redirectUrl = '/pharmacist-dashboard.html';
+    } else if (user.role === 'bloodbank') {
+      redirectUrl = '/bloodbank-dashboard.html';
     }
     
     console.log('🔍 DEBUG - Final redirect URL:', redirectUrl);

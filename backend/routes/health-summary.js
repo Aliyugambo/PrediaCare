@@ -50,7 +50,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (req, re
       params.push(type);
     }
     
-    query += ' ORDER BY h.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -210,7 +210,7 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), as
       JOIN users u ON d.user_id = u.id
       WHERE e.patient_id = ? AND e.vital_signs IS NOT NULL AND e.vital_signs != ''
       ORDER BY e.examination_date DESC, e.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, parseInt(limit), parseInt(offset)]);
     
     // Get total count
@@ -305,7 +305,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (
       params.push(type);
     }
     
-    query += ' ORDER BY h.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -527,7 +527,7 @@ router.get('/by-type/:type', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), a
       JOIN users u ON d.user_id = u.id
       WHERE h.patient_id = ? AND h.summary_type = ?
       ORDER BY h.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, type, parseInt(limit), parseInt(offset)]);
     
     const [countResult] = await connection.execute(`
@@ -721,7 +721,7 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), as
       JOIN users u ON d.user_id = u.id
       WHERE e.patient_id = ? AND e.vital_signs IS NOT NULL AND e.vital_signs != ''
       ORDER BY e.examination_date DESC, e.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, parseInt(limit), parseInt(offset)]);
     
     // Get total count

@@ -128,8 +128,7 @@ router.get('/users', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, re
       params.push(patient_status);
     }
     
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [rows] = await connection.query(query, params);
@@ -157,8 +156,8 @@ router.get('/users', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, re
       success: true, 
       users: rows, 
       total: countResult[0].total,
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+      limit: Math.floor(Number(limit)) || 50,
+      offset: Math.floor(Number(offset)) || 0
     });
   } catch (err) {
     console.error('Error fetching users list:', err);
@@ -216,7 +215,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'name, email, password and role are required' });
     }
 
-    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist'].includes(role)) {
+    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'bloodbank'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
@@ -301,7 +300,7 @@ router.post('/set-role', requireAdmin, async (req, res) => {
     if (!userId || !role) {
       return res.status(400).json({ success: false, message: 'userId and role are required' });
     }
-    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist'].includes(role)) {
+    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'bloodbank'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
@@ -359,7 +358,7 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email, and role are required' });
     }
 
-    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist'].includes(role)) {
+    if (!['doctor', 'staff', 'nurse', 'patient', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'bloodbank'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
@@ -473,8 +472,7 @@ router.get('/appointments', requireAdmin, async (req, res) => {
       params.push(patient_id);
     }
     
-    query += ' ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [appointments] = await connection.query(query, params);
@@ -635,8 +633,7 @@ router.get('/messages', requireAdmin, async (req, res) => {
       query += ' AND m.is_read = FALSE';
     }
     
-    query += ' ORDER BY m.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY m.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [messages] = await connection.query(query, params);
@@ -722,8 +719,7 @@ router.get('/results', requireAdmin, async (req, res) => {
       params.push(status);
     }
     
-    query += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [results] = await connection.query(query, params);
@@ -784,8 +780,7 @@ router.get('/doctors', requireAdmin, async (req, res) => {
       params.push(is_active === 'true');
     }
     
-    query += ' ORDER BY u.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY u.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [doctors] = await connection.query(query, params);
@@ -898,8 +893,7 @@ router.get('/health-summaries', requireAdmin, async (req, res) => {
       params.push(summary_type);
     }
     
-    query += ' ORDER BY h.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [summaries] = await connection.query(query, params);
@@ -953,7 +947,7 @@ router.get('/medications', requireAdmin, async (req, res) => {
       JOIN users u_patient ON m.patient_id = u_patient.id
       JOIN users u_doctor ON m.doctor_id = u_doctor.id
       ORDER BY m.created_at DESC
-      LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
+       LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `);
     
     const [countResult] = await connection.execute('SELECT COUNT(*) as total FROM medications');
@@ -1010,8 +1004,7 @@ router.get('/test-referrals', requireAdmin, async (req, res) => {
       params.push(status);
     }
     
-    query += ' ORDER BY tr.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY tr.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [referrals] = await connection.query(query, params);
@@ -1082,8 +1075,7 @@ router.get('/reports', requireAdmin, async (req, res) => {
       params.push(report_type);
     }
     
-    query += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
     const connection = await pool.getConnection();
     const [reports] = await connection.query(query, params);
@@ -1262,12 +1254,11 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
       query += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern);
-    }
+     }
 
-    query += ` ORDER BY a.discharge_date DESC LIMIT ? OFFSET ?`;
-    params.push(parseInt(limit), parseInt(offset));
+     query += ` ORDER BY a.discharge_date DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
 
-    const connection = await pool.getConnection();
+     const connection = await pool.getConnection();
     const [rows] = await connection.execute(query, params);
 
     let countQuery = `
@@ -1307,8 +1298,8 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
         created_at: p.created_at
       })),
       total: countResult[0].total,
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+      limit: Math.floor(Number(limit)) || 50,
+      offset: Math.floor(Number(offset)) || 0
     });
   } catch (err) {
     console.error('Error fetching discharged patients:', err);

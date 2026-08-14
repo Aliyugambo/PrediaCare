@@ -331,7 +331,7 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_ALL_APPOINTMENTS), 
       params.push(patient_id);
     }
 
-    query += ' ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const connection = await pool.getConnection();

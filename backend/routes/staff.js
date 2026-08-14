@@ -53,7 +53,7 @@ router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), 
       params.push(status);
     }
     
-    query += ' ORDER BY tr.urgency DESC, tr.created_at ASC LIMIT ? OFFSET ?';
+    query += ` ORDER BY tr.urgency DESC, tr.created_at ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -387,7 +387,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_REPORTS), async (req, re
       params.push(status);
     }
     
-    query += ' ORDER BY r.urgency DESC, r.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY r.urgency DESC, r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -749,7 +749,7 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), as
       params.push(status);
     }
 
-    query += ' ORDER BY a.appointment_date DESC, a.appointment_time ASC LIMIT ? OFFSET ?';
+    query += ` ORDER BY a.appointment_date DESC, a.appointment_time ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const [appointments] = await connection.query(query, params);

@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blood Bank Dashboard - Carenix Clinic</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #0b0c0c;
+      --accent-hover: #101010;
+      --success: #10b981;
+      --warning: #363534;
+      --danger: #ef4444;
+      --info: #06b6d4;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --border: #e2e8f0;
+      --bg-light: #f8fafc;
+      --white: #ffffff;
+    }
+
+    * {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-light);
+      color: var(--primary);
+      min-height: 100vh;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--danger);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: black;
+    }
+
+    .logo-text span {
+      color: var(--danger);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 24px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--slate-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-light);
+      color: var(--danger);
+    }
+
+    .nav-item.active {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .nav-item.active i {
+      color: var(--danger);
+    }
+
+    .nav-item i {
+      width: 20px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-menu {
+      position: relative;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--danger);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 200px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 100;
+    }
+
+    .user-menu:hover .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dropdown-header .name {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    .dropdown-header .email {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-top: 2px;
+    }
+
+    .dropdown-item {
+      padding: 12px 16px;
+      color: var(--slate-600);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background: var(--bg-light);
+      color: var(--primary);
+    }
+
+    .dropdown-item i {
+      width: 16px;
+      font-size: 14px;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    .content {
+      flex: 1;
+      padding: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .stat-icon.blue { background: #dbeafe; color: #171819; }
+    .stat-icon.green { background: #d1fae5; color: #059669; }
+    .stat-icon.orange { background: #fef3c7; color: #d97706; }
+    .stat-icon.purple { background: #f3e8ff; color: #7c3aed; }
+    .stat-icon.red { background: #fee2e2; color: #dc2626; }
+    .stat-icon.cyan { background: #cffafe; color: #0891b2; }
+    .stat-icon.yellow { background: #fef3c7; color: #d97706; }
+    .stat-icon.teal { background: #ccfbf1; color: #0d9488; }
+
+    .stat-info h4 {
+      font-size: 13px;
+      color: var(--slate-500);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .stat-info .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      background: var(--bg-light);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--slate-600);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    tbody tr:hover {
+      background: var(--bg-light);
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .badge-admin { background: #dbeafe; color: #1b1b1c; }
+    .badge-doctor { background: #d1fae5; color: #059669; }
+    .badge-staff { background: #fef3c7; color: #d97706; }
+    .badge-nurse { background: #fce7f3; color: #db2777; }
+    .badge-patient { background: #f3e8ff; color: #7c3aed; }
+    .badge-customer_care { background: #cffafe; color: #0891b2; }
+    .badge-diagnostic { background: #fef9c3; color: #a16207; }
+    .badge-pharmacist { background: #ccfbf1; color: #0d9488; }
+    .badge-bloodbank { background: #fee2e2; color: #991b1b; }
+    .badge-active { background: #d1fae5; color: #059669; }
+    .badge-inactive { background: #fee2e2; color: #dc2626; }
+    .badge-scheduled { background: #dbeafe; color: #131313; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
+    .badge-confirmed { background: #d1fae5; color: #059669; }
+    .badge-completed { background: #f3e8ff; color: #7c3aed; }
+    .badge-cancelled { background: #fee2e2; color: #dc2626; }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: var(--bg-light);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .btn-danger:hover {
+      background: #fee2e2;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .view-field {
+      margin: 0;
+      font-size: 14px;
+      color: var(--slate-600);
+      line-height: 1.5;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--primary);
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--slate-500);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 24px;
+      color: var(--slate-500);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-overlay.active {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .modal {
+      position: static !important;
+      display: block !important;
+      background: var(--white);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: var(--bg-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--slate-500);
+      font-size: 18px;
+    }
+
+    .modal-close:hover {
+      background: var(--border);
+    }
+
+    .blood-bank-tabs {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .blood-tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--slate-600);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .blood-tab-btn:hover {
+      background: var(--bg-light);
+      color: var(--primary);
+    }
+
+    .blood-tab-btn.active {
+      background: #fef2f2;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .blood-bank-tab-content {
+      display: none;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 24px;
+      color: var(--slate-500);
+    }
+
+    .error-message {
+      text-align: center;
+      padding: 24px;
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--slate-500);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      color: var(--border);
+      margin-bottom: 16px;
+    }
+
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--slate-500);
+    }
+
+    .sidebar-close {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--slate-500);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .mobile-toggle {
+        display: block;
+      }
+
+      .sidebar-close {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="logo">
+          <div class="#"><img src="assets/images/logo/logo_64.svg" alt="offcanvas logo"></div>
+          <div class="logo-text">rediaCare<span></span></div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Blood Bank</div>
+          <a href="#" class="nav-item active" data-section="blood-bank" onclick="navigateTo('blood-bank'); return false;">
+            <i class="fas fa-tint"></i>
+            <span>Blood Bank</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Account</div>
+          <a href="#" class="nav-item" onclick="showProfileModal(); return false;">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+          </a>
+          <a href="#" class="nav-item" onclick="logout(); return false;">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p style="font-size: 12px; color: var(--slate-500); text-align: center;">Blood Bank Staff</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <header class="header">
+        <div class="header-left">
+          <button class="header-btn mobile-toggle" onclick="toggleSidebar()" style="display: none;" id="mobileToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title" id="pageTitle">Blood Bank</h1>
+        </div>
+        <div class="header-right">
+          <div class="user-menu">
+            <div class="user-avatar" id="userInitials">B</div>
+            <div class="dropdown-menu">
+              <div class="dropdown-header">
+                <div class="name" id="userName">Blood Bank Staff</div>
+                <div class="email" id="userEmail">bloodbank@carenix.com</div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a href="#" class="dropdown-item" onclick="showProfileModal(); return false;"><i class="fas fa-user"></i> Profile</a>
+              <div class="dropdown-divider"></div>
+              <a href="#" class="dropdown-item" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- Blood Bank Section -->
+        <div id="section-blood-bank" class="tab-content active">
+          <!-- Blood Bank Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-tint"></i></div>
+              <div class="stat-info">
+                <h4>Total Units</h4>
+                <div class="value" id="bloodBankStatTotal">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-info">
+                <h4>Available</h4>
+                <div class="value" id="bloodBankStatAvailable">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="stat-info">
+                <h4>Reserved</h4>
+                <div class="value" id="bloodBankStatReserved">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-exchange-alt"></i></div>
+              <div class="stat-info">
+                <h4>Issued</h4>
+                <div class="value" id="bloodBankStatIssued">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-calendar-times"></i></div>
+              <div class="stat-info">
+                <h4>Expired</h4>
+                <div class="value" id="bloodBankStatExpired">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>Expiring Soon</h4>
+                <div class="value" id="bloodBankStatExpiring">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+              <div class="stat-info">
+                <h4>Total Donors</h4>
+                <div class="value" id="bloodBankStatDonors">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon cyan"><i class="fas fa-procedures"></i></div>
+              <div class="stat-info">
+                <h4>Pending Issues</h4>
+                <div class="value" id="bloodBankStatPendingIssues">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blood Bank Tabs -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Blood Bank Management</h3>
+              <div class="filters">
+                <button class="btn btn-primary btn-sm" onclick="openAddBloodUnitModal()">
+                  <i class="fas fa-plus"></i> Add Blood Unit
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="openAddDonorModal()">
+                  <i class="fas fa-user-plus"></i> Add Donor
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="openIssueBloodModal()">
+                  <i class="fas fa-hand-holding-medical"></i> Issue Blood
+                </button>
+              </div>
+            </div>
+            <div class="blood-bank-tabs">
+              <button class="blood-tab-btn active" onclick="switchBloodBankTab('inventory')" data-tab="inventory">Inventory</button>
+              <button class="blood-tab-btn" onclick="switchBloodBankTab('donors')" data-tab="donors">Donors</button>
+              <button class="blood-tab-btn" onclick="switchBloodBankTab('issues')" data-tab="issues">Issued Blood</button>
+              <button class="blood-tab-btn" onclick="switchBloodBankTab('transfusions')" data-tab="transfusions">Transfusions</button>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="bloodBankInventory" class="blood-bank-tab-content">
+              <div class="filters" style="padding: 16px 24px;">
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="bloodSearch" placeholder="Search inventory..." onkeyup="searchBloodInventory()">
+                </div>
+                <select id="bloodGroupFilter" onchange="filterBloodInventory()">
+                  <option value="all">All Blood Groups</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+                <select id="bloodComponentFilter" onchange="filterBloodInventory()">
+                  <option value="all">All Components</option>
+                  <option value="Whole Blood">Whole Blood</option>
+                  <option value="Packed RBC">Packed RBC</option>
+                  <option value="Platelets">Platelets</option>
+                  <option value="Plasma">Plasma</option>
+                  <option value="Cryoprecipitate">Cryoprecipitate</option>
+                </select>
+                <select id="bloodStatusFilter" onchange="filterBloodInventory()">
+                  <option value="all">All Status</option>
+                  <option value="available">Available</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="issued">Issued</option>
+                  <option value="expired">Expired</option>
+                  <option value="discarded">Discarded</option>
+                </select>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Blood Group</th>
+                      <th>Component</th>
+                      <th>Quantity</th>
+                      <th>Donor</th>
+                      <th>Collection Date</th>
+                      <th>Expiry Date</th>
+                      <th>Storage</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bloodInventoryTable">
+                    <tr><td colspan="9" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Donors Tab -->
+            <div id="bloodBankDonors" class="blood-bank-tab-content" style="display: none;">
+              <div class="filters" style="padding: 16px 24px;">
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="donorSearch" placeholder="Search donors..." onkeyup="searchBloodDonors()">
+                </div>
+                <select id="donorBloodGroupFilter" onchange="filterBloodDonors()">
+                  <option value="all">All Blood Groups</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+                <select id="donorStatusFilter" onchange="filterBloodDonors()">
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="blacklisted">Blacklisted</option>
+                </select>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Blood Group</th>
+                      <th>Gender</th>
+                      <th>Phone</th>
+                      <th>Total Donations</th>
+                      <th>Last Donation</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bloodDonorsTable">
+                    <tr><td colspan="8" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Issues Tab -->
+            <div id="bloodBankIssues" class="blood-bank-tab-content" style="display: none;">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Patient/Recipient</th>
+                      <th>Blood Type</th>
+                      <th>Units</th>
+                      <th>Department</th>
+                      <th>Doctor</th>
+                      <th>Issue Date</th>
+                      <th>Emergency</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bloodIssuesTable">
+                    <tr><td colspan="9" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Transfusions Tab -->
+            <div id="bloodBankTransfusions" class="blood-bank-tab-content" style="display: none;">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Patient</th>
+                      <th>Blood Group</th>
+                      <th>Component</th>
+                      <th>Transfusion Date</th>
+                      <th>Administered By</th>
+                      <th>Status</th>
+                      <th>Reaction</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bloodTransfusionsTable">
+                    <tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Blood Unit Modal -->
+  <div class="modal-overlay" id="modal-addBloodUnit" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="bloodUnitModalTitle">Add Blood Unit</h3>
+        <button class="modal-close" onclick="closeAddBloodUnitModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <input type="hidden" id="editBloodUnitId">
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Blood Unit Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Blood Group *</label>
+              <select id="bloodGroup" class="form-control" required>
+                <option value="">Select Blood Group</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Component *</label>
+              <select id="bloodComponent" class="form-control" required>
+                <option value="">Select Component</option>
+                <option value="Whole Blood">Whole Blood</option>
+                <option value="Packed RBC">Packed RBC</option>
+                <option value="Platelets">Platelets</option>
+                <option value="Plasma">Plasma</option>
+                <option value="Cryoprecipitate">Cryoprecipitate</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantity (units) *</label>
+              <input type="number" id="bloodQuantity" class="form-control" value="1" min="1" required>
+              <small style="color: #64748b; font-size: 12px;">Standard unit is 450ml of whole blood.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Collection Date *</label>
+              <input type="date" id="bloodCollectionDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Date *</label>
+              <input type="date" id="bloodExpiryDate" class="form-control" required>
+              <small style="color: #64748b; font-size: 12px;">Typically 35-42 days after collection for whole blood.</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Source Type</label>
+              <select id="bloodSourceType" class="form-control">
+                <option value="">Select Source Type</option>
+                <option value="walk-in">Walk-in Donor</option>
+                <option value="mobile-camp">Mobile Camp</option>
+                <option value="hospital-donor">Hospital Donor</option>
+                <option value="external">External</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Collection Location</label>
+              <input type="text" id="bloodCollectionLocation" class="form-control" placeholder="Enter collection location">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Donor Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="bloodAnonymousDonor" onchange="toggleAnonymousDonor()">
+                <span style="font-size: 14px; color: #374151;">Anonymous Donor</span>
+              </label>
+            </div>
+            <div class="form-group" id="donorIdGroup">
+              <label class="form-label">Donor ID</label>
+              <input type="text" id="bloodDonorId" class="form-control" placeholder="Enter donor ID">
+            </div>
+            <div class="form-group" id="donorNameGroup">
+              <label class="form-label">Donor Name</label>
+              <input type="text" id="bloodDonorName" class="form-control" placeholder="Enter donor name">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Processing Status</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="bloodScreeningComplete">
+                <span style="font-size: 14px; color: #374151;">Screening Complete</span>
+              </label>
+              <small style="color: #64748b; font-size: 12px; margin-left: 24px;">Blood has been screened for infectious diseases.</small>
+            </div>
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="bloodProcessingComplete">
+                <span style="font-size: 14px; color: #374151;">Processing Complete</span>
+              </label>
+              <small style="color: #64748b; font-size: 12px; margin-left: 24px;">Blood has been processed and is ready for storage.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Additional Notes</label>
+          <textarea id="bloodNotes" class="form-control" rows="3" placeholder="Special instructions or notes"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddBloodUnitModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBloodUnit()">Save Blood Unit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Donor Modal -->
+  <div class="modal-overlay" id="modal-addDonor" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="donorModalTitle">Add Blood Donor</h3>
+        <button class="modal-close" onclick="closeAddDonorModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <input type="hidden" id="editDonorId">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" id="donorFirstName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input type="text" id="donorLastName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="donorDOB" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select id="donorGender" class="form-control">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Blood Group *</label>
+            <select id="donorBloodGroup" class="form-control" required>
+              <option value="">Select Blood Group</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" id="donorPhone" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="donorEmail" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emergency Contact</label>
+            <input type="text" id="donorEmergencyContact" class="form-control">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Address</label>
+            <textarea id="donorAddress" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Medical Conditions</label>
+            <textarea id="donorMedicalConditions" class="form-control" rows="2" placeholder="Any relevant medical conditions"></textarea>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Notes</label>
+            <textarea id="donorNotes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddDonorModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDonor()">Save Donor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issue Blood Modal -->
+  <div class="modal-overlay" id="modal-issueBlood" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Issue Blood</h3>
+        <button class="modal-close" onclick="closeIssueBloodModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Blood Issue Form</h4>
+          <p style="margin: 0 0 16px 0; font-size: 13px; color: #64748b;">Fill out all required information to issue blood units.</p>
+
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Recipient Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Recipient Type *</label>
+              <div style="display: flex; gap: 16px; margin-top: 6px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="recipientType" value="patient" checked onchange="toggleRecipientType()">
+                  <span>Hospital Patient</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="recipientType" value="external" onchange="toggleRecipientType()">
+                  <span>External Recipient</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-group" id="issuePatientGroup">
+              <label class="form-label">Patient *</label>
+              <select id="issuePatientId" class="form-control">
+                <option value="">Select patient</option>
+              </select>
+            </div>
+            <div class="form-group" id="issueRecipientGroup" style="display: none;">
+              <label class="form-label">Recipient Name *</label>
+              <input type="text" id="issueRecipientName" class="form-control" placeholder="Enter recipient name">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Blood Information</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Blood Unit *</label>
+              <select id="issueBloodUnitId" class="form-control" required>
+                <option value="">Select Blood Unit</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Blood Type *</label>
+              <select id="issueBloodType" class="form-control" required>
+                <option value="">Select blood type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Units *</label>
+              <input type="number" id="issueUnits" class="form-control" value="1" min="1" required>
+              <small style="color: #64748b; font-size: 12px;">Each unit is approximately 450ml</small>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Issue Details</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Department *</label>
+              <select id="issueDepartment" class="form-control" required>
+                <option value="">Select department</option>
+                <option value="emergency">Emergency</option>
+                <option value="surgery">Surgery</option>
+                <option value="internal-medicine">Internal Medicine</option>
+                <option value="pediatrics">Pediatrics</option>
+                <option value="obstetrics">Obstetrics</option>
+                <option value="oncology">Oncology</option>
+                <option value="orthopedics">Orthopedics</option>
+                <option value="icu">ICU</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Requesting Doctor *</label>
+              <select id="issueDoctorId" class="form-control" required>
+                <option value="">Select doctor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issue Date *</label>
+              <input type="date" id="issueDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 24px;">
+                <input type="checkbox" id="issueEmergency">
+                <span style="font-size: 14px; color: #374151;">Emergency Request</span>
+              </label>
+              <small style="color: #dc2626; font-size: 12px; margin-left: 24px;">Mark this if the blood is needed for an emergency situation.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Purpose</label>
+          <textarea id="issuePurpose" class="form-control" rows="3" placeholder="Describe the purpose of this blood issue"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Additional Notes</label>
+          <textarea id="issueNotes" class="form-control" rows="2" placeholder="Additional notes"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeIssueBloodModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBloodIssue()">Issue Blood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3><i class="fas fa-user" style="margin-right: 8px;"></i> My Profile</h3>
+        <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: #dc2626; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; margin: 0 auto;" id="profileAvatar">A</div>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" id="profileFirstName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="profileLastName" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Email Address</label>
+          <input type="text" class="form-control" id="profileEmail" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Role</label>
+          <input type="text" class="form-control" id="profileRole" readonly style="background: #f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Member Since</label>
+          <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+    let csrfToken = null;
+    let currentUser = null;
+
+    function getCsrfHeaders(extraHeaders = {}) {
+      const headers = { ...extraHeaders };
+      if (csrfToken) {
+        headers['XSRF-TOKEN'] = csrfToken;
+        headers['X-CSRF-Token'] = csrfToken;
+        headers['CSRF-Token'] = csrfToken;
+      }
+      return headers;
+    }
+
+    let bloodBankPage = 0;
+    let bloodInventory = [];
+    let bloodDonors = [];
+    let bloodIssues = [];
+    let bloodTransfusions = [];
+    let currentBloodBankTab = 'inventory';
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await checkAuthentication();
+    });
+
+    async function checkAuthentication() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+
+        const csrfTokenHeader = response.headers.get('XSRF-TOKEN');
+        if (csrfTokenHeader) {
+          csrfToken = csrfTokenHeader;
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          window.location.href = 'sign-in.html';
+          return;
+        }
+
+        currentUser = data.user;
+
+        if (currentUser.role !== 'bloodbank' && currentUser.role !== 'admin') {
+          alert('Access Denied: You need blood bank staff access');
+          window.location.href = 'sign-in.html';
+          return;
+        }
+
+        updateUserInfo();
+        switchBloodBankTab('inventory');
+        loadBloodBankStats();
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = 'sign-in.html';
+      }
+    }
+
+    function updateUserInfo() {
+      const initials = (currentUser.name || 'B').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('userInitials').textContent = initials;
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userEmail').textContent = currentUser.email;
+    }
+
+    function showProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (!modal) return;
+      if (currentUser) {
+        const name = currentUser.name || '';
+        const nameParts = name.split(' ').filter(n => n.length > 0);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        document.getElementById('profileFirstName').value = firstName;
+        document.getElementById('profileLastName').value = lastName;
+        document.getElementById('profileEmail').value = currentUser.email || 'N/A';
+        document.getElementById('profileRole').value = (currentUser.role || 'bloodbank').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        document.getElementById('profileCreatedAt').value = currentUser.created_at
+          ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'N/A';
+      }
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+      modal.style.visibility = 'visible';
+      modal.style.opacity = '1';
+
+      const innerModal = modal.querySelector('.modal');
+      if (innerModal) {
+        innerModal.style.display = 'block';
+        innerModal.style.visibility = 'visible';
+        innerModal.style.opacity = '1';
+      }
+
+      modal.offsetHeight;
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      window.location.href = 'sign-in.html';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function capitalize(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Blood Bank Functions
+    function switchBloodBankTab(tab) {
+      currentBloodBankTab = tab;
+      document.querySelectorAll('.blood-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.blood-bank-tab-content').forEach(content => content.style.display = 'none');
+      document.querySelector(`.blood-tab-btn[data-tab="${tab}"]`)?.classList.add('active');
+      const tabContent = document.getElementById(tab === 'inventory' ? 'bloodBankInventory' : tab === 'donors' ? 'bloodBankDonors' : tab === 'issues' ? 'bloodBankIssues' : 'bloodBankTransfusions');
+      if (tabContent) tabContent.style.display = 'block';
+
+      if (tab === 'inventory') loadBloodInventory();
+      else if (tab === 'donors') loadBloodDonors();
+      else if (tab === 'issues') loadBloodIssues();
+      else if (tab === 'transfusions') loadBloodTransfusions();
+    }
+
+    async function loadBloodBankStats() {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/stats`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          document.getElementById('bloodBankStatTotal').textContent = data.stats.totalUnits || 0;
+          document.getElementById('bloodBankStatAvailable').textContent = data.stats.availableUnits || 0;
+          document.getElementById('bloodBankStatReserved').textContent = data.stats.reservedUnits || 0;
+          document.getElementById('bloodBankStatIssued').textContent = data.stats.issuedUnits || 0;
+          document.getElementById('bloodBankStatExpired').textContent = data.stats.expiredUnits || 0;
+          document.getElementById('bloodBankStatExpiring').textContent = data.stats.expiringSoon || 0;
+          document.getElementById('bloodBankStatDonors').textContent = data.stats.totalDonors || 0;
+          document.getElementById('bloodBankStatPendingIssues').textContent = data.stats.pendingIssues || 0;
+        }
+      } catch (error) {
+        console.error('Error loading blood bank stats:', error);
+      }
+    }
+
+    async function loadBloodInventory() {
+      const tbody = document.getElementById('bloodInventoryTable');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="9" class="loading"><i class="fas fa-spinner"></i></td></tr>';
+
+      try {
+        const search = document.getElementById('bloodSearch')?.value || '';
+        const bloodGroup = document.getElementById('bloodGroupFilter')?.value || 'all';
+        const component = document.getElementById('bloodComponentFilter')?.value || 'all';
+        const status = document.getElementById('bloodStatusFilter')?.value || 'all';
+
+        let url = `${API_BASE}/blood-bank/inventory?search=${encodeURIComponent(search)}`;
+        if (bloodGroup !== 'all') url += `&blood_group=${encodeURIComponent(bloodGroup)}`;
+        if (component !== 'all') url += `&component=${encodeURIComponent(component)}`;
+        if (status !== 'all') url += `&status=${encodeURIComponent(status)}`;
+
+        const response = await fetch(url, { credentials: 'include' });
+        const data = await response.json();
+
+        if (!data.success || !data.inventory || data.inventory.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 24px; color: #64748b;">No blood units found</td></tr>';
+          return;
+        }
+
+        bloodInventory = data.inventory;
+        tbody.innerHTML = bloodInventory.map(item => `
+          <tr>
+            <td><span class="badge ${item.bloodGroup.includes('-') ? 'badge-inactive' : 'badge-active'}">${escapeHtml(item.bloodGroup)}</span></td>
+            <td>${escapeHtml(item.component)}</td>
+            <td>${item.quantity}</td>
+            <td>${escapeHtml(item.donorName || 'N/A')}</td>
+            <td>${item.collectionDate ? new Date(item.collectionDate).toLocaleDateString() : 'N/A'}</td>
+            <td>${item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : 'N/A'}</td>
+            <td>${escapeHtml(item.storageLocation || 'N/A')}</td>
+            <td><span class="badge ${item.status === 'available' ? 'badge-active' : item.status === 'issued' ? 'badge-pending' : item.status === 'expired' ? 'badge-inactive' : 'badge-warning'}">${capitalize(item.status)}</span></td>
+            <td>
+              <button class="btn btn-sm" onclick="viewBloodUnit(${item.id})"><i class="fas fa-eye"></i></button>
+              ${item.status === 'available' ? `<button class="btn btn-sm btn-success" onclick="editBloodUnitStatus(${item.id}, 'reserved')" title="Reserve"><i class="fas fa-lock"></i></button>` : ''}
+              ${item.status === 'reserved' ? `<button class="btn btn-sm btn-primary" onclick="editBloodUnitStatus(${item.id}, 'available')" title="Make Available"><i class="fas fa-unlock"></i></button>` : ''}
+              <button class="btn btn-sm btn-danger" onclick="deleteBloodUnit(${item.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading blood inventory:', error);
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 24px; color: #dc2626;">Error loading inventory</td></tr>';
+      }
+    }
+
+    function searchBloodInventory() {
+      loadBloodInventory();
+    }
+
+    function filterBloodInventory() {
+      loadBloodInventory();
+    }
+
+    async function loadBloodDonors() {
+      const tbody = document.getElementById('bloodDonorsTable');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner"></i></td></tr>';
+
+      try {
+        const search = document.getElementById('donorSearch')?.value || '';
+        const bloodGroup = document.getElementById('donorBloodGroupFilter')?.value || 'all';
+        const status = document.getElementById('donorStatusFilter')?.value || 'all';
+
+        let url = `${API_BASE}/blood-bank/donors?search=${encodeURIComponent(search)}`;
+        if (bloodGroup !== 'all') url += `&blood_group=${encodeURIComponent(bloodGroup)}`;
+        if (status !== 'all') url += `&status=${encodeURIComponent(status)}`;
+
+        const response = await fetch(url, { credentials: 'include' });
+        const data = await response.json();
+
+        if (!data.success || !data.donors || data.donors.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: #64748b;">No donors found</td></tr>';
+          return;
+        }
+
+        bloodDonors = data.donors;
+        tbody.innerHTML = bloodDonors.map(donor => `
+          <tr>
+            <td><strong>${escapeHtml(donor.firstName + ' ' + donor.lastName)}</strong></td>
+            <td><span class="badge ${donor.bloodGroup.includes('-') ? 'badge-inactive' : 'badge-active'}">${escapeHtml(donor.bloodGroup)}</span></td>
+            <td>${capitalize(donor.gender || 'N/A')}</td>
+            <td>${escapeHtml(donor.phone || 'N/A')}</td>
+            <td>${donor.totalDonations || 0}</td>
+            <td>${donor.lastDonationDate ? new Date(donor.lastDonationDate).toLocaleDateString() : 'N/A'}</td>
+            <td><span class="badge ${donor.status === 'active' ? 'badge-active' : donor.status === 'blacklisted' ? 'badge-inactive' : 'badge-warning'}">${capitalize(donor.status)}</span></td>
+            <td>
+              <button class="btn btn-sm" onclick="viewDonor(${donor.id})"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-primary" onclick="editDonor(${donor.id})"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="deleteDonor(${donor.id})"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading donors:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: #dc2626;">Error loading donors</td></tr>';
+      }
+    }
+
+    function searchBloodDonors() {
+      loadBloodDonors();
+    }
+
+    function filterBloodDonors() {
+      loadBloodDonors();
+    }
+
+    async function loadBloodIssues() {
+      const tbody = document.getElementById('bloodIssuesTable');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="9" class="loading"><i class="fas fa-spinner"></i></td></tr>';
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/issues`, { credentials: 'include' });
+        const data = await response.json();
+
+        if (!data.success || !data.issues || data.issues.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 24px; color: #64748b;">No issued blood units found</td></tr>';
+          return;
+        }
+
+        bloodIssues = data.issues;
+        tbody.innerHTML = bloodIssues.map(issue => `
+          <tr>
+            <td><strong>${escapeHtml(issue.patientName || issue.recipientName || 'N/A')}</strong><br><span style="font-size: 12px; color: #64748b;">${capitalize(issue.recipientType || 'patient')}</span></td>
+            <td><span class="badge ${issue.bloodType?.includes('-') ? 'badge-inactive' : 'badge-active'}">${escapeHtml(issue.bloodType || 'N/A')}</span></td>
+            <td>${issue.units || 1}</td>
+            <td>${escapeHtml(issue.department ? issue.department.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A')}</td>
+            <td>${escapeHtml(issue.doctorId ? `Doctor #${issue.doctorId}` : 'N/A')}</td>
+            <td>${issue.issueDate ? new Date(issue.issueDate).toLocaleDateString() : 'N/A'}</td>
+            <td>${issue.emergency ? '<span style="color: #dc2626; font-weight: 600;">YES</span>' : 'No'}</td>
+            <td><span class="badge ${issue.status === 'issued' ? 'badge-pending' : issue.status === 'transfused' ? 'badge-active' : issue.status === 'returned' ? 'badge-scheduled' : 'badge-inactive'}">${capitalize(issue.status)}</span></td>
+            <td>
+              ${issue.status === 'issued' ? `
+                <button class="btn btn-sm btn-success" onclick="recordTransfusion(${issue.id})" title="Record Transfusion"><i class="fas fa-procedures"></i></button>
+                <button class="btn btn-sm btn-primary" onclick="returnBloodUnit(${issue.id})" title="Return"><i class="fas fa-undo"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="cancelBloodIssue(${issue.id})" title="Cancel"><i class="fas fa-times"></i></button>
+              ` : '<span style="color: #64748b; font-size: 12px;">Completed</span>'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading blood issues:', error);
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 24px; color: #dc2626;">Error loading issues</td></tr>';
+      }
+    }
+
+    async function loadBloodTransfusions() {
+      const tbody = document.getElementById('bloodTransfusionsTable');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i></td></tr>';
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/transfusions`, { credentials: 'include' });
+        const data = await response.json();
+
+        if (!data.success || !data.transfusions || data.transfusions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">No transfusions recorded</td></tr>';
+          return;
+        }
+
+        bloodTransfusions = data.transfusions;
+        tbody.innerHTML = bloodTransfusions.map(t => `
+          <tr>
+            <td><strong>${escapeHtml(t.patientName || 'N/A')}</strong></td>
+            <td><span class="badge ${t.bloodGroup?.includes('-') ? 'badge-inactive' : 'badge-active'}">${escapeHtml(t.bloodGroup || 'N/A')}</span></td>
+            <td>${escapeHtml(t.component || 'N/A')}</td>
+            <td>${t.transfusionDate ? new Date(t.transfusionDate).toLocaleString() : 'N/A'}</td>
+            <td>${escapeHtml(t.administeredBy || 'N/A')}</td>
+            <td><span class="badge ${t.status === 'completed' ? 'badge-active' : 'badge-inactive'}">${capitalize(t.status)}</span></td>
+            <td>${escapeHtml(t.reaction || 'None')}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading transfusions:', error);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: #dc2626;">Error loading transfusions</td></tr>';
+      }
+    }
+
+    // Blood Bank Modal Functions
+    function openAddBloodUnitModal() {
+      try {
+        document.getElementById('bloodUnitModalTitle').textContent = 'Add Blood Unit';
+        document.getElementById('editBloodUnitId').value = '';
+        document.getElementById('bloodGroup').value = '';
+        document.getElementById('bloodComponent').value = '';
+        document.getElementById('bloodQuantity').value = 1;
+        document.getElementById('bloodCollectionDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('bloodExpiryDate').value = '';
+        document.getElementById('bloodSourceType').value = '';
+        document.getElementById('bloodCollectionLocation').value = '';
+        document.getElementById('bloodAnonymousDonor').checked = false;
+        document.getElementById('bloodDonorId').value = '';
+        document.getElementById('bloodDonorName').value = '';
+        document.getElementById('bloodScreeningComplete').checked = false;
+        document.getElementById('bloodProcessingComplete').checked = false;
+        document.getElementById('bloodNotes').value = '';
+        toggleAnonymousDonor();
+        openModal('addBloodUnit');
+      } catch (error) {
+        console.error('Error opening blood unit modal:', error);
+      }
+    }
+
+    function toggleAnonymousDonor() {
+      try {
+        const isAnonymous = document.getElementById('bloodAnonymousDonor').checked;
+        const donorIdGroup = document.getElementById('donorIdGroup');
+        const donorNameGroup = document.getElementById('donorNameGroup');
+        if (donorIdGroup) donorIdGroup.style.display = isAnonymous ? 'none' : 'block';
+        if (donorNameGroup) donorNameGroup.style.display = isAnonymous ? 'none' : 'block';
+        if (isAnonymous) {
+          document.getElementById('bloodDonorId').value = '';
+          document.getElementById('bloodDonorName').value = '';
+        }
+      } catch (error) {
+        console.error('Error toggling anonymous donor:', error);
+      }
+    }
+
+    function closeAddBloodUnitModal() {
+      closeModal('addBloodUnit');
+    }
+
+    async function saveBloodUnit() {
+      const bloodGroup = document.getElementById('bloodGroup').value;
+      const component = document.getElementById('bloodComponent').value;
+      const collectionDate = document.getElementById('bloodCollectionDate').value;
+      const expiryDate = document.getElementById('bloodExpiryDate').value;
+      const isAnonymous = document.getElementById('bloodAnonymousDonor').checked;
+
+      if (!bloodGroup || !component || !collectionDate || !expiryDate) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const editId = document.getElementById('editBloodUnitId').value;
+      const url = editId ? `${API_BASE}/blood-bank/inventory/${editId}` : `${API_BASE}/blood-bank/inventory`;
+      const method = editId ? 'PUT' : 'POST';
+
+      try {
+        const response = await fetch(url, {
+          method: method,
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            blood_group: bloodGroup,
+            component: component,
+            quantity: parseInt(document.getElementById('bloodQuantity').value) || 1,
+            unit_type: 'unit',
+            donor_id: isAnonymous ? null : (document.getElementById('bloodDonorId').value || null),
+            donor_name: isAnonymous ? null : document.getElementById('bloodDonorName').value,
+            collection_date: collectionDate,
+            expiry_date: expiryDate,
+            status: 'available',
+            storage_location: document.getElementById('bloodCollectionLocation').value || null,
+            notes: document.getElementById('bloodNotes').value || null
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(editId ? 'Blood unit updated successfully' : 'Blood unit added successfully');
+          closeAddBloodUnitModal();
+          loadBloodInventory();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to save blood unit');
+        }
+      } catch (error) {
+        console.error('Error saving blood unit:', error);
+        alert('Error saving blood unit');
+      }
+    }
+
+    async function viewBloodUnit(id) {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/inventory/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const item = data.inventory;
+          alert(`Blood Unit Details:\n\nBlood Group: ${item.bloodGroup}\nComponent: ${item.component}\nQuantity: ${item.quantity}\nDonor: ${item.donorName || 'N/A'}\nCollection: ${item.collectionDate}\nExpiry: ${item.expiryDate}\nStorage: ${item.storageLocation || 'N/A'}\nStatus: ${item.status}\nNotes: ${item.notes || 'N/A'}`);
+        }
+      } catch (error) {
+        console.error('Error viewing blood unit:', error);
+      }
+    }
+
+    async function editBloodUnitStatus(id, status) {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/inventory/${id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ status })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          loadBloodInventory();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to update status');
+        }
+      } catch (error) {
+        console.error('Error updating blood unit status:', error);
+        alert('Error updating status');
+      }
+    }
+
+    async function deleteBloodUnit(id) {
+      if (!confirm('Are you sure you want to delete this blood unit?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/inventory/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: getCsrfHeaders()
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          loadBloodInventory();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to delete blood unit');
+        }
+      } catch (error) {
+        console.error('Error deleting blood unit:', error);
+        alert('Error deleting blood unit');
+      }
+    }
+
+    // Donor Modal Functions
+    function openAddDonorModal() {
+      try {
+        document.getElementById('donorModalTitle').textContent = 'Add Blood Donor';
+        document.getElementById('editDonorId').value = '';
+        document.getElementById('donorFirstName').value = '';
+        document.getElementById('donorLastName').value = '';
+        document.getElementById('donorDOB').value = '';
+        document.getElementById('donorGender').value = '';
+        document.getElementById('donorBloodGroup').value = '';
+        document.getElementById('donorPhone').value = '';
+        document.getElementById('donorEmail').value = '';
+        document.getElementById('donorAddress').value = '';
+        document.getElementById('donorEmergencyContact').value = '';
+        document.getElementById('donorMedicalConditions').value = '';
+        document.getElementById('donorNotes').value = '';
+        openModal('addDonor');
+      } catch (error) {
+        console.error('Error opening donor modal:', error);
+      }
+    }
+
+    function closeAddDonorModal() {
+      closeModal('addDonor');
+    }
+
+    async function saveDonor() {
+      const firstName = document.getElementById('donorFirstName').value;
+      const lastName = document.getElementById('donorLastName').value;
+      const bloodGroup = document.getElementById('donorBloodGroup').value;
+
+      if (!firstName || !lastName || !bloodGroup) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const editId = document.getElementById('editDonorId').value;
+      const url = editId ? `${API_BASE}/blood-bank/donors/${editId}` : `${API_BASE}/blood-bank/donors`;
+      const method = editId ? 'PUT' : 'POST';
+
+      try {
+        const response = await fetch(url, {
+          method: method,
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            date_of_birth: document.getElementById('donorDOB').value || null,
+            gender: document.getElementById('donorGender').value || null,
+            blood_group: bloodGroup,
+            phone: document.getElementById('donorPhone').value,
+            email: document.getElementById('donorEmail').value,
+            address: document.getElementById('donorAddress').value,
+            emergency_contact: document.getElementById('donorEmergencyContact').value,
+            medical_conditions: document.getElementById('donorMedicalConditions').value,
+            notes: document.getElementById('donorNotes').value
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(editId ? 'Donor updated successfully' : 'Donor added successfully');
+          closeAddDonorModal();
+          loadBloodDonors();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to save donor');
+        }
+      } catch (error) {
+        console.error('Error saving donor:', error);
+        alert('Error saving donor');
+      }
+    }
+
+    async function viewDonor(id) {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/donors/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const donor = data.donor;
+          alert(`Donor Details:\n\nName: ${donor.firstName} ${donor.lastName}\nBlood Group: ${donor.bloodGroup}\nGender: ${donor.gender || 'N/A'}\nPhone: ${donor.phone || 'N/A'}\nTotal Donations: ${donor.totalDonations || 0}\nLast Donation: ${donor.lastDonationDate || 'N/A'}\nStatus: ${donor.status}`);
+        }
+      } catch (error) {
+        console.error('Error viewing donor:', error);
+      }
+    }
+
+    async function editDonor(id) {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/donors/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const donor = data.donor;
+          document.getElementById('donorModalTitle').textContent = 'Edit Donor';
+          document.getElementById('editDonorId').value = donor.id;
+          document.getElementById('donorFirstName').value = donor.firstName || '';
+          document.getElementById('donorLastName').value = donor.lastName || '';
+          document.getElementById('donorDOB').value = donor.dateOfBirth || '';
+          document.getElementById('donorGender').value = donor.gender || '';
+          document.getElementById('donorBloodGroup').value = donor.bloodGroup || '';
+          document.getElementById('donorPhone').value = donor.phone || '';
+          document.getElementById('donorEmail').value = donor.email || '';
+          document.getElementById('donorAddress').value = donor.address || '';
+          document.getElementById('donorEmergencyContact').value = donor.emergencyContact || '';
+          document.getElementById('donorMedicalConditions').value = donor.medicalConditions || '';
+          document.getElementById('donorNotes').value = donor.notes || '';
+          openModal('addDonor');
+        }
+      } catch (error) {
+        console.error('Error loading donor:', error);
+      }
+    }
+
+    async function deleteDonor(id) {
+      if (!confirm('Are you sure you want to delete this donor?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/donors/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: getCsrfHeaders()
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          loadBloodDonors();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to delete donor');
+        }
+      } catch (error) {
+        console.error('Error deleting donor:', error);
+        alert('Error deleting donor');
+      }
+    }
+
+    // Issue Blood Modal
+    function openIssueBloodModal() {
+      try {
+        document.getElementById('issueBloodUnitId').innerHTML = '<option value="">Select Blood Unit</option>';
+        document.getElementById('issuePatientId').innerHTML = '<option value="">Select patient</option>';
+        document.getElementById('issueDoctorId').innerHTML = '<option value="">Select doctor</option>';
+        document.getElementById('issueRecipientName').value = '';
+        document.getElementById('issueBloodType').value = '';
+        document.getElementById('issueUnits').value = 1;
+        document.getElementById('issueDepartment').value = '';
+        document.getElementById('issueDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('issueEmergency').checked = false;
+        document.getElementById('issuePurpose').value = '';
+        document.getElementById('issueNotes').value = '';
+        const recipientType = document.querySelector('input[name="recipientType"]:checked');
+        if (!recipientType || recipientType.value !== 'patient') {
+          const patientRadio = document.querySelector('input[name="recipientType"][value="patient"]');
+          if (patientRadio) patientRadio.checked = true;
+        }
+        toggleRecipientType();
+
+        openModal('issueBlood');
+
+        setTimeout(() => {
+          loadAvailableBloodUnits();
+          loadPatientsForIssue();
+          loadDoctorsForIssue();
+        }, 0);
+      } catch (error) {
+        console.error('Error opening issue blood modal:', error);
+      }
+    }
+
+    function toggleRecipientType() {
+      try {
+        const recipientType = document.querySelector('input[name="recipientType"]:checked');
+        const isPatient = recipientType && recipientType.value === 'patient';
+        const issuePatientGroup = document.getElementById('issuePatientGroup');
+        const issueRecipientGroup = document.getElementById('issueRecipientGroup');
+        if (issuePatientGroup) issuePatientGroup.style.display = isPatient ? 'block' : 'none';
+        if (issueRecipientGroup) issueRecipientGroup.style.display = isPatient ? 'none' : 'block';
+      } catch (error) {
+        console.error('Error toggling recipient type:', error);
+      }
+    }
+
+    async function loadAvailableBloodUnits() {
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/inventory?status=available`, { credentials: 'include' });
+        const data = await response.json();
+        const select = document.getElementById('issueBloodUnitId');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Blood Unit</option>';
+        if (data.success && data.inventory) {
+          data.inventory.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = `${item.bloodGroup} - ${item.component} (${item.quantity})`;
+            select.appendChild(option);
+          });
+          if (data.inventory.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No available blood units';
+            option.disabled = true;
+            select.appendChild(option);
+          }
+        } else {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Failed to load blood units';
+          option.disabled = true;
+          select.appendChild(option);
+        }
+      } catch (error) {
+        console.error('Error loading blood units:', error);
+        const select = document.getElementById('issueBloodUnitId');
+        if (select) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Error loading blood units';
+          option.disabled = true;
+          select.appendChild(option);
+        }
+      }
+    }
+
+    async function loadPatientsForIssue() {
+      try {
+        const response = await fetch(`${API_BASE}/admin/users?role=patient&patient_status=all`, { credentials: 'include' });
+        const data = await response.json();
+        const select = document.getElementById('issuePatientId');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select patient</option>';
+        if (data.success && data.users) {
+          data.users.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = p.name;
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading patients:', error);
+      }
+    }
+
+    async function loadDoctorsForIssue() {
+      try {
+        const response = await fetch(`${API_BASE}/doctors`, { credentials: 'include' });
+        const data = await response.json();
+        const select = document.getElementById('issueDoctorId');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select doctor</option>';
+        const doctors = Array.isArray(data.doctors) ? data.doctors : [];
+        doctors.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.name || doc.userName || `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.trim();
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading doctors:', error);
+      }
+    }
+
+    function closeIssueBloodModal() {
+      closeModal('issueBlood');
+    }
+
+    async function saveBloodIssue() {
+      const bloodUnitId = document.getElementById('issueBloodUnitId').value;
+      const recipientType = document.querySelector('input[name="recipientType"]:checked');
+      const bloodType = document.getElementById('issueBloodType').value;
+      const units = parseInt(document.getElementById('issueUnits').value) || 1;
+      const department = document.getElementById('issueDepartment').value;
+      const doctorId = document.getElementById('issueDoctorId').value;
+      const issueDate = document.getElementById('issueDate').value;
+      const emergency = document.getElementById('issueEmergency').checked;
+      const purpose = document.getElementById('issuePurpose').value;
+      const notes = document.getElementById('issueNotes').value;
+
+      if (!bloodUnitId) {
+        alert('Please select a blood unit to issue');
+        return;
+      }
+      if (!bloodType) {
+        alert('Please select blood type');
+        return;
+      }
+      if (!department) {
+        alert('Please select a department');
+        return;
+      }
+      if (!doctorId) {
+        alert('Please select a requesting doctor');
+        return;
+      }
+      if (!issueDate) {
+        alert('Please select an issue date');
+        return;
+      }
+
+      let patientId = null;
+      let patientName = null;
+      let recipientName = null;
+
+      if (recipientType && recipientType.value === 'patient') {
+        patientId = document.getElementById('issuePatientId').value;
+        if (!patientId) {
+          alert('Please select a patient');
+          return;
+        }
+        const patientSelect = document.getElementById('issuePatientId');
+        patientName = patientSelect.options[patientSelect.selectedIndex]?.text || null;
+      } else {
+        recipientName = document.getElementById('issueRecipientName').value;
+        if (!recipientName) {
+          alert('Please enter recipient name');
+          return;
+        }
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/issues`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            blood_unit_id: parseInt(bloodUnitId),
+            patient_id: patientId ? parseInt(patientId) : null,
+            patient_name: patientName,
+            recipient_name: recipientName,
+            recipient_type: recipientType ? recipientType.value : 'patient',
+            issue_reason: purpose || null,
+            notes: notes || null
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Blood unit issued successfully');
+          closeIssueBloodModal();
+          loadBloodInventory();
+          loadBloodIssues();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to issue blood unit');
+        }
+      } catch (error) {
+        console.error('Error issuing blood unit:', error);
+        alert('Error issuing blood unit');
+      }
+    }
+
+    async function recordTransfusion(issueId) {
+      const bloodUnitId = prompt('Enter blood unit ID for transfusion:');
+      if (!bloodUnitId) return;
+
+      const patientName = prompt('Enter patient name:');
+      if (!patientName) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/transfusions`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            blood_issue_id: issueId,
+            blood_unit_id: parseInt(bloodUnitId),
+            patient_name: patientName,
+            transfusion_date: new Date().toISOString().slice(0, 16),
+            status: 'completed'
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Transfusion recorded successfully');
+          loadBloodIssues();
+          loadBloodTransfusions();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to record transfusion');
+        }
+      } catch (error) {
+        console.error('Error recording transfusion:', error);
+        alert('Error recording transfusion');
+      }
+    }
+
+    async function returnBloodUnit(issueId) {
+      if (!confirm('Are you sure you want to return this blood unit?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/issues/${issueId}/return`, {
+          method: 'PUT',
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Blood unit returned successfully');
+          loadBloodIssues();
+          loadBloodInventory();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to return blood unit');
+        }
+      } catch (error) {
+        console.error('Error returning blood unit:', error);
+        alert('Error returning blood unit');
+      }
+    }
+
+    async function cancelBloodIssue(issueId) {
+      if (!confirm('Are you sure you want to cancel this blood issue?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/blood-bank/issues/${issueId}/cancel`, {
+          method: 'PUT',
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('Blood issue cancelled successfully');
+          loadBloodIssues();
+          loadBloodInventory();
+          loadBloodBankStats();
+        } else {
+          alert(data.message || 'Failed to cancel blood issue');
+        }
+      } catch (error) {
+        console.error('Error cancelling blood issue:', error);
+        alert('Error cancelling blood issue');
+      }
+    }
+
+    // Modal Functions
+    function openModal(id) {
+      try {
+        const modal = document.getElementById('modal-' + id);
+        if (modal) {
+          modal.classList.add('active');
+          modal.style.display = 'flex';
+          modal.style.visibility = 'visible';
+          modal.style.opacity = '1';
+
+          const innerModal = modal.querySelector('.modal');
+          if (innerModal) {
+            innerModal.style.display = 'block';
+            innerModal.style.visibility = 'visible';
+            innerModal.style.opacity = '1';
+          }
+
+          modal.offsetHeight;
+        } else {
+          console.error('Modal not found: modal-' + id);
+        }
+      } catch (error) {
+        console.error('Error opening modal:', error);
+      }
+    }
+
+    function closeModal(id) {
+      try {
+        const modal = document.getElementById('modal-' + id);
+        if (modal) {
+          modal.classList.remove('active');
+          modal.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error closing modal:', error);
+      }
+    }
+  </script>
+</body>
+</html>

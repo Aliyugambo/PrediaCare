@@ -165,7 +165,7 @@ router.get('/invoices', checkPermission(PERMISSIONS.VIEW_BILLING), async (req, r
       params.push(date_to);
     }
 
-    query += ' ORDER BY bi.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY bi.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const connection = await pool.getConnection();
@@ -635,7 +635,7 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
   const connection = await pool.getConnection();
   
   try {
-    const { patient_id, invoice_date, due_date, payment_method, service_ids, medication_ids, notes } = req.body;
+    const { patient_id, invoice_date, due_date, payment_method, service_ids, medication_ids, discharge_medication_ids, notes } = req.body;
 
     if (!patient_id || !due_date) {
       connection.release();
@@ -645,7 +645,7 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
       });
     }
 
-    if ((!service_ids || service_ids.length === 0) && (!medication_ids || medication_ids.length === 0)) {
+    if ((!service_ids || service_ids.length === 0) && (!medication_ids || medication_ids.length === 0) && (!discharge_medication_ids || discharge_medication_ids.length === 0)) {
       connection.release();
       return res.status(400).json({
         success: false,
@@ -714,6 +714,33 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
       });
     }
 
+    // Get discharge medication details
+    if (discharge_medication_ids && discharge_medication_ids.length > 0) {
+      const dmPlaceholders = discharge_medication_ids.map(() => '?').join(',');
+      const [dischargeMeds] = await connection.execute(
+        `SELECT dm.id, dm.medicine_name, dm.dosage, dm.frequency, dm.amount, dm.notes,
+                pm.unit_price, dm.patient_id
+         FROM discharge_medications dm
+         LEFT JOIN pharmacy_medicines pm ON pm.medicine_name = dm.medicine_name
+         WHERE dm.id IN (${dmPlaceholders}) AND dm.patient_id = ?`,
+        [...discharge_medication_ids, patient_id]
+      );
+
+      dischargeMeds.forEach(dm => {
+        const price = parseFloat(dm.unit_price || 0);
+        items.push({
+          service_id: null,
+          medication_id: null,
+          discharge_medication_id: dm.id,
+          service_name: dm.medicine_name,
+          description: [dm.dosage, dm.frequency, dm.amount].filter(Boolean).join(' • ') || 'Discharge medication',
+          quantity: 1,
+          unit_price: price,
+          total_price: price
+        });
+      });
+    }
+
     // Calculate totals
     let subtotal = 0;
     items.forEach(item => {
@@ -752,12 +779,13 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
     for (const item of items) {
       await connection.execute(
         `INSERT INTO billing_invoice_items 
-         (invoice_id, service_id, medication_id, service_name, description, quantity, unit_price, total_price)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (invoice_id, service_id, medication_id, discharge_medication_id, service_name, description, quantity, unit_price, total_price)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           invoiceId,
           item.service_id,
           item.medication_id,
+          item.discharge_medication_id || null,
           item.service_name,
           item.description,
           item.quantity,
@@ -1047,15 +1075,20 @@ router.get('/patient/:id/medications', checkPermission(PERMISSIONS.VIEW_BILLING)
     }
 
     const [medications] = await connection.execute(`
-      SELECT m.id, m.medication_name, m.dosage, m.frequency, m.duration, m.instructions, m.status, m.prescribed_date, m.unit_price
+      SELECT m.id, m.medication_name, m.dosage, m.frequency, m.duration, m.instructions, m.status, m.prescribed_date, m.unit_price, 'regular' as source
       FROM medications m
       LEFT JOIN discharge_medications dm ON dm.patient_id = m.patient_id
         AND dm.medicine_name = m.medication_name
         AND dm.status = 'not_available'
       WHERE m.patient_id = ? AND m.status IN ('active', 'completed')
         AND dm.id IS NULL
-      ORDER BY m.prescribed_date DESC
-    `, [id]);
+      UNION ALL
+      SELECT dm.id, dm.medicine_name as medication_name, dm.dosage, dm.frequency, dm.amount as duration, dm.notes as instructions, dm.status, dm.created_at as prescribed_date, pm.unit_price, 'discharge' as source
+      FROM discharge_medications dm
+      LEFT JOIN pharmacy_medicines pm ON pm.medicine_name = dm.medicine_name
+      WHERE dm.patient_id = ? AND dm.status IN ('pending', 'dispensed')
+      ORDER BY prescribed_date DESC
+    `, [id, id]);
 
     connection.release();
 
@@ -1075,7 +1108,8 @@ router.get('/patient/:id/medications', checkPermission(PERMISSIONS.VIEW_BILLING)
         instructions: m.instructions,
         status: m.status,
         prescribedDate: m.prescribed_date,
-        price: parseFloat(m.unit_price || 0)
+        price: parseFloat(m.unit_price || 0),
+        source: m.source
       }))
     });
   } catch (err) {
@@ -1103,7 +1137,7 @@ router.get('/payments', checkPermission(PERMISSIONS.VIEW_BILLING), async (req, r
       LEFT JOIN users u ON bi.patient_id = u.id
       LEFT JOIN users u_staff ON bp.received_by = u_staff.id
       ORDER BY bp.payment_date DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [parseInt(limit), parseInt(offset)]);
 
     const [countResult] = await connection.execute('SELECT COUNT(*) as total FROM billing_payments');

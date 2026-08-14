@@ -99,7 +99,8 @@ app.use((req, res, next) => {
     '/api/diagnostic',
     '/api/pharmacy',
     '/api/billing',
-    '/api/newsletter'
+    '/api/newsletter',
+    '/api/blood-bank'
   ];
   if (csrfExemptPaths.some(path => req.path.startsWith(path))) {
     return next();
@@ -236,6 +237,10 @@ app.use('/api/pharmacy', pharmacyRoutes);
 // Billing routes
 app.use('/api/billing', billingRoutes);
 
+// Blood Bank routes
+const bloodBankRoutes = require('./routes/blood-bank');
+app.use('/api/blood-bank', bloodBankRoutes);
+
 // Newsletter / Health Newspaper routes (public)
 app.use('/api/newsletter', newsletterRoutes);
 
@@ -292,6 +297,10 @@ app.get('/customer-care-dashboard.html', checkRole(['customer_care', 'admin']), 
 
 app.get('/diagnostic-dashboard.html', checkRole(['diagnostic', 'admin']), (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'diagnostic-dashboard.html'));
+});
+
+app.get('/bloodbank-dashboard.html', checkRole(['bloodbank', 'admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'bloodbank-dashboard.html'));
 });
 // Health check
 app.get('/api/health', (req, res) => {

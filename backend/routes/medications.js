@@ -48,7 +48,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req, res) 
       params.push(status);
     }
     
-    query += ' ORDER BY m.prescribed_date DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY m.prescribed_date DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();

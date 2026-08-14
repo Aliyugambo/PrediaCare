@@ -31,7 +31,7 @@ async function initializeDatabase() {
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
-        role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse') NOT NULL DEFAULT 'patient',
+        role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse', 'bloodbank') NOT NULL DEFAULT 'patient',
         is_active BOOLEAN DEFAULT TRUE,
         patient_status ENUM('active', 'admitted', 'discharged', 'outpost') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -42,7 +42,7 @@ async function initializeDatabase() {
     
     // Ensure admin role exists in ENUM (for older installations)
     try {
-      await connection.execute(`ALTER TABLE users MODIFY COLUMN role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse') NOT NULL DEFAULT 'patient'`);
+      await connection.execute(`ALTER TABLE users MODIFY COLUMN role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse', 'bloodbank') NOT NULL DEFAULT 'patient'`);
       console.log('Updated users table to include admin role');
     } catch (e) {
       // Column might already have the correct type
@@ -621,6 +621,153 @@ async function initializeDatabase() {
       }
     } catch (e) {}
 
+    // ==================== BLOOD BANK ====================
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS blood_bank_inventory (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        blood_group VARCHAR(5) NOT NULL,
+        component ENUM('Whole Blood', 'Packed RBC', 'Platelets', 'Plasma', 'Cryoprecipitate') NOT NULL,
+        quantity INT NOT NULL DEFAULT 1,
+        unit_type VARCHAR(50) DEFAULT 'unit',
+        donor_id INT,
+        donor_name VARCHAR(255),
+        collection_date DATE NOT NULL,
+        expiry_date DATE NOT NULL,
+        status ENUM('available', 'reserved', 'issued', 'expired', 'discarded') DEFAULT 'available',
+        storage_location VARCHAR(255),
+        notes TEXT,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Blood bank inventory table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS blood_donors (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
+        date_of_birth DATE,
+        gender ENUM('male', 'female', 'other'),
+        blood_group VARCHAR(5) NOT NULL,
+        phone VARCHAR(20),
+        email VARCHAR(255),
+        address TEXT,
+        emergency_contact VARCHAR(20),
+        medical_conditions TEXT,
+        last_donation_date DATE,
+        total_donations INT DEFAULT 0,
+        status ENUM('active', 'inactive', 'blacklisted') DEFAULT 'active',
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Blood donors table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS blood_issues (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        blood_unit_id INT NOT NULL,
+        patient_id INT,
+        patient_name VARCHAR(255),
+        recipient_name VARCHAR(255),
+        recipient_type ENUM('patient', 'external') DEFAULT 'patient',
+        issue_reason TEXT,
+        issued_by INT,
+        issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status ENUM('issued', 'transfused', 'returned', 'cancelled') DEFAULT 'issued',
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (blood_unit_id) REFERENCES blood_bank_inventory(id) ON DELETE CASCADE,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (issued_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Blood issues table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS blood_transfusions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        blood_issue_id INT NOT NULL,
+        blood_unit_id INT NOT NULL,
+        patient_id INT,
+        patient_name VARCHAR(255),
+        transfusion_date DATETIME NOT NULL,
+        administered_by INT,
+        volume_issued INT,
+        reaction TEXT,
+        status ENUM('completed', 'reaction', 'incomplete') DEFAULT 'completed',
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (blood_issue_id) REFERENCES blood_issues(id) ON DELETE CASCADE,
+        FOREIGN KEY (blood_unit_id) REFERENCES blood_bank_inventory(id) ON DELETE CASCADE,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (administered_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Blood transfusions table created or already exists');
+
+    // Ensure blood_issues table has additional columns
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'blood_type'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN blood_type VARCHAR(10) AFTER recipient_type");
+        console.log('Added blood_type column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking blood_type column:', e.message);
+    }
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'units'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN units INT DEFAULT 1");
+        console.log('Added units column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking units column:', e.message);
+    }
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'department'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN department VARCHAR(100)");
+        console.log('Added department column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking department column:', e.message);
+    }
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'doctor_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN doctor_id INT");
+        console.log('Added doctor_id column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking doctor_id column:', e.message);
+    }
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'issue_date'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN issue_date DATE");
+        console.log('Added issue_date column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking issue_date column:', e.message);
+    }
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM blood_issues LIKE 'emergency'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE blood_issues ADD COLUMN emergency BOOLEAN DEFAULT FALSE");
+        console.log('Added emergency column to blood_issues table');
+      }
+    } catch (e) {
+      console.log('Error checking emergency column:', e.message);
+    }
+
     // Walk-in patients table (registered by customer care staff)
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS walkin_patients (
@@ -706,6 +853,7 @@ async function initializeDatabase() {
         invoice_id INT NOT NULL,
         service_id INT,
         medication_id INT,
+        discharge_medication_id INT,
         service_name VARCHAR(255) NOT NULL,
         description TEXT,
         quantity INT NOT NULL DEFAULT 1,
@@ -714,7 +862,8 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (invoice_id) REFERENCES billing_invoices(id) ON DELETE CASCADE,
         FOREIGN KEY (service_id) REFERENCES billing_services(id) ON DELETE SET NULL,
-        FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE SET NULL
+        FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE SET NULL,
+        FOREIGN KEY (discharge_medication_id) REFERENCES discharge_medications(id) ON DELETE SET NULL
       )
     `);
     console.log('Billing invoice items table created or already exists');
@@ -729,6 +878,18 @@ async function initializeDatabase() {
       }
     } catch (e) {
       console.log('Error checking medication_id column:', e.message);
+    }
+
+    // Ensure billing_invoice_items has discharge_medication_id column
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM billing_invoice_items LIKE 'discharge_medication_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE billing_invoice_items ADD COLUMN discharge_medication_id INT DEFAULT NULL AFTER medication_id");
+        await connection.execute("ALTER TABLE billing_invoice_items ADD CONSTRAINT fk_billing_invoice_items_discharge_medication FOREIGN KEY (discharge_medication_id) REFERENCES discharge_medications(id) ON DELETE SET NULL");
+        console.log('Added discharge_medication_id column to billing_invoice_items table');
+      }
+    } catch (e) {
+      console.log('Error checking discharge_medication_id column:', e.message);
     }
 
     // Create billing_payments table (payment history)

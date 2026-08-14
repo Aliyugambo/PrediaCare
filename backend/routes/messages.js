@@ -84,7 +84,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, res)
       params = [patientId, patientId];
     }
     
-    query += ' ORDER BY m.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY m.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
@@ -510,7 +510,7 @@ router.get('/conversation/:doctorId', checkPermission(PERMISSIONS.VIEW_OWN_MESSA
       WHERE (m.sender_id = ? AND m.receiver_id = ?) 
          OR (m.sender_id = ? AND m.receiver_id = ?)
       ORDER BY m.created_at ASC
-      LIMIT ? OFFSET ?
+      LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}
     `, [patientId, doctorId, doctorId, patientId, parseInt(limit), parseInt(offset)]);
     
     connection.release();
@@ -580,7 +580,7 @@ router.get('/doctor/inbox', checkPermission(PERMISSIONS.VIEW_PATIENT_MESSAGES), 
       query += ' AND m.is_read = FALSE';
     }
     
-    query += ' ORDER BY m.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY m.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const [messages] = await connection.query(query, params);

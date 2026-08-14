@@ -45,7 +45,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_APPOINTMENTS), async (req, 
       params.push(status);
     }
     
-    query += ' ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
     const connection = await pool.getConnection();
