@@ -7,7 +7,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
-require('dotenv').config();
+require('dotenv').config({
+  path: path.join(__dirname, '.env')
+});
 
 const pool = require('./config/database');
 const authRoutes = require('./routes/auth');
