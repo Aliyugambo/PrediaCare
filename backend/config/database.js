@@ -1,5 +1,9 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+const path = require('path');
+
+require('dotenv').config({
+  path: path.join(__dirname, '../.env')
+});
 
 // Require important DB env vars — fail fast if missing in production
 if (!process.env.MYSQL_PASSWORD || !process.env.MYSQL_USER || !process.env.MYSQL_DATABASE) {
