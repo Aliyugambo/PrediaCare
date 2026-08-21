@@ -968,7 +968,15 @@
             <span>Blood Bank</span>
           </a>
         </div>
-        
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="#" class="nav-item" data-section="inventory">
+            <i class="fas fa-boxes"></i>
+            <span>Inventory</span>
+          </a>
+        </div>
+
         <div class="nav-section">
           <div class="nav-section-title">Medical Records</div>
           <a href="#" class="nav-item" data-section="health-summaries">
@@ -1881,7 +1889,136 @@
             </div>
           </div>
         </div>
-        
+
+        <!-- Inventory Section -->
+        <div id="section-inventory" class="tab-content">
+          <!-- Inventory Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-boxes"></i></div>
+              <div class="stat-info">
+                <h4>Total Items</h4>
+                <div class="value" id="invStatTotal">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="stat-info">
+                <h4>Low Stock</h4>
+                <div class="value" id="invStatLowStock">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+              <div class="stat-info">
+                <h4>Out of Stock</h4>
+                <div class="value" id="invStatOutOfStock">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>Expiring Soon</h4>
+                <div class="value" id="invStatExpiring">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon cyan"><i class="fas fa-shopping-cart"></i></div>
+              <div class="stat-info">
+                <h4>Pending Orders</h4>
+                <div class="value" id="invStatPendingOrders">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-naira-sign"></i></div>
+              <div class="stat-info">
+                <h4>Total Value</h4>
+                <div class="value" id="invStatTotalValue">₦0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerts Panel -->
+          <div class="card" id="inventoryAlertsCard" style="display:none; margin-bottom: 24px;">
+            <div class="card-header" style="cursor:pointer;" onclick="toggleAlertsPanel()">
+              <h3><i class="fas fa-bell" style="color: #dc2626;"></i> Inventory Alerts</h3>
+              <button class="btn btn-sm" onclick="event.stopPropagation(); loadInventoryAlerts();"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="card-body" id="inventoryAlertsBody" style="display:none; padding: 0;">
+              <div id="inventoryAlertsContent" style="padding: 24px;"></div>
+            </div>
+          </div>
+
+          <!-- Inventory Items -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Inventory Items</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" onclick="openAddInventoryModal()">
+                  <i class="fas fa-plus"></i> Add Item
+                </button>
+                <button class="btn btn-sm" onclick="openAddSupplierModal()">
+                  <i class="fas fa-truck"></i> Add Supplier
+                </button>
+                <div class="dropdown" style="position: relative; display: inline-block;">
+                  <button class="btn btn-sm" onclick="toggleExportDropdown()">
+                    <i class="fas fa-download"></i> Export
+                  </button>
+                  <div id="exportDropdown" style="display:none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 50; margin-top: 4px;">
+                    <a href="#" class="dropdown-item" onclick="exportInventory('all')" style="padding: 10px 16px; display: block; color: #475569; text-decoration: none; font-size: 14px;">All Items</a>
+                    <a href="#" class="dropdown-item" onclick="exportInventory('low_stock')" style="padding: 10px 16px; display: block; color: #475569; text-decoration: none; font-size: 14px;">Low Stock</a>
+                    <a href="#" class="dropdown-item" onclick="exportInventory('out_of_stock')" style="padding: 10px 16px; display: block; color: #475569; text-decoration: none; font-size: 14px;">Out of Stock</a>
+                    <a href="#" class="dropdown-item" onclick="exportInventory('expiring_soon')" style="padding: 10px 16px; display: block; color: #475569; text-decoration: none; font-size: 14px;">Expiring Soon</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="filters" style="padding: 16px 24px;">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="inventorySearch" placeholder="Search items..." onkeyup="searchInventory()">
+              </div>
+              <select id="inventoryCategoryFilter" onchange="filterInventory()">
+                <option value="all">All Categories</option>
+              </select>
+              <select id="inventoryStockFilter" onchange="filterInventory()">
+                <option value="all">All Stock</option>
+                <option value="low_stock">Low Stock</option>
+                <option value="out_of_stock">Out of Stock</option>
+                <option value="expiring_soon">Expiring Soon</option>
+              </select>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Item ID</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Reorder Point</th>
+                    <th>Unit Cost</th>
+                    <th>Supplier</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryItemsTable">
+                  <tr><td colspan="10" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination">
+              <div class="pagination-info" id="inventoryPagination">Showing 0 items</div>
+              <div class="pagination-btns">
+                <button class="btn btn-sm" onclick="prevInventoryPage()" id="prevInventoryBtn">Previous</button>
+                <button class="btn btn-sm" onclick="nextInventoryPage()" id="nextInventoryBtn">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Billing Section -->
         <div id="section-billing" class="tab-content">
           <!-- Billing Stats -->
@@ -2478,9 +2615,295 @@
             <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
           </div>
         </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Inventory Item Modal -->
+  <div class="modal-overlay" id="modal-addInventoryItem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="inventoryModalTitle">Add Inventory Item</h3>
+        <button class="modal-close" onclick="closeAddInventoryModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="editInventoryItemId" value="">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Item Name *</label>
+            <input type="text" class="form-control" id="invItemName" placeholder="Enter item name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Item ID</label>
+            <input type="text" class="form-control" id="invItemId" placeholder="e.g. INV-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-control" id="invCategory" onchange="loadSubcategoriesForDropdown()">
+              <option value="">Select category...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subcategory</label>
+            <select class="form-control" id="invSubcategory">
+              <option value="">Select subcategory...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit of Measure</label>
+            <select class="form-control" id="invUnitOfMeasure">
+              <option value="">Select...</option>
+              <option value="pieces">Pieces</option>
+              <option value="boxes">Boxes</option>
+              <option value="packs">Packs</option>
+              <option value="bottles">Bottles</option>
+              <option value="vials">Vials</option>
+              <option value="units">Units</option>
+              <option value="liters">Liters</option>
+              <option value="kg">Kilograms</option>
+              <option value="grams">Grams</option>
+              <option value="rolls">Rolls</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Quantity</label>
+            <input type="number" step="0.01" class="form-control" id="invUnitQuantity" placeholder="e.g. 10">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="invDescription" rows="2" placeholder="Item description"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Storage Location</label>
+            <input type="text" class="form-control" id="invStorageLocation" placeholder="e.g. Warehouse A">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Manufacturer</label>
+            <input type="text" class="form-control" id="invManufacturer" placeholder="Manufacturer name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Brand</label>
+            <input type="text" class="form-control" id="invBrand" placeholder="Brand name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Model Version</label>
+            <input type="text" class="form-control" id="invModelVersion" placeholder="Model/version">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiry Tracking</label>
+            <select class="form-control" id="invExpiryTracking" onchange="toggleExpiryDateField()">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group" id="expiryDateField" style="display:none;">
+            <label class="form-label">Expiry Date</label>
+            <input type="date" class="form-control" id="invExpiryDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Current Stock *</label>
+            <input type="number" class="form-control" id="invCurrentStock" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Min Stock Level</label>
+            <input type="number" class="form-control" id="invMinStockLevel" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Stock Level</label>
+            <input type="number" class="form-control" id="invMaxStockLevel" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reorder Point</label>
+            <input type="number" class="form-control" id="invReorderPoint" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reorder Quantity</label>
+            <input type="number" class="form-control" id="invReorderQuantity" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Cost (₦)</label>
+            <input type="number" step="0.01" class="form-control" id="invUnitCost" placeholder="0.00" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Price (₦)</label>
+            <input type="number" step="0.01" class="form-control" id="invUnitPrice" placeholder="0.00" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary Supplier</label>
+            <select class="form-control" id="invPrimarySupplier">
+              <option value="">Select supplier...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier Item Code</label>
+            <input type="text" class="form-control" id="invSupplierItemCode" placeholder="Supplier SKU">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier Price (₦)</label>
+            <input type="number" step="0.01" class="form-control" id="invSupplierPrice" placeholder="0.00" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lead Time (days)</label>
+            <input type="number" class="form-control" id="invLeadTimeDays" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Min Order Quantity</label>
+            <input type="number" step="0.01" class="form-control" id="invMinOrderQuantity" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-control" id="invStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="discontinued">Discontinued</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="invNotes" rows="2" placeholder="Additional notes"></textarea>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invRequiresRefrigeration">
+              <span>Requires Refrigeration</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invControlledSubstance">
+              <span>Controlled Substance</span>
+            </label>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invHazardousMaterial">
+              <span>Hazardous Material</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invSterile">
+              <span>Sterile</span>
+            </label>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invEnableLowStockAlerts" checked>
+              <span>Enable Low Stock Alerts</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="invEnableExpiryAlerts" checked>
+              <span>Enable Expiry Alerts</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddInventoryModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveInventoryItem()">Save Item</button>
       </div>
     </div>
+  </div>
 
+  <!-- View Item Modal -->
+  <div class="modal-overlay" id="modal-viewInventoryItem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Item Details</h3>
+        <button class="modal-close" onclick="closeViewInventoryItemModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="viewInventoryItemBody" style="padding: 24px;"></div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeViewInventoryItemModal()">Close</button>
+        <button class="btn btn-primary" id="viewInventoryEditBtn"><i class="fas fa-edit"></i> Edit Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <div class="modal-overlay" id="modal-addSupplier" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="supplierModalTitle">Add Supplier</h3>
+        <button class="modal-close" onclick="closeAddSupplierModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="editSupplierId" value="">
+        <div class="form-group">
+          <label class="form-label">Supplier Name *</label>
+          <input type="text" class="form-control" id="supplierName" placeholder="Supplier name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" id="supplierCategory">
+            <option value="Medical Supplies">Medical Supplies</option>
+            <option value="Pharmaceuticals">Pharmaceuticals</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Laboratory">Laboratory</option>
+            <option value="Surgical">Surgical</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Person</label>
+          <input type="text" class="form-control" id="supplierContactPerson" placeholder="Contact person">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="supplierEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-control" id="supplierPhone" placeholder="Phone number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" class="form-control" id="supplierLocation" placeholder="Location">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input type="text" class="form-control" id="supplierWebsite" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Terms</label>
+          <input type="text" class="form-control" id="supplierPaymentTerms" placeholder="Net 30" value="Net 30">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avg Lead Time (days)</label>
+          <input type="number" class="form-control" id="supplierAvgLeadTime" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min Order Value (₦)</label>
+          <input type="number" step="0.01" class="form-control" id="supplierMinOrderValue" placeholder="0.00" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rating (1-5)</label>
+          <input type="number" class="form-control" id="supplierRating" placeholder="3" min="1" max="5" value="3">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="supplierStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" id="supplierDescription" rows="2" placeholder="Supplier description"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddSupplierModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSupplier()">Save Supplier</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Alerts Modal -->
+  <div class="modal-overlay" id="modal-viewAlerts" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3>Inventory Alerts</h3>
+        <button class="modal-close" onclick="closeViewAlertsModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="viewAlertsBody" style="padding: 24px;"></div>
+    </div>
+  </div>
 
 <script>
     const API_BASE = '/api';
@@ -2642,8 +3065,9 @@
          medications: 'Medications',
          'test-referrals': 'Test Referrals',
          pharmacy: 'Pharmacy',
-         billing: 'Billing'
-       };
+         billing: 'Billing',
+         inventory: 'Inventory'
+        };
       document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
       
       // Show section
@@ -2703,10 +3127,15 @@
            loadBloodBankStats();
            loadBloodInventory();
            break;
-         case 'billing':
-          loadBillingStats();
-          loadInvoices();
-          break;
+          case 'billing':
+           loadBillingStats();
+           loadInvoices();
+           break;
+          case 'inventory':
+            loadInventoryStats();
+            loadInventoryItems();
+            loadInventoryAlerts();
+            break;
       }
     }
     
@@ -6091,6 +6520,660 @@ function editUser(userId) {
         alert('Error creating invoice');
       }
     }
+
+    // ==================== INVENTORY ====================
+    let inventoryPage = 0;
+    let inventoryItems = [];
+    let inventoryCategories = [];
+    let inventorySuppliers = [];
+    let inventoryAlertsVisible = false;
+
+    async function loadInventoryStats() {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/stats`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('invStatTotal').textContent = stats.totalItems || 0;
+          document.getElementById('invStatLowStock').textContent = stats.lowStock || 0;
+          document.getElementById('invStatOutOfStock').textContent = stats.outOfStock || 0;
+          document.getElementById('invStatExpiring').textContent = stats.expiringSoon || 0;
+          document.getElementById('invStatPendingOrders').textContent = stats.pendingOrders || 0;
+          document.getElementById('invStatTotalValue').textContent = '₦' + parseFloat(stats.totalValue || 0).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+      } catch (error) {
+        console.error('Error loading inventory stats:', error);
+      }
+    }
+
+    async function loadInventoryItems() {
+      try {
+        const search = document.getElementById('inventorySearch').value;
+        const category = document.getElementById('inventoryCategoryFilter').value;
+        const stockFilter = document.getElementById('inventoryStockFilter').value;
+
+        let url = `${API_BASE}/inventory/items?limit=${pageSize}&offset=${inventoryPage * pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (category !== 'all') url += `&category=${encodeURIComponent(category)}`;
+        if (stockFilter !== 'all') url += `&stock_filter=${encodeURIComponent(stockFilter)}`;
+
+        const response = await fetch(url, { credentials: 'include' });
+        const data = await response.json();
+
+        if (data.success) {
+          inventoryItems = data.data;
+          renderInventoryItemsTable(data.data);
+          updateInventoryPagination(data.total);
+
+          // Update category filter options
+          if (data.categories && data.categories.length > 0) {
+            const categoryFilter = document.getElementById('inventoryCategoryFilter');
+            const currentValue = categoryFilter.value;
+            const options = ['<option value="all">All Categories</option>'];
+            data.categories.forEach(cat => {
+              const selected = cat.id === currentValue ? 'selected' : '';
+              options.push(`<option value="${cat.id}" ${selected}>${escapeHtml(cat.name)}</option>`);
+            });
+            categoryFilter.innerHTML = options.join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading inventory items:', error);
+      }
+    }
+
+    function renderInventoryItemsTable(items) {
+      const tbody = document.getElementById('inventoryItemsTable');
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-boxes"></i><h4>No items found</h4></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => {
+        const isLowStock = item.stock_quantity <= item.reorder_point;
+        const isOutOfStock = item.stock_quantity === 0;
+        const isExpiringSoon = item.expiry_date && !isOutOfStock && new Date(item.expiry_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const expiryDate = item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A';
+        const statusBadge = item.status === 'active' ? 'badge-active' : item.status === 'inactive' ? 'badge-pending' : 'badge-cancelled';
+
+        return `
+          <tr>
+            <td><strong>${escapeHtml(item.item_name)}</strong></td>
+            <td>${escapeHtml(item.item_id || '-')}</td>
+            <td>${escapeHtml(item.category_name || '-')}</td>
+            <td>
+              <span style="color: ${isOutOfStock ? '#dc2626' : isLowStock ? '#d97706' : '#059669'}; font-weight: 600;">
+                ${item.stock_quantity}
+              </span>
+              ${isLowStock ? ' <i class="fas fa-exclamation-triangle" style="color: #d97706;" title="Low stock"></i>' : ''}
+              ${isOutOfStock ? ' <i class="fas fa-times-circle" style="color: #dc2626;" title="Out of stock"></i>' : ''}
+            </td>
+            <td>${item.reorder_point || 0}</td>
+            <td>₦${parseFloat(item.unit_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td>${escapeHtml(item.primary_supplier_name || '-')}</td>
+            <td>
+              <span style="color: ${isExpiringSoon ? '#d97706' : 'inherit'};">
+                ${expiryDate}
+              </span>
+              ${isExpiringSoon ? ' <span class="badge badge-pending">Expiring</span>' : ''}
+            </td>
+            <td><span class="badge ${statusBadge}">${capitalize(item.status)}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-sm btn-icon" title="View" onclick="viewInventoryItem(${item.id})"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-icon" title="Edit" onclick="editInventoryItem(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-icon btn-danger" title="Delete" onclick="deleteInventoryItem(${item.id})"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateInventoryPagination(total) {
+      const start = inventoryPage * pageSize + 1;
+      const end = Math.min((inventoryPage + 1) * pageSize, total);
+      document.getElementById('inventoryPagination').textContent = total > 0 ? `Showing ${start}-${end} of ${total} items` : 'Showing 0 items';
+      document.getElementById('prevInventoryBtn').disabled = inventoryPage === 0;
+      document.getElementById('nextInventoryBtn').disabled = end >= total;
+    }
+
+    function prevInventoryPage() {
+      if (inventoryPage > 0) {
+        inventoryPage--;
+        loadInventoryItems();
+      }
+    }
+
+    function nextInventoryPage() {
+      inventoryPage++;
+      loadInventoryItems();
+    }
+
+    function searchInventory() {
+      inventoryPage = 0;
+      loadInventoryItems();
+    }
+
+    function filterInventory() {
+      inventoryPage = 0;
+      loadInventoryItems();
+    }
+
+    async function loadCategoriesForDropdown() {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/categories`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          inventoryCategories = data.data;
+          const categorySelect = document.getElementById('invCategory');
+          const subcategorySelect = document.getElementById('invSubcategory');
+          if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Select category...</option>' + data.data.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+          }
+          if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">Select subcategory...</option>' + data.data.filter(c => c.parent_id).map(c => `<option value="${c.id}" data-parent="${c.parent_id}">${escapeHtml(c.name)}</option>`).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+    function loadSubcategoriesForDropdown() {
+      const categoryId = document.getElementById('invCategory').value;
+      const subcategorySelect = document.getElementById('invSubcategory');
+      if (!subcategorySelect) return;
+      const filtered = inventoryCategories.filter(c => c.parent_id == categoryId);
+      if (filtered.length > 0) {
+        subcategorySelect.innerHTML = '<option value="">Select subcategory...</option>' + filtered.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        subcategorySelect.disabled = false;
+      } else {
+        subcategorySelect.innerHTML = '<option value="">No subcategories</option>';
+        subcategorySelect.disabled = true;
+      }
+    }
+
+    async function loadSuppliersForDropdown() {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/suppliers`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          inventorySuppliers = data.data;
+          const supplierSelect = document.getElementById('invPrimarySupplier');
+          if (supplierSelect) {
+            supplierSelect.innerHTML = '<option value="">Select supplier...</option>' + data.data.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading suppliers:', error);
+      }
+    }
+
+    function openAddInventoryModal() {
+      document.getElementById('inventoryModalTitle').textContent = 'Add Inventory Item';
+      document.getElementById('editInventoryItemId').value = '';
+      clearInventoryForm();
+      openModal('addInventoryItem');
+    }
+
+    function closeAddInventoryModal() {
+      const modal = document.getElementById('modal-addInventoryItem');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    function closeViewInventoryItemModal() {
+      const modal = document.getElementById('modal-viewInventoryItem');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    function clearInventoryForm() {
+      document.getElementById('invItemName').value = '';
+      document.getElementById('invItemId').value = '';
+      document.getElementById('invCategory').value = '';
+      document.getElementById('invSubcategory').value = '';
+      document.getElementById('invUnitOfMeasure').value = '';
+      document.getElementById('invUnitQuantity').value = '';
+      document.getElementById('invDescription').value = '';
+      document.getElementById('invStorageLocation').value = '';
+      document.getElementById('invManufacturer').value = '';
+      document.getElementById('invBrand').value = '';
+      document.getElementById('invModelVersion').value = '';
+      document.getElementById('invExpiryTracking').value = 'no';
+      document.getElementById('expiryDateField').style.display = 'none';
+      document.getElementById('invExpiryDate').value = '';
+      document.getElementById('invCurrentStock').value = '';
+      document.getElementById('invMinStockLevel').value = '';
+      document.getElementById('invMaxStockLevel').value = '';
+      document.getElementById('invReorderPoint').value = '';
+      document.getElementById('invReorderQuantity').value = '';
+      document.getElementById('invUnitCost').value = '';
+      document.getElementById('invUnitPrice').value = '';
+      document.getElementById('invPrimarySupplier').value = '';
+      document.getElementById('invSupplierItemCode').value = '';
+      document.getElementById('invSupplierPrice').value = '';
+      document.getElementById('invLeadTimeDays').value = '';
+      document.getElementById('invMinOrderQuantity').value = '';
+      document.getElementById('invStatus').value = 'active';
+      document.getElementById('invNotes').value = '';
+      document.getElementById('invRequiresRefrigeration').checked = false;
+      document.getElementById('invControlledSubstance').checked = false;
+      document.getElementById('invHazardousMaterial').checked = false;
+      document.getElementById('invSterile').checked = false;
+      document.getElementById('invEnableLowStockAlerts').checked = true;
+      document.getElementById('invEnableExpiryAlerts').checked = true;
+    }
+
+    async function editInventoryItem(id) {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/items/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const item = data.data;
+          document.getElementById('inventoryModalTitle').textContent = 'Edit Inventory Item';
+          document.getElementById('editInventoryItemId').value = item.id;
+          document.getElementById('invItemName').value = item.item_name || '';
+          document.getElementById('invItemId').value = item.item_id || '';
+          document.getElementById('invCategory').value = item.category_id || '';
+          await loadSubcategoriesForDropdown();
+          document.getElementById('invSubcategory').value = item.subcategory_id || '';
+          document.getElementById('invUnitOfMeasure').value = item.unit_of_measure || '';
+          document.getElementById('invUnitQuantity').value = item.unit_quantity || '';
+          document.getElementById('invDescription').value = item.description || '';
+          document.getElementById('invStorageLocation').value = item.storage_location || '';
+          document.getElementById('invManufacturer').value = item.manufacturer || '';
+          document.getElementById('invBrand').value = item.brand || '';
+          document.getElementById('invModelVersion').value = item.model_version || '';
+          document.getElementById('invExpiryTracking').value = item.expiry_tracking || 'no';
+          document.getElementById('invExpiryDate').value = item.expiry_date || '';
+          document.getElementById('expiryDateField').style.display = item.expiry_tracking === 'yes' ? 'block' : 'none';
+          document.getElementById('invCurrentStock').value = item.stock_quantity || 0;
+          document.getElementById('invMinStockLevel').value = item.min_stock_level || 0;
+          document.getElementById('invMaxStockLevel').value = item.max_stock_level || 0;
+          document.getElementById('invReorderPoint').value = item.reorder_point || 0;
+          document.getElementById('invReorderQuantity').value = item.reorder_quantity || 0;
+          document.getElementById('invUnitCost').value = item.unit_cost || 0;
+          document.getElementById('invUnitPrice').value = item.unit_price || 0;
+          await loadSuppliersForDropdown();
+          document.getElementById('invPrimarySupplier').value = item.primary_supplier_id || '';
+          document.getElementById('invSupplierItemCode').value = item.supplier_item_code || '';
+          document.getElementById('invSupplierPrice').value = item.supplier_price || 0;
+          document.getElementById('invLeadTimeDays').value = item.lead_time_days || 0;
+          document.getElementById('invMinOrderQuantity').value = item.min_order_quantity || 0;
+          document.getElementById('invStatus').value = item.status || 'active';
+          document.getElementById('invNotes').value = item.notes || '';
+          document.getElementById('invRequiresRefrigeration').checked = item.requires_refrigeration ? true : false;
+          document.getElementById('invControlledSubstance').checked = item.controlled_substance ? true : false;
+          document.getElementById('invHazardousMaterial').checked = item.hazardous_material ? true : false;
+          document.getElementById('invSterile').checked = item.sterile ? true : false;
+          document.getElementById('invEnableLowStockAlerts').checked = item.enable_low_stock_alerts ? true : false;
+          document.getElementById('invEnableExpiryAlerts').checked = item.enable_expiry_alerts ? true : false;
+          openModal('addInventoryItem');
+        } else {
+          alert(data.message || 'Failed to load item');
+        }
+      } catch (error) {
+        console.error('Error loading inventory item:', error);
+        alert('Error loading item');
+      }
+    }
+
+    async function saveInventoryItem() {
+      const id = document.getElementById('editInventoryItemId').value;
+      const item_name = document.getElementById('invItemName').value.trim();
+
+      if (!item_name) {
+        alert('Item name is required');
+        return;
+      }
+
+      const body = {
+        item_name,
+        item_id: document.getElementById('invItemId').value.trim() || null,
+        category_id: document.getElementById('invCategory').value || null,
+        subcategory_id: document.getElementById('invSubcategory').value || null,
+        description: document.getElementById('invDescription').value.trim() || null,
+        unit_of_measure: document.getElementById('invUnitOfMeasure').value || null,
+        unit_quantity: parseFloat(document.getElementById('invUnitQuantity').value) || 0,
+        storage_location: document.getElementById('invStorageLocation').value.trim() || null,
+        manufacturer: document.getElementById('invManufacturer').value.trim() || null,
+        brand: document.getElementById('invBrand').value.trim() || null,
+        model_version: document.getElementById('invModelVersion').value.trim() || null,
+        expiry_tracking: document.getElementById('invExpiryTracking').value || 'no',
+        expiry_date: document.getElementById('invExpiryDate').value || null,
+        requires_refrigeration: document.getElementById('invRequiresRefrigeration').checked,
+        controlled_substance: document.getElementById('invControlledSubstance').checked,
+        hazardous_material: document.getElementById('invHazardousMaterial').checked,
+        sterile: document.getElementById('invSterile').checked,
+        notes: document.getElementById('invNotes').value.trim() || null,
+        current_stock: parseInt(document.getElementById('invCurrentStock').value) || 0,
+        min_stock_level: parseInt(document.getElementById('invMinStockLevel').value) || 0,
+        max_stock_level: parseInt(document.getElementById('invMaxStockLevel').value) || 0,
+        reorder_point: parseInt(document.getElementById('invReorderPoint').value) || 0,
+        reorder_quantity: parseInt(document.getElementById('invReorderQuantity').value) || 0,
+        unit_cost: parseFloat(document.getElementById('invUnitCost').value) || 0,
+        unit_price: parseFloat(document.getElementById('invUnitPrice').value) || 0,
+        primary_supplier_id: document.getElementById('invPrimarySupplier').value || null,
+        supplier_item_code: document.getElementById('invSupplierItemCode').value.trim() || null,
+        supplier_price: parseFloat(document.getElementById('invSupplierPrice').value) || 0,
+        lead_time_days: parseInt(document.getElementById('invLeadTimeDays').value) || 0,
+        min_order_quantity: parseFloat(document.getElementById('invMinOrderQuantity').value) || 0,
+        alternative_suppliers: null,
+        status: document.getElementById('invStatus').value || 'active',
+        enable_low_stock_alerts: document.getElementById('invEnableLowStockAlerts').checked,
+        enable_expiry_alerts: document.getElementById('invEnableExpiryAlerts').checked
+      };
+
+      try {
+        const headers = getCsrfHeaders({ 'Content-Type': 'application/json' });
+        const url = id ? `${API_BASE}/inventory/items/${id}` : `${API_BASE}/inventory/items`;
+        const response = await fetch(url, {
+          method: id ? 'PUT' : 'POST',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(id ? 'Item updated successfully' : 'Item added successfully');
+          closeAddInventoryModal();
+          loadInventoryItems();
+          loadInventoryStats();
+          loadInventoryAlerts();
+        } else {
+          alert(data.message || 'Failed to save item');
+        }
+      } catch (error) {
+        console.error('Error saving inventory item:', error);
+        alert('Error saving item');
+      }
+    }
+
+    async function deleteInventoryItem(id) {
+      if (!confirm('Are you sure you want to delete this item?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/inventory/items/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: getCsrfHeaders()
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('Item deleted successfully');
+          loadInventoryItems();
+          loadInventoryStats();
+          loadInventoryAlerts();
+        } else {
+          alert(data.message || 'Failed to delete item');
+        }
+      } catch (error) {
+        console.error('Error deleting inventory item:', error);
+        alert('Error deleting item');
+      }
+    }
+
+    async function viewInventoryItem(id) {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/items/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const item = data.data;
+          const body = document.getElementById('viewInventoryItemBody');
+          const expiryDate = item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A';
+          const createdDate = item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A';
+          const updatedDate = item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'N/A';
+          const statusMap = { active: { text: 'Active', color: '#059669', bg: '#d1fae5' }, inactive: { text: 'Inactive', color: '#d97706', bg: '#fef3c7' }, discontinued: { text: 'Discontinued', color: '#dc2626', bg: '#fee2e2' } };
+          const st = statusMap[item.status] || statusMap.active;
+
+          body.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
+              <div style="width: 56px; height: 56px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #171819;">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div>
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #0f172a;">${escapeHtml(item.item_name)}</h2>
+                <p style="font-size: 14px; color: #64748b; margin: 4px 0 0 0;">${escapeHtml(item.item_id || 'No ID')} | ${escapeHtml(item.category_name || 'No category')}</p>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Stock Quantity</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 600; color: ${item.stock_quantity <= item.reorder_point ? '#dc2626' : '#059669'};">${item.stock_quantity}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Reorder Point</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">${item.reorder_point || 0}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Unit Cost</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">₦${parseFloat(item.unit_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Unit Price</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">₦${parseFloat(item.unit_price || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                </div>
+              </div>
+              <div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Supplier</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">${escapeHtml(item.primary_supplier_name || 'N/A')}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Expiry Date</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">${expiryDate}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Storage Location</div>
+                  <div style="font-size: 14px; color: #0f172a; font-weight: 500;">${escapeHtml(item.storage_location || 'N/A')}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Status</div>
+                  <div style="font-size: 14px; font-weight: 500;"><span style="display:inline-block; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; background: ${st.bg}; color: ${st.color};">${st.text}</span></div>
+                </div>
+              </div>
+            </div>
+            ${item.description ? `
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+              <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Description</div>
+              <div style="font-size: 14px; color: #0f172a; line-height: 1.6;">${escapeHtml(item.description)}</div>
+            </div>
+            ` : ''}
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; gap: 24px; font-size: 12px; color: #64748b;">
+              <div><strong>Created:</strong> <span>${createdDate}</span></div>
+              <div><strong>Last Updated:</strong> <span>${updatedDate}</span></div>
+            </div>
+          `;
+
+          document.getElementById('viewInventoryEditBtn').onclick = function() {
+            closeViewInventoryItemModal();
+            editInventoryItem(id);
+          };
+
+          openModal('viewInventoryItem');
+        } else {
+          alert(data.message || 'Failed to load item details');
+        }
+      } catch (error) {
+        console.error('Error viewing inventory item:', error);
+        alert('Error loading item details');
+      }
+    }
+
+    function openAddSupplierModal() {
+      document.getElementById('supplierModalTitle').textContent = 'Add Supplier';
+      document.getElementById('editSupplierId').value = '';
+      clearSupplierForm();
+      openModal('addSupplier');
+    }
+
+    function closeAddSupplierModal() {
+      const modal = document.getElementById('modal-addSupplier');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    function clearSupplierForm() {
+      document.getElementById('supplierName').value = '';
+      document.getElementById('supplierCategory').value = 'Medical Supplies';
+      document.getElementById('supplierContactPerson').value = '';
+      document.getElementById('supplierEmail').value = '';
+      document.getElementById('supplierPhone').value = '';
+      document.getElementById('supplierLocation').value = '';
+      document.getElementById('supplierWebsite').value = '';
+      document.getElementById('supplierPaymentTerms').value = 'Net 30';
+      document.getElementById('supplierAvgLeadTime').value = '';
+      document.getElementById('supplierMinOrderValue').value = '';
+      document.getElementById('supplierRating').value = '3';
+      document.getElementById('supplierStatus').value = 'active';
+      document.getElementById('supplierDescription').value = '';
+    }
+
+    async function saveSupplier() {
+      const name = document.getElementById('supplierName').value.trim();
+      if (!name) {
+        alert('Supplier name is required');
+        return;
+      }
+
+      const body = {
+        name,
+        category: document.getElementById('supplierCategory').value,
+        description: document.getElementById('supplierDescription').value.trim() || null,
+        contact_person: document.getElementById('supplierContactPerson').value.trim() || null,
+        email: document.getElementById('supplierEmail').value.trim() || null,
+        phone: document.getElementById('supplierPhone').value.trim() || null,
+        location: document.getElementById('supplierLocation').value.trim() || null,
+        website: document.getElementById('supplierWebsite').value.trim() || null,
+        payment_terms: document.getElementById('supplierPaymentTerms').value.trim() || 'Net 30',
+        avg_lead_time: parseInt(document.getElementById('supplierAvgLeadTime').value) || 0,
+        min_order_value: parseFloat(document.getElementById('supplierMinOrderValue').value) || 0,
+        rating: parseInt(document.getElementById('supplierRating').value) || 3,
+        is_preferred: false,
+        status: document.getElementById('supplierStatus').value || 'active'
+      };
+
+      try {
+        const headers = getCsrfHeaders({ 'Content-Type': 'application/json' });
+        const response = await fetch(`${API_BASE}/inventory/suppliers`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('Supplier added successfully');
+          closeAddSupplierModal();
+          loadSuppliersForDropdown();
+        } else {
+          alert(data.message || 'Failed to save supplier');
+        }
+      } catch (error) {
+        console.error('Error saving supplier:', error);
+        alert('Error saving supplier');
+      }
+    }
+
+    async function loadInventoryAlerts() {
+      try {
+        const response = await fetch(`${API_BASE}/inventory/alerts`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const alerts = data.data;
+          const totalAlerts = (alerts.low_stock || []).length + (alerts.out_of_stock || []).length + (alerts.expiring_soon || []).length;
+          const alertsCard = document.getElementById('inventoryAlertsCard');
+          if (totalAlerts > 0 && alertsCard) {
+            alertsCard.style.display = 'block';
+            const alertsContent = document.getElementById('inventoryAlertsContent');
+            let html = '';
+            if (alerts.low_stock.length > 0) {
+              html += '<h4 style="margin: 0 0 12px 0; color: #d97706; font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> Low Stock Items</h4>';
+              html += '<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">';
+              alerts.low_stock.forEach(item => {
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
+                  <div><strong>${escapeHtml(item.item_name)}</strong> <span style="color: #64748b; font-size: 12px;">Stock: ${item.stock_quantity} | Reorder: ${item.reorder_point}</span></div>
+                  <button class="btn btn-sm" onclick="editInventoryItem(${item.id})">Restock</button>
+                </div>`;
+              });
+              html += '</div>';
+            }
+            if (alerts.out_of_stock.length > 0) {
+              html += '<h4 style="margin: 0 0 12px 0; color: #dc2626; font-size: 14px;"><i class="fas fa-times-circle"></i> Out of Stock</h4>';
+              html += '<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">';
+              alerts.out_of_stock.forEach(item => {
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px;">
+                  <div><strong>${escapeHtml(item.item_name)}</strong> <span style="color: #64748b; font-size: 12px;">Min: ${item.min_stock_level}</span></div>
+                  <button class="btn btn-sm" onclick="editInventoryItem(${item.id})">Restock</button>
+                </div>`;
+              });
+              html += '</div>';
+            }
+            if (alerts.expiring_soon.length > 0) {
+              html += '<h4 style="margin: 0 0 12px 0; color: #0891b2; font-size: 14px;"><i class="fas fa-clock"></i> Expiring Soon</h4>';
+              html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+              alerts.expiring_soon.forEach(item => {
+                const expiry = new Date(item.expiry_date).toLocaleDateString();
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #ecfeff; border: 1px solid #cffafe; border-radius: 8px;">
+                  <div><strong>${escapeHtml(item.item_name)}</strong> <span style="color: #64748b; font-size: 12px;">Expires: ${expiry}</span></div>
+                  <button class="btn btn-sm" onclick="editInventoryItem(${item.id})">Review</button>
+                </div>`;
+              });
+              html += '</div>';
+            }
+            alertsContent.innerHTML = html;
+          } else if (alertsCard) {
+            alertsCard.style.display = 'none';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading inventory alerts:', error);
+      }
+    }
+
+    function toggleAlertsPanel() {
+      const body = document.getElementById('inventoryAlertsBody');
+      inventoryAlertsVisible = !inventoryAlertsVisible;
+      body.style.display = inventoryAlertsVisible ? 'block' : 'none';
+    }
+
+    function toggleExpiryDateField() {
+      const tracking = document.getElementById('invExpiryTracking').value;
+      const field = document.getElementById('expiryDateField');
+      field.style.display = tracking === 'yes' ? 'block' : 'none';
+    }
+
+    function toggleExportDropdown() {
+      const dropdown = document.getElementById('exportDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function exportInventory(type) {
+      const url = `${API_BASE}/inventory/export?type=${type}`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      document.getElementById('exportDropdown').style.display = 'none';
+    }
+
+    function closeViewAlertsModal() {
+      const modal = document.getElementById('modal-viewAlerts');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    // Initialize inventory data when navigating to inventory
+    const originalLoadSectionData = loadSectionData;
+    loadSectionData = function(section) {
+      if (section === 'inventory') {
+        loadCategoriesForDropdown();
+        loadSuppliersForDropdown();
+      }
+      originalLoadSectionData(section);
+    };
   </script>
 
 <!-- Blood Bank Modals - Positioned Outside App Container -->

@@ -102,7 +102,8 @@ app.use((req, res, next) => {
     '/api/pharmacy',
     '/api/billing',
     '/api/newsletter',
-    '/api/blood-bank'
+    '/api/blood-bank',
+    '/api/inventory'
   ];
   if (csrfExemptPaths.some(path => req.path.startsWith(path))) {
     return next();
@@ -239,6 +240,10 @@ app.use('/api/pharmacy', pharmacyRoutes);
 // Billing routes
 app.use('/api/billing', billingRoutes);
 
+// Inventory routes
+const inventoryRoutes = require('./routes/inventory');
+app.use('/api/inventory', inventoryRoutes);
+
 // Blood Bank routes
 const bloodBankRoutes = require('./routes/blood-bank');
 app.use('/api/blood-bank', bloodBankRoutes);
@@ -311,8 +316,7 @@ app.get('/api/health', (req, res) => {
 
 module.exports = app;
 
-if (require.main === module) {
-    app.listen(process.env.PORT || 5000, () => {
-        console.log("Running...");
-    });
-}
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

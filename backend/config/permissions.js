@@ -75,6 +75,10 @@ const PERMISSIONS = {
   // Blood Bank permissions
   MANAGE_BLOOD_BANK: 'manage_blood_bank',
   VIEW_BLOOD_BANK: 'view_blood_bank',
+
+  // Inventory permissions
+  MANAGE_INVENTORY: 'manage_inventory',
+  VIEW_INVENTORY: 'view_inventory',
 };
 
 // Define role-permission mapping
@@ -122,6 +126,9 @@ const ROLE_PERMISSIONS = {
     // Blood Bank permissions
     PERMISSIONS.MANAGE_BLOOD_BANK,
     PERMISSIONS.VIEW_BLOOD_BANK,
+    // Inventory permissions
+    PERMISSIONS.MANAGE_INVENTORY,
+    PERMISSIONS.VIEW_INVENTORY,
     // Staff permissions
     PERMISSIONS.VIEW_ALL_USERS,
     PERMISSIONS.VIEW_ALL_APPOINTMENTS,

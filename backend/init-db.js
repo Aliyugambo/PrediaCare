@@ -1149,6 +1149,409 @@ if (fs.existsSync(seedSqlPath)) {
       }
     }
 
+    // ==================== INVENTORY ====================
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS inventory_categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        parent_id INT DEFAULT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES inventory_categories(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Inventory categories table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS inventory_suppliers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(100) DEFAULT 'Medical Supplies',
+        description TEXT,
+        contact_person VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        location VARCHAR(255),
+        website VARCHAR(255),
+        payment_terms VARCHAR(100) DEFAULT 'Net 30',
+        avg_lead_time INT DEFAULT 0,
+        min_order_value DECIMAL(10,2) DEFAULT 0.00,
+        rating INT DEFAULT 3,
+        is_preferred BOOLEAN DEFAULT FALSE,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Inventory suppliers table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS inventory_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        item_name VARCHAR(255) NOT NULL,
+        item_id VARCHAR(100) UNIQUE,
+        category_id INT,
+        subcategory_id INT,
+        description TEXT,
+        unit_of_measure VARCHAR(50),
+        unit_quantity DECIMAL(10,2),
+        storage_location VARCHAR(255),
+        manufacturer VARCHAR(255),
+        brand VARCHAR(255),
+        model_version VARCHAR(255),
+        expiry_tracking ENUM('yes', 'no') DEFAULT 'no',
+        expiry_date DATE DEFAULT NULL,
+        requires_refrigeration BOOLEAN DEFAULT FALSE,
+        controlled_substance BOOLEAN DEFAULT FALSE,
+        hazardous_material BOOLEAN DEFAULT FALSE,
+        sterile BOOLEAN DEFAULT FALSE,
+        notes TEXT,
+        stock_quantity INT DEFAULT 0,
+        min_stock_level INT DEFAULT 0,
+        max_stock_level INT DEFAULT 0,
+        reorder_point INT DEFAULT 0,
+        reorder_quantity INT DEFAULT 0,
+        unit_cost DECIMAL(10,2) DEFAULT 0.00,
+        unit_price DECIMAL(10,2) DEFAULT 0.00,
+        primary_supplier_id INT,
+        supplier_item_code VARCHAR(100),
+        supplier_price DECIMAL(10,2) DEFAULT 0.00,
+        lead_time_days INT DEFAULT 0,
+        min_order_quantity DECIMAL(10,2) DEFAULT 0,
+        alternative_suppliers JSON,
+        status ENUM('active', 'inactive', 'discontinued') DEFAULT 'active',
+        enable_low_stock_alerts BOOLEAN DEFAULT TRUE,
+        enable_expiry_alerts BOOLEAN DEFAULT TRUE,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES inventory_categories(id) ON DELETE SET NULL,
+        FOREIGN KEY (subcategory_id) REFERENCES inventory_categories(id) ON DELETE SET NULL,
+        FOREIGN KEY (primary_supplier_id) REFERENCES inventory_suppliers(id) ON DELETE SET NULL,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Inventory items table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS inventory_orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        item_id INT NOT NULL,
+        supplier_id INT,
+        quantity DECIMAL(10,2) NOT NULL,
+        unit_price DECIMAL(10,2) DEFAULT 0.00,
+        total_amount DECIMAL(12,2) DEFAULT 0.00,
+        status ENUM('pending', 'ordered', 'received', 'cancelled') DEFAULT 'pending',
+        expected_delivery DATE,
+        received_date DATE,
+        notes TEXT,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (item_id) REFERENCES inventory_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (supplier_id) REFERENCES inventory_suppliers(id) ON DELETE SET NULL,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Inventory orders table created or already exists');
+
+    // Ensure inventory tables have required columns for older installations
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'item_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN item_id VARCHAR(100) UNIQUE AFTER item_name");
+        console.log('Added item_id column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items item_id column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'category_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN category_id INT AFTER item_id");
+        await connection.execute("ALTER TABLE inventory_items ADD CONSTRAINT fk_inventory_items_category FOREIGN KEY (category_id) REFERENCES inventory_categories(id) ON DELETE SET NULL");
+        console.log('Added category_id column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items category_id column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'subcategory_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN subcategory_id INT AFTER category_id");
+        await connection.execute("ALTER TABLE inventory_items ADD CONSTRAINT fk_inventory_items_subcategory FOREIGN KEY (subcategory_id) REFERENCES inventory_categories(id) ON DELETE SET NULL");
+        console.log('Added subcategory_id column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items subcategory_id column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'unit_of_measure'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN unit_of_measure VARCHAR(50) AFTER description");
+        console.log('Added unit_of_measure column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items unit_of_measure column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'expiry_tracking'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN expiry_tracking ENUM('yes', 'no') DEFAULT 'no' AFTER model_version");
+        console.log('Added expiry_tracking column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items expiry_tracking column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'expiry_date'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN expiry_date DATE DEFAULT NULL AFTER expiry_tracking");
+        console.log('Added expiry_date column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items expiry_date column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'requires_refrigeration'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN requires_refrigeration BOOLEAN DEFAULT FALSE AFTER expiry_tracking");
+        console.log('Added requires_refrigeration column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items requires_refrigeration column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'controlled_substance'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN controlled_substance BOOLEAN DEFAULT FALSE AFTER requires_refrigeration");
+        console.log('Added controlled_substance column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items controlled_substance column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'hazardous_material'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN hazardous_material BOOLEAN DEFAULT FALSE AFTER controlled_substance");
+        console.log('Added hazardous_material column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items hazardous_material column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'sterile'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN sterile BOOLEAN DEFAULT FALSE AFTER hazardous_material");
+        console.log('Added sterile column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items sterile column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'stock_quantity'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN stock_quantity INT DEFAULT 0 AFTER notes");
+        console.log('Added stock_quantity column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items stock_quantity column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'min_stock_level'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN min_stock_level INT DEFAULT 0 AFTER stock_quantity");
+        console.log('Added min_stock_level column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items min_stock_level column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'max_stock_level'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN max_stock_level INT DEFAULT 0 AFTER min_stock_level");
+        console.log('Added max_stock_level column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items max_stock_level column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'reorder_point'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN reorder_point INT DEFAULT 0 AFTER max_stock_level");
+        console.log('Added reorder_point column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items reorder_point column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'reorder_quantity'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN reorder_quantity INT DEFAULT 0 AFTER reorder_point");
+        console.log('Added reorder_quantity column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items reorder_quantity column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'unit_cost'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN unit_cost DECIMAL(10,2) DEFAULT 0.00 AFTER reorder_quantity");
+        console.log('Added unit_cost column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items unit_cost column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'unit_price'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN unit_price DECIMAL(10,2) DEFAULT 0.00 AFTER unit_cost");
+        console.log('Added unit_price column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items unit_price column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'primary_supplier_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN primary_supplier_id INT AFTER unit_price");
+        await connection.execute("ALTER TABLE inventory_items ADD CONSTRAINT fk_inventory_items_supplier FOREIGN KEY (primary_supplier_id) REFERENCES inventory_suppliers(id) ON DELETE SET NULL");
+        console.log('Added primary_supplier_id column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items primary_supplier_id column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'supplier_item_code'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN supplier_item_code VARCHAR(100) AFTER primary_supplier_id");
+        console.log('Added supplier_item_code column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items supplier_item_code column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'supplier_price'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN supplier_price DECIMAL(10,2) DEFAULT 0.00 AFTER supplier_item_code");
+        console.log('Added supplier_price column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items supplier_price column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'lead_time_days'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN lead_time_days INT DEFAULT 0 AFTER supplier_price");
+        console.log('Added lead_time_days column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items lead_time_days column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'min_order_quantity'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN min_order_quantity DECIMAL(10,2) DEFAULT 0 AFTER lead_time_days");
+        console.log('Added min_order_quantity column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items min_order_quantity column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'alternative_suppliers'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN alternative_suppliers JSON AFTER min_order_quantity");
+        console.log('Added alternative_suppliers column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items alternative_suppliers column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'enable_low_stock_alerts'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN enable_low_stock_alerts BOOLEAN DEFAULT TRUE AFTER status");
+        console.log('Added enable_low_stock_alerts column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items enable_low_stock_alerts column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'enable_expiry_alerts'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN enable_expiry_alerts BOOLEAN DEFAULT TRUE AFTER enable_low_stock_alerts");
+        console.log('Added enable_expiry_alerts column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items enable_expiry_alerts column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'created_by'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_items ADD COLUMN created_by INT AFTER enable_expiry_alerts");
+        await connection.execute("ALTER TABLE inventory_items ADD CONSTRAINT fk_inventory_items_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL");
+        console.log('Added created_by column to inventory_items table');
+      }
+    } catch (e) {
+      console.log('inventory_items created_by column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_orders LIKE 'total_amount'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_orders ADD COLUMN total_amount DECIMAL(12,2) DEFAULT 0.00 AFTER unit_price");
+        console.log('Added total_amount column to inventory_orders table');
+      }
+    } catch (e) {
+      console.log('inventory_orders total_amount column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_orders LIKE 'received_date'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_orders ADD COLUMN received_date DATE AFTER expected_delivery");
+        console.log('Added received_date column to inventory_orders table');
+      }
+    } catch (e) {
+      console.log('inventory_orders received_date column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_orders LIKE 'created_by'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE inventory_orders ADD COLUMN created_by INT AFTER notes");
+        await connection.execute("ALTER TABLE inventory_orders ADD CONSTRAINT fk_inventory_orders_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL");
+        console.log('Added created_by column to inventory_orders table');
+      }
+    } catch (e) {
+      console.log('inventory_orders created_by column check:', e.message);
+    }
+
     await connection.end();
     console.log('\nDatabase initialization completed successfully!');
   } catch (error) {
