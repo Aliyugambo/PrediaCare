@@ -1256,6 +1256,73 @@ if (fs.existsSync(seedSqlPath)) {
     `);
     console.log('Inventory orders table created or already exists');
 
+    // Seed inventory categories
+    const categoriesToSeed = [
+      { name: 'medication', parent_name: null, description: 'Medication items' },
+      { name: 'Medical Suppliers', parent_name: null, description: 'Medical supplier-related items' },
+      { name: 'Equipment', parent_name: null, description: 'Medical equipment and devices' },
+      { name: 'office Suppliers', parent_name: null, description: 'Office supply items' }
+    ];
+    for (const cat of categoriesToSeed) {
+      try {
+        let parentId = null;
+        if (cat.parent_name) {
+          const [parentRows] = await connection.execute("SELECT id FROM inventory_categories WHERE name = ? LIMIT 1", [cat.parent_name]);
+          if (parentRows.length > 0) parentId = parentRows[0].id;
+        }
+        const [existing] = await connection.execute("SELECT id FROM inventory_categories WHERE name = ? LIMIT 1", [cat.name]);
+        if (!existing || existing.length === 0) {
+          await connection.execute(
+            "INSERT INTO inventory_categories (name, parent_id, description) VALUES (?, ?, ?)",
+            [cat.name, parentId, cat.description]
+          );
+          console.log(`Seeded inventory category: ${cat.name}`);
+        }
+      } catch (e) {
+        console.log(`Category seed warning (${cat.name}):`, e.message);
+      }
+    }
+
+    // Seed subcategories for medication
+    const medicationCatRows = await connection.execute("SELECT id FROM inventory_categories WHERE name = 'medication' LIMIT 1");
+    const medCatId = medicationCatRows[0] && medicationCatRows[0].length > 0 ? medicationCatRows[0][0].id : null;
+    if (medCatId) {
+      const subcats = ['disposable', 'reusable', 'prescriptions', 'over the counter'];
+      for (const sub of subcats) {
+        try {
+          const [existing] = await connection.execute("SELECT id FROM inventory_categories WHERE name = ? AND parent_id = ? LIMIT 1", [sub, medCatId]);
+          if (!existing || existing.length === 0) {
+            await connection.execute("INSERT INTO inventory_categories (name, parent_id) VALUES (?, ?)", [sub, medCatId]);
+            console.log(`Seeded inventory subcategory: ${sub}`);
+          }
+        } catch (e) {
+          console.log(`Subcategory seed warning (${sub}):`, e.message);
+        }
+      }
+    }
+
+    // Seed inventory suppliers
+    const suppliersToSeed = [
+      { name: 'MedPlus Suppliers', category: 'Medical Supplies', description: 'Leading medical supply distributor', contact_person: 'Aliyu Gambo', email: 'contact@medplus.com', phone: '08012345678', location: 'Lagos, Nigeria', website: 'https://medplus.com', payment_terms: 'Net 30', avg_lead_time: 5, min_order_value: 100, rating: 4 },
+      { name: 'PharmaTech Inc', category: 'Medical Supplies', description: 'Pharmaceutical supplier', contact_person: 'Sarah Jones', email: 'sales@pharmatech.com', phone: '08023456789', location: 'Abuja, Nigeria', website: 'https://pharmatech.com', payment_terms: 'Net 30', avg_lead_time: 3, min_order_value: 200, rating: 5 },
+      { name: 'MedEquip Solutions', category: 'Equipment', description: 'Medical equipment supplier', contact_person: 'Mike Chen', email: 'info@medequip.com', phone: '08034567890', location: 'Port Harcourt, Nigeria', website: 'https://medequip.com', payment_terms: 'Net 45', avg_lead_time: 7, min_order_value: 500, rating: 4 },
+      { name: 'Health Supply Co.', category: 'Medical Supplies', description: 'General health supplies', contact_person: 'Grace Adeyemi', email: 'hello@healthsupply.com', phone: '08045678901', location: 'Ibadan, Nigeria', website: 'https://healthsupply.com', payment_terms: 'Net 30', is_preferred: 1, avg_lead_time: 2, min_order_value: 50, rating: 5 }
+    ];
+    for (const supplier of suppliersToSeed) {
+      try {
+        const [existing] = await connection.execute("SELECT id FROM inventory_suppliers WHERE name = ? LIMIT 1", [supplier.name]);
+        if (!existing || existing.length === 0) {
+          await connection.execute(
+            `INSERT INTO inventory_suppliers (name, category, description, contact_person, email, phone, location, website, payment_terms, avg_lead_time, min_order_value, rating, is_preferred) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [supplier.name, supplier.category, supplier.description, supplier.contact_person, supplier.email, supplier.phone, supplier.location, supplier.website, supplier.payment_terms, supplier.avg_lead_time, supplier.min_order_value, supplier.rating, supplier.is_preferred || 0]
+          );
+          console.log(`Seeded inventory supplier: ${supplier.name}`);
+        }
+      } catch (e) {
+        console.log(`Supplier seed warning (${supplier.name}):`, e.message);
+      }
+    }
+
     // Ensure inventory tables have required columns for older installations
     try {
       const [cols] = await connection.execute("SHOW COLUMNS FROM inventory_items LIKE 'item_id'");
@@ -1550,6 +1617,86 @@ if (fs.existsSync(seedSqlPath)) {
       }
     } catch (e) {
       console.log('inventory_orders created_by column check:', e.message);
+    }
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS birth_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        child_first_name VARCHAR(255) NOT NULL,
+        child_middle_name VARCHAR(255),
+        child_last_name VARCHAR(255),
+        child_gender ENUM('Male', 'Female', 'Other') DEFAULT 'Male',
+        child_dob DATE,
+        child_time_of_birth TIME,
+        place_of_birth VARCHAR(255),
+        child_weight DECIMAL(5,2),
+        child_length DECIMAL(5,2),
+        mother_first_name VARCHAR(255),
+        mother_middle_name VARCHAR(255),
+        mother_last_name VARCHAR(255),
+        mother_dob DATE,
+        mother_nationality VARCHAR(100),
+        mother_occupation VARCHAR(255),
+        father_first_name VARCHAR(255),
+        father_middle_name VARCHAR(255),
+        father_last_name VARCHAR(255),
+        father_dob DATE,
+        father_nationality VARCHAR(100),
+        father_occupation VARCHAR(255),
+        attending_doctor VARCHAR(255),
+        hospital_facility VARCHAR(255),
+        additional_remarks TEXT,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Birth records table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS death_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(255) NOT NULL,
+        gender ENUM('Male', 'Female', 'Other') DEFAULT 'Male',
+        date_of_birth DATE,
+        age_at_death VARCHAR(50),
+        place_of_birth VARCHAR(255),
+        nationality VARCHAR(100),
+        last_known_address TEXT,
+        marital_status ENUM('Single', 'Married', 'Divorced', 'Widowed', 'Other'),
+        occupation VARCHAR(255),
+        date_of_death DATE,
+        time_of_death TIME,
+        place_of_death VARCHAR(255),
+        immediate_cause_of_death TEXT,
+        manner_of_death ENUM('Natural', 'Accident', 'Suicide', 'Homicide', 'Undetermined', 'Pending Investigation'),
+        attending_physician VARCHAR(255),
+        medical_examiner VARCHAR(255),
+        autopsy_performed ENUM('Yes', 'No') DEFAULT 'No',
+        autopsy_findings TEXT,
+        informant_name VARCHAR(255),
+        informant_relationship VARCHAR(255),
+        informant_contact VARCHAR(255),
+        additional_notes TEXT,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Death records table created or already exists');
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM birth_records LIKE 'child_dob'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE birth_records ADD COLUMN child_dob DATE AFTER child_gender");
+        console.log('Added child_dob column to birth_records table');
+      }
+    } catch (e) {
+      console.log('birth_records child_dob column check:', e.message);
     }
 
     await connection.end();

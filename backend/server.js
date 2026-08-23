@@ -103,7 +103,9 @@ app.use((req, res, next) => {
     '/api/billing',
     '/api/newsletter',
     '/api/blood-bank',
-    '/api/inventory'
+    '/api/inventory',
+    '/api/birth-records',
+    '/api/death-records'
   ];
   if (csrfExemptPaths.some(path => req.path.startsWith(path))) {
     return next();
@@ -247,6 +249,14 @@ app.use('/api/inventory', inventoryRoutes);
 // Blood Bank routes
 const bloodBankRoutes = require('./routes/blood-bank');
 app.use('/api/blood-bank', bloodBankRoutes);
+
+// Birth Records routes
+const birthRecordsRoutes = require('./routes/birth-records');
+app.use('/api/birth-records', birthRecordsRoutes);
+
+// Death Records routes
+const deathRecordsRoutes = require('./routes/death-records');
+app.use('/api/death-records', deathRecordsRoutes);
 
 // Newsletter / Health Newspaper routes (public)
 app.use('/api/newsletter', newsletterRoutes);

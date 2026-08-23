@@ -978,6 +978,18 @@
         </div>
 
         <div class="nav-section">
+          <div class="nav-section-title">Records</div>
+          <a href="#" class="nav-item" data-section="birth-records">
+            <i class="fas fa-baby-carriage"></i>
+            <span>Birth Records</span>
+          </a>
+          <a href="#" class="nav-item" data-section="death-records">
+            <i class="fas fa-cross"></i>
+            <span>Death Records</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
           <div class="nav-section-title">Medical Records</div>
           <a href="#" class="nav-item" data-section="health-summaries">
             <i class="fas fa-notes-medical"></i>
@@ -2019,6 +2031,160 @@
           </div>
         </div>
 
+        <!-- Birth Records Section -->
+        <div id="section-birth-records" class="tab-content">
+          <!-- Birth Records Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-baby-carriage"></i></div>
+              <div class="stat-info">
+                <h4>Total Births</h4>
+                <div class="value" id="birthStatTotal">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-male"></i></div>
+              <div class="stat-info">
+                <h4>Male Births</h4>
+                <div class="value" id="birthStatMale">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon pink"><i class="fas fa-female"></i></div>
+              <div class="stat-info">
+                <h4>Female Births</h4>
+                <div class="value" id="birthStatFemale">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-calendar-alt"></i></div>
+              <div class="stat-info">
+                <h4>This Year</h4>
+                <div class="value" id="birthStatThisYear">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Birth Records List -->
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Birth Records</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-sm" onclick="openAddBirthRecordModal()"><i class="fas fa-plus"></i> Add Birth Record</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="filters" style="padding: 16px 24px;">
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="birthSearch" placeholder="Search items..." onkeyup="searchBirthRecords()">
+                </div>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Child Name</th>
+                    <th>Gender</th>
+                    <th>Date of Birth</th>
+                    <th>Mother</th>
+                    <th>Father</th>
+                    <th>Doctor</th>
+                    <th>Created</th>
+                    <th style="width: 120px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="birthRecordsTableBody">
+                  <tr><td colspan="8" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
+              <div class="pagination">
+                <div class="pagination-info" id="birthRecordsPagination">Showing 0 items</div>
+                <div class="pagination-btns">
+                  <button class="btn btn-sm" onclick="prevBirthRecordsPage()" id="prevBirthRecordsBtn">Previous</button>
+                  <button class="btn btn-sm" onclick="nextBirthRecordsPage()" id="nextBirthRecordsBtn">Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Death Records Section -->
+        <div id="section-death-records" class="tab-content">
+          <!-- Death Records Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-cross"></i></div>
+              <div class="stat-info">
+                <h4>Total Deaths</h4>
+                <div class="value" id="deathStatTotal">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-male"></i></div>
+              <div class="stat-info">
+                <h4>Male Deaths</h4>
+                <div class="value" id="deathStatMale">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon pink"><i class="fas fa-female"></i></div>
+              <div class="stat-info">
+                <h4>Female Deaths</h4>
+                <div class="value" id="deathStatFemale">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-calendar-alt"></i></div>
+              <div class="stat-info">
+                <h4>This Year</h4>
+                <div class="value" id="deathStatThisYear">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Death Records List -->
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Death Records</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-sm" onclick="openAddDeathRecordModal()"><i class="fas fa-plus"></i> Add Death Record</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div class="filters" style="padding: 16px 24px;">
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="deathSearch" placeholder="Search items..." onkeyup="searchDeathRecords()">
+                </div>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Date of Death</th>
+                    <th>Age at Death</th>
+                    <th>Cause of Death</th>
+                    <th>Manner</th>
+                    <th>Created</th>
+                    <th style="width: 120px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="deathRecordsTableBody">
+                  <tr><td colspan="8" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
+              <div class="pagination">
+                <div class="pagination-info" id="deathRecordsPagination">Showing 0 items</div>
+                <div class="pagination-btns">
+                  <button class="btn btn-sm" onclick="prevDeathRecordsPage()" id="prevDeathRecordsBtn">Previous</button>
+                  <button class="btn btn-sm" onclick="nextDeathRecordsPage()" id="nextDeathRecordsBtn">Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Billing Section -->
         <div id="section-billing" class="tab-content">
           <!-- Billing Stats -->
@@ -2627,161 +2793,143 @@
       </div>
       <div class="modal-body" style="padding: 20px;">
         <input type="hidden" id="editInventoryItemId" value="">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label class="form-label">Item Name *</label>
-            <input type="text" class="form-control" id="invItemName" placeholder="Enter item name">
+        <!-- Tab Navigation -->
+        <div class="tabs" style="padding: 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 0;">
+          <div class="tab active" onclick="switchInventoryModalTab('details')" data-tab="details">Item Details</div>
+          <div class="tab" onclick="switchInventoryModalTab('stock')" data-tab="stock">Stock Management</div>
+          <div class="tab" onclick="switchInventoryModalTab('suppliers')" data-tab="suppliers">Suppliers</div>
+        </div>
+
+        <!-- Tab 1: Item Details -->
+        <div id="invTabDetails" class="inv-modal-tab-content" style="display: block; padding: 0 0 20px 0;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Item Name *</label>
+              <input type="text" class="form-control" id="invItemName" placeholder="Enter item name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Item ID/SKU</label>
+              <input type="text" class="form-control" id="invItemId" placeholder="e.g. INV-001">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-control" id="invCategory" onchange="loadSubcategoriesForDropdown()">
+                <option value="">Select category...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subcategory</label>
+              <select class="form-control" id="invSubcategory">
+                <option value="">Select subcategory...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit of Measure</label>
+              <select class="form-control" id="invUnitOfMeasure">
+                <option value="">Select...</option>
+                <option value="each">Each</option>
+                <option value="box">Box</option>
+                <option value="pack">Pack</option>
+                <option value="bottle">Bottle</option>
+                <option value="case">Case</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit Quantity</label>
+              <input type="number" step="0.01" class="form-control" id="invUnitQuantity" placeholder="e.g. 10">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" id="invDescription" rows="2" placeholder="Item description"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Storage Location</label>
+              <input type="text" class="form-control" id="invStorageLocation" placeholder="e.g. Warehouse A">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Manufacturer</label>
+              <input type="text" class="form-control" id="invManufacturer" placeholder="Manufacturer name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Brand</label>
+              <input type="text" class="form-control" id="invBrand" placeholder="Brand name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model/Version</label>
+              <input type="text" class="form-control" id="invModelVersion" placeholder="Model/version">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Tracking</label>
+              <select class="form-control" id="invExpiryTracking" onchange="toggleExpiryDateField()">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div class="form-group" id="expiryDateField" style="display:none;">
+              <label class="form-label">Expiry Date</label>
+              <input type="date" class="form-control" id="invExpiryDate">
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="invRequiresRefrigeration">
+                <span>Requires Refrigeration</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="invControlledSubstance">
+                <span>Controlled Substance</span>
+              </label>
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="invHazardousMaterial">
+                <span>Hazardous Material</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="invSterile">
+                <span>Sterile</span>
+              </label>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" id="invNotes" rows="2" placeholder="Additional notes"></textarea>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Item ID</label>
-            <input type="text" class="form-control" id="invItemId" placeholder="e.g. INV-001">
+        </div>
+
+        <!-- Tab 2: Stock Management -->
+        <div id="invTabStock" class="inv-modal-tab-content" style="display: none; padding: 0 0 20px 0;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Current Stock *</label>
+              <input type="number" class="form-control" id="invCurrentStock" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min Stock Level</label>
+              <input type="number" class="form-control" id="invMinStockLevel" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Stock Level</label>
+              <input type="number" class="form-control" id="invMaxStockLevel" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reorder Point</label>
+              <input type="number" class="form-control" id="invReorderPoint" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reorder Quantity</label>
+              <input type="number" class="form-control" id="invReorderQuantity" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit Cost (₦)</label>
+              <input type="number" step="0.01" class="form-control" id="invUnitCost" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit Price (₦)</label>
+              <input type="number" step="0.01" class="form-control" id="invUnitPrice" placeholder="0.00" min="0">
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Category *</label>
-            <select class="form-control" id="invCategory" onchange="loadSubcategoriesForDropdown()">
-              <option value="">Select category...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Subcategory</label>
-            <select class="form-control" id="invSubcategory">
-              <option value="">Select subcategory...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit of Measure</label>
-            <select class="form-control" id="invUnitOfMeasure">
-              <option value="">Select...</option>
-              <option value="pieces">Pieces</option>
-              <option value="boxes">Boxes</option>
-              <option value="packs">Packs</option>
-              <option value="bottles">Bottles</option>
-              <option value="vials">Vials</option>
-              <option value="units">Units</option>
-              <option value="liters">Liters</option>
-              <option value="kg">Kilograms</option>
-              <option value="grams">Grams</option>
-              <option value="rolls">Rolls</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit Quantity</label>
-            <input type="number" step="0.01" class="form-control" id="invUnitQuantity" placeholder="e.g. 10">
-          </div>
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" id="invDescription" rows="2" placeholder="Item description"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Storage Location</label>
-            <input type="text" class="form-control" id="invStorageLocation" placeholder="e.g. Warehouse A">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Manufacturer</label>
-            <input type="text" class="form-control" id="invManufacturer" placeholder="Manufacturer name">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Brand</label>
-            <input type="text" class="form-control" id="invBrand" placeholder="Brand name">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Model Version</label>
-            <input type="text" class="form-control" id="invModelVersion" placeholder="Model/version">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Expiry Tracking</label>
-            <select class="form-control" id="invExpiryTracking" onchange="toggleExpiryDateField()">
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
-            </select>
-          </div>
-          <div class="form-group" id="expiryDateField" style="display:none;">
-            <label class="form-label">Expiry Date</label>
-            <input type="date" class="form-control" id="invExpiryDate">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Current Stock *</label>
-            <input type="number" class="form-control" id="invCurrentStock" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Min Stock Level</label>
-            <input type="number" class="form-control" id="invMinStockLevel" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Max Stock Level</label>
-            <input type="number" class="form-control" id="invMaxStockLevel" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Reorder Point</label>
-            <input type="number" class="form-control" id="invReorderPoint" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Reorder Quantity</label>
-            <input type="number" class="form-control" id="invReorderQuantity" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit Cost (₦)</label>
-            <input type="number" step="0.01" class="form-control" id="invUnitCost" placeholder="0.00" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unit Price (₦)</label>
-            <input type="number" step="0.01" class="form-control" id="invUnitPrice" placeholder="0.00" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Primary Supplier</label>
-            <select class="form-control" id="invPrimarySupplier">
-              <option value="">Select supplier...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Supplier Item Code</label>
-            <input type="text" class="form-control" id="invSupplierItemCode" placeholder="Supplier SKU">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Supplier Price (₦)</label>
-            <input type="number" step="0.01" class="form-control" id="invSupplierPrice" placeholder="0.00" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Lead Time (days)</label>
-            <input type="number" class="form-control" id="invLeadTimeDays" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Min Order Quantity</label>
-            <input type="number" step="0.01" class="form-control" id="invMinOrderQuantity" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-control" id="invStatus">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="discontinued">Discontinued</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" id="invNotes" rows="2" placeholder="Additional notes"></textarea>
-          </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="invRequiresRefrigeration">
-              <span>Requires Refrigeration</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="invControlledSubstance">
-              <span>Controlled Substance</span>
-            </label>
-          </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="invHazardousMaterial">
-              <span>Hazardous Material</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="invSterile">
-              <span>Sterile</span>
-            </label>
-          </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 16px;">
+          <hr style="grid-column: 1 / -1; border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;">
+          <div class="form-group" style="grid-column: 1 / -1; display: flex; align-items: center; gap: 16px;">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="checkbox" id="invEnableLowStockAlerts" checked>
               <span>Enable Low Stock Alerts</span>
@@ -2790,6 +2938,48 @@
               <input type="checkbox" id="invEnableExpiryAlerts" checked>
               <span>Enable Expiry Alerts</span>
             </label>
+          </div>
+        </div>
+
+        <!-- Tab 3: Suppliers -->
+        <div id="invTabSuppliers" class="inv-modal-tab-content" style="display: none; padding: 0;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Primary Supplier</label>
+              <select class="form-control" id="invPrimarySupplier" onchange="updateAlternativeSuppliers()">
+                <option value="">Select supplier...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supplier Item Code</label>
+              <input type="text" class="form-control" id="invSupplierItemCode" placeholder="Supplier SKU">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supplier Price (₦)</label>
+              <input type="number" step="0.01" class="form-control" id="invSupplierPrice" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Lead Time (Days)</label>
+              <input type="number" class="form-control" id="invLeadTimeDays" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Order Quantity</label>
+              <input type="number" step="0.01" class="form-control" id="invMinOrderQuantity" placeholder="0" min="0">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label">Alternative Suppliers</label>
+              <div id="alternativeSuppliersList" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Loading suppliers...</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-control" id="invStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="discontinued">Discontinued</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -2902,6 +3092,309 @@
         <button class="modal-close" onclick="closeViewAlertsModal()">&times;</button>
       </div>
       <div class="modal-body" id="viewAlertsBody" style="padding: 24px;"></div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Birth Record Modal -->
+  <div class="modal-overlay" id="modal-addBirthRecord" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="birthRecordModalTitle">Add Birth Record</h3>
+        <button class="modal-close" onclick="closeAddBirthRecordModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="editBirthRecordId" value="">
+        <!-- Child Information -->
+        <h4 style="margin-bottom: 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Child Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" class="form-control" id="birthChildFirstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Middle Name (Optional)</label>
+            <input type="text" class="form-control" id="birthChildMiddleName" placeholder="Middle name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input type="text" class="form-control" id="birthChildLastName" placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-control" id="birthChildGender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="birthChildDob">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time of Birth</label>
+            <input type="time" class="form-control" id="birthChildTimeOfBirth">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Weight (kg)</label>
+            <input type="number" step="0.01" class="form-control" id="birthChildWeight" placeholder="e.g., 3.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Length (cm)</label>
+            <input type="number" step="0.1" class="form-control" id="birthChildLength" placeholder="e.g., 50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Place of Birth</label>
+            <input type="text" class="form-control" id="birthPlaceOfBirth" placeholder="Hospital or location">
+          </div>
+        </div>
+
+        <!-- Mother's Information -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Mother's Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" class="form-control" id="birthMotherFirstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Middle Name (Optional)</label>
+            <input type="text" class="form-control" id="birthMotherMiddleName" placeholder="Middle name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="birthMotherLastName" placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="birthMotherDob">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nationality</label>
+            <input type="text" class="form-control" id="birthMotherNationality" placeholder="Nationality">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Occupation (Optional)</label>
+            <input type="text" class="form-control" id="birthMotherOccupation" placeholder="Occupation">
+          </div>
+        </div>
+
+        <!-- Father's Information -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Father's Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" class="form-control" id="birthFatherFirstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Middle Name (Optional)</label>
+            <input type="text" class="form-control" id="birthFatherMiddleName" placeholder="Middle name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="birthFatherLastName" placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="birthFatherDob">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nationality</label>
+            <input type="text" class="form-control" id="birthFatherNationality" placeholder="Nationality">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Occupation (Optional)</label>
+            <input type="text" class="form-control" id="birthFatherOccupation" placeholder="Occupation">
+          </div>
+        </div>
+
+        <!-- Medical Information -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Medical Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Attending Doctor</label>
+            <select class="form-control" id="birthAttendingDoctor">
+              <option value="">Select attending doctor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hospital/Facility</label>
+            <input type="text" class="form-control" id="birthHospitalFacility" placeholder="Select hospital or facility">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Additional Remarks (Optional)</label>
+          <textarea class="form-control" id="birthAdditionalRemarks" rows="2" placeholder="Enter any additional information or notes about the birth"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddBirthRecordModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBirthRecord()">Save Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Death Record Modal -->
+  <div class="modal-overlay" id="modal-addDeathRecord" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="deathRecordModalTitle">Add Death Record</h3>
+        <button class="modal-close" onclick="closeAddDeathRecordModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="editDeathRecordId" value="">
+
+        <!-- Personal Information -->
+        <h4 style="margin-bottom: 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Personal Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-control" id="deathFullName" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-control" id="deathGender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="deathDateOfBirth">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Age at Death</label>
+            <input type="text" class="form-control" id="deathAgeAtDeath" placeholder="e.g. 65 years, 4 months">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Place of Birth</label>
+            <input type="text" class="form-control" id="deathPlaceOfBirth" placeholder="City, Country">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nationality</label>
+            <input type="text" class="form-control" id="deathNationality" placeholder="e.g. American">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Known Address</label>
+          <textarea class="form-control" id="deathLastKnownAddress" rows="2" placeholder="Enter full address"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marital Status</label>
+            <select class="form-control" id="deathMaritalStatus">
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Occupation</label>
+            <input type="text" class="form-control" id="deathOccupation" placeholder="e.g. Engineer">
+          </div>
+        </div>
+
+        <!-- Death Details -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Death Details</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Death</label>
+            <input type="date" class="form-control" id="deathDateOfDeath">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time of Death</label>
+            <input type="time" class="form-control" id="deathTimeOfDeath" placeholder="HH:MM">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Place of Death</label>
+          <input type="text" class="form-control" id="deathPlaceOfDeath" placeholder="e.g. City General Hospital">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Immediate Cause of Death</label>
+          <textarea class="form-control" id="deathImmediateCause" rows="2" placeholder="Describe the immediate cause of death"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Manner of Death</label>
+          <select class="form-control" id="deathManner">
+            <option value="Natural">Natural</option>
+            <option value="Accident">Accident</option>
+            <option value="Suicide">Suicide</option>
+            <option value="Homicide">Homicide</option>
+            <option value="Undetermined">Undetermined</option>
+            <option value="Pending Investigation">Pending Investigation</option>
+          </select>
+        </div>
+
+        <!-- Medical Information -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Medical Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Attending Physician</label>
+            <select class="form-control" id="deathAttendingPhysician" onchange="handleDoctorSelect(this, 'deathAttendingPhysicianOther')">
+              <option value="">Select attending physician</option>
+            </select>
+            <input type="text" class="form-control" id="deathAttendingPhysicianOther" placeholder="Enter physician name" style="display:none; margin-top: 8px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Medical Examiner/Coroner</label>
+            <select class="form-control" id="deathMedicalExaminer" onchange="handleDoctorSelect(this, 'deathMedicalExaminerOther')">
+              <option value="">Select medical examiner</option>
+            </select>
+            <input type="text" class="form-control" id="deathMedicalExaminerOther" placeholder="Enter examiner name" style="display:none; margin-top: 8px;">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Autopsy Performed</label>
+            <select class="form-control" id="deathAutopsyPerformed">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Autopsy Findings</label>
+          <textarea class="form-control" id="deathAutopsyFindings" rows="2" placeholder="Enter autopsy findings if applicable"></textarea>
+        </div>
+
+        <!-- Additional Information -->
+        <h4 style="margin: 24px 0 16px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Additional Information</h4>
+        <div class="form-group">
+          <label class="form-label">Informant Name</label>
+          <input type="text" class="form-control" id="deathInformantName" placeholder="Full name of informant">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Relationship to Deceased</label>
+            <input type="text" class="form-control" id="deathInformantRelationship" placeholder="e.g. Spouse, Child">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Informant Contact</label>
+            <input type="text" class="form-control" id="deathInformantContact" placeholder="Phone or email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Additional Notes</label>
+          <textarea class="form-control" id="deathAdditionalNotes" rows="2" placeholder="Any additional information"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeAddDeathRecordModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDeathRecord()">Save Record</button>
+      </div>
     </div>
   </div>
 
@@ -3065,8 +3558,10 @@
          medications: 'Medications',
          'test-referrals': 'Test Referrals',
          pharmacy: 'Pharmacy',
-         billing: 'Billing',
-         inventory: 'Inventory'
+        billing: 'Billing',
+          inventory: 'Inventory',
+          'birth-records': 'Birth Records',
+          'death-records': 'Death Records'
         };
       document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
       
@@ -3132,10 +3627,18 @@
            loadInvoices();
            break;
           case 'inventory':
-            loadInventoryStats();
-            loadInventoryItems();
-            loadInventoryAlerts();
-            break;
+              loadInventoryStats();
+              loadInventoryItems();
+              loadInventoryAlerts();
+              break;
+          case 'birth-records':
+              loadBirthRecordsStats();
+              loadBirthRecords();
+              break;
+          case 'death-records':
+              loadDeathRecordsStats();
+              loadDeathRecords();
+              break;
       }
     }
     
@@ -5226,10 +5729,20 @@ function editUser(userId) {
         .replace(/'/g, '\'');
     }
     
-    function capitalize(str) {
-      if (!str) return '';
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+     function capitalize(str) {
+       if (!str) return '';
+       return str.charAt(0).toUpperCase() + str.slice(1);
+     }
+
+     function formatDate(dateStr) {
+       if (!dateStr) return '-';
+       const d = new Date(dateStr);
+       if (isNaN(d.getTime())) return dateStr;
+       const year = d.getFullYear();
+       const month = String(d.getMonth() + 1).padStart(2, '0');
+       const day = String(d.getDate()).padStart(2, '0');
+       return `${year}-${month}-${day}`;
+     }
     
     // Add event listeners for modal buttons
     document.addEventListener('DOMContentLoaded', function() {
@@ -6694,7 +7207,7 @@ function editUser(userId) {
       }
     }
 
-    async function loadSuppliersForDropdown() {
+     async function loadSuppliersForDropdown() {
       try {
         const response = await fetch(`${API_BASE}/inventory/suppliers`, { credentials: 'include' });
         const data = await response.json();
@@ -6704,16 +7217,51 @@ function editUser(userId) {
           if (supplierSelect) {
             supplierSelect.innerHTML = '<option value="">Select supplier...</option>' + data.data.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
           }
+          updateAlternativeSuppliers();
         }
       } catch (error) {
         console.error('Error loading suppliers:', error);
       }
     }
 
+    function updateAlternativeSuppliers() {
+      const container = document.getElementById('alternativeSuppliersList');
+      const primarySupplierId = document.getElementById('invPrimarySupplier').value;
+      if (!container) return;
+      if (!inventorySuppliers || inventorySuppliers.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; font-size: 14px; margin: 0;">No suppliers available. Add suppliers first.</p>';
+        return;
+      }
+      const alternative = inventorySuppliers.filter(s => String(s.id) !== String(primarySupplierId));
+      if (alternative.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; font-size: 14px; margin: 0;">No alternative suppliers.</p>';
+        return;
+      }
+      container.innerHTML = alternative.map(s => `
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px;">
+          <input type="checkbox" class="inv-alt-supplier" value="${s.id}">
+          <span style="font-size: 14px; color: #0f172a;">${escapeHtml(s.name)}</span>
+        </label>
+      `).join('');
+    }
+
+    function switchInventoryModalTab(tab) {
+      document.querySelectorAll('.inv-modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.inv-modal-tab-content').forEach(content => content.style.display = 'none');
+      document.querySelector(`.inv-modal-tab-btn[data-tab="${tab}"]`)?.classList.add('active');
+      const tabContent = tab === 'details' ? document.getElementById('invTabDetails')
+                       : tab === 'stock' ? document.getElementById('invTabStock')
+                       : document.getElementById('invTabSuppliers');
+      if (tabContent) tabContent.style.display = 'block';
+    }
+
     function openAddInventoryModal() {
       document.getElementById('inventoryModalTitle').textContent = 'Add Inventory Item';
       document.getElementById('editInventoryItemId').value = '';
       clearInventoryForm();
+      switchInventoryModalTab('details');
+      loadCategoriesForDropdown();
+      loadSuppliersForDropdown();
       openModal('addInventoryItem');
     }
 
@@ -6762,6 +7310,7 @@ function editUser(userId) {
       document.getElementById('invSterile').checked = false;
       document.getElementById('invEnableLowStockAlerts').checked = true;
       document.getElementById('invEnableExpiryAlerts').checked = true;
+      document.getElementById('alternativeSuppliersList').innerHTML = '<p style="color: #64748b; font-size: 14px; margin: 0;">Loading suppliers...</p>';
     }
 
     async function editInventoryItem(id) {
@@ -6795,7 +7344,25 @@ function editUser(userId) {
           document.getElementById('invUnitCost').value = item.unit_cost || 0;
           document.getElementById('invUnitPrice').value = item.unit_price || 0;
           await loadSuppliersForDropdown();
+          updateAlternativeSuppliers();
           document.getElementById('invPrimarySupplier').value = item.primary_supplier_id || '';
+          updateAlternativeSuppliers();
+          if (item.alternative_suppliers) {
+            let altSuppliers;
+            try {
+              altSuppliers = typeof item.alternative_suppliers === 'string' ? JSON.parse(item.alternative_suppliers) : item.alternative_suppliers;
+            } catch (e) {
+              altSuppliers = [];
+            }
+            if (Array.isArray(altSuppliers)) {
+              setTimeout(() => {
+                altSuppliers.forEach(sid => {
+                  const cb = document.querySelector(`.inv-alt-supplier[value="${sid}"]`);
+                  if (cb) cb.checked = true;
+                });
+              }, 50);
+            }
+          }
           document.getElementById('invSupplierItemCode').value = item.supplier_item_code || '';
           document.getElementById('invSupplierPrice').value = item.supplier_price || 0;
           document.getElementById('invLeadTimeDays').value = item.lead_time_days || 0;
@@ -6808,6 +7375,7 @@ function editUser(userId) {
           document.getElementById('invSterile').checked = item.sterile ? true : false;
           document.getElementById('invEnableLowStockAlerts').checked = item.enable_low_stock_alerts ? true : false;
           document.getElementById('invEnableExpiryAlerts').checked = item.enable_expiry_alerts ? true : false;
+          switchInventoryModalTab('details');
           openModal('addInventoryItem');
         } else {
           alert(data.message || 'Failed to load item');
@@ -6858,7 +7426,7 @@ function editUser(userId) {
         supplier_price: parseFloat(document.getElementById('invSupplierPrice').value) || 0,
         lead_time_days: parseInt(document.getElementById('invLeadTimeDays').value) || 0,
         min_order_quantity: parseFloat(document.getElementById('invMinOrderQuantity').value) || 0,
-        alternative_suppliers: null,
+        alternative_suppliers: Array.from(document.querySelectorAll('.inv-alt-supplier:checked')).map(cb => cb.value),
         status: document.getElementById('invStatus').value || 'active',
         enable_low_stock_alerts: document.getElementById('invEnableLowStockAlerts').checked,
         enable_expiry_alerts: document.getElementById('invEnableExpiryAlerts').checked
@@ -7174,6 +7742,617 @@ function editUser(userId) {
       }
       originalLoadSectionData(section);
     };
+
+     // ==================== BIRTH RECORDS ====================
+    let birthRecordsPage = 0;
+    let birthRecords = [];
+    let birthRecordsTotal = 0;
+
+     async function loadDoctorsForBirthRecord() {
+       try {
+         const response = await fetch(`${API_BASE}/doctors`, { credentials: 'include' });
+         const data = await response.json();
+         const select = document.getElementById('birthAttendingDoctor');
+         if (!select) return;
+         select.innerHTML = '<option value="">Select attending doctor</option>';
+         const doctors = Array.isArray(data.doctors) ? data.doctors : [];
+         doctors.forEach(doc => {
+           const option = document.createElement('option');
+           const docName = doc.name || doc.userName || `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.trim();
+           option.value = docName;
+           option.textContent = docName;
+           select.appendChild(option);
+         });
+       } catch (error) {
+         console.error('Error loading doctors:', error);
+       }
+     }
+
+     function handleDoctorSelect(selectEl, otherInputId) {
+       const otherInput = document.getElementById(otherInputId);
+       if (!otherInput) return;
+       if (selectEl.value === 'Other') {
+         otherInput.style.display = 'block';
+       } else {
+         otherInput.style.display = 'none';
+         otherInput.value = '';
+       }
+     }
+
+     async function loadDoctorsForDeathRecord() {
+       try {
+         const response = await fetch(`${API_BASE}/doctors`, { credentials: 'include' });
+         const data = await response.json();
+         const attendingSelect = document.getElementById('deathAttendingPhysician');
+         const examinerSelect = document.getElementById('deathMedicalExaminer');
+         if (!attendingSelect || !examinerSelect) return;
+         const options = ['<option value="">Select...</option>'];
+         const doctors = Array.isArray(data.doctors) ? data.doctors : [];
+         doctors.forEach(doc => {
+           const docName = doc.name || doc.userName || `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.trim();
+           options.push(`<option value="${escapeHtml(docName)}">${escapeHtml(docName)}</option>`);
+         });
+         options.push('<option value="Other">Other (enter manually)</option>');
+         attendingSelect.innerHTML = options.join('');
+         examinerSelect.innerHTML = options.join('');
+       } catch (error) {
+         console.error('Error loading doctors:', error);
+       }
+     }
+
+    async function loadBirthRecordsStats() {
+      try {
+        const response = await fetch(`${API_BASE}/birth-records/stats`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('birthStatTotal').textContent = stats.totalBirths || 0;
+          document.getElementById('birthStatMale').textContent = stats.maleBirths || 0;
+          document.getElementById('birthStatFemale').textContent = stats.femaleBirths || 0;
+          document.getElementById('birthStatThisYear').textContent = stats.thisYearBirths || 0;
+        }
+      } catch (error) {
+        console.error('Error loading birth records stats:', error);
+      }
+    }
+
+    async function loadBirthRecords() {
+      try {
+        const search = document.getElementById('birthSearch').value;
+        let url = `${API_BASE}/birth-records?limit=${pageSize}&offset=${birthRecordsPage * pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, { credentials: 'include' });
+        const data = await response.json();
+
+        if (data.success) {
+          birthRecords = data.data;
+          birthRecordsTotal = data.total;
+          renderBirthRecordsTable(data.data);
+          updateBirthRecordsPagination(data.total);
+        }
+      } catch (error) {
+        console.error('Error loading birth records:', error);
+      }
+    }
+
+    function renderBirthRecordsTable(items) {
+      const tbody = document.getElementById('birthRecordsTableBody');
+      if (!tbody) return;
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px; color: #94a3b8;">No birth records found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.map(record => `
+        <tr>
+          <td>${escapeHtml((record.child_first_name || '') + ' ' + (record.child_last_name || ''))}</td>
+          <td>${escapeHtml(record.child_gender || '')}</td>
+          <td>${formatDate(record.child_dob)}</td>
+          <td>${escapeHtml((record.mother_first_name || '') + ' ' + (record.mother_last_name || ''))}</td>
+          <td>${escapeHtml((record.father_first_name || '') + ' ' + (record.father_last_name || ''))}</td>
+          <td>${escapeHtml(record.attending_doctor || '')}</td>
+          <td>${formatDate(record.created_at)}</td>
+          <td>
+            <button class="btn btn-sm" onclick="viewBirthRecord(${record.id})"><i class="fas fa-eye"></i></button>
+            <button class="btn btn-sm" onclick="editBirthRecord(${record.id})"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteBirthRecord(${record.id})"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateBirthRecordsPagination(total) {
+      const info = document.getElementById('birthRecordsPagination');
+      const prevBtn = document.getElementById('prevBirthRecordsBtn');
+      const nextBtn = document.getElementById('nextBirthRecordsBtn');
+      const start = birthRecordsPage * pageSize + 1;
+      const end = Math.min((birthRecordsPage + 1) * pageSize, total);
+      if (info) info.textContent = total > 0 ? `Showing ${start}-${end} of ${total} items` : 'No items found';
+      if (prevBtn) prevBtn.disabled = birthRecordsPage === 0;
+      if (nextBtn) nextBtn.disabled = (birthRecordsPage + 1) * pageSize >= total;
+    }
+
+    function searchBirthRecords() {
+      birthRecordsPage = 0;
+      loadBirthRecords();
+    }
+
+    function prevBirthRecordsPage() {
+      if (birthRecordsPage > 0) {
+        birthRecordsPage--;
+        loadBirthRecords();
+      }
+    }
+
+    function nextBirthRecordsPage() {
+      if ((birthRecordsPage + 1) * pageSize < birthRecordsTotal) {
+        birthRecordsPage++;
+        loadBirthRecords();
+      }
+    }
+
+     async function openAddBirthRecordModal() {
+       document.getElementById('birthRecordModalTitle').textContent = 'Add Birth Record';
+       document.getElementById('editBirthRecordId').value = '';
+      document.getElementById('birthChildFirstName').value = '';
+      document.getElementById('birthChildMiddleName').value = '';
+      document.getElementById('birthChildLastName').value = '';
+      document.getElementById('birthChildGender').value = 'Male';
+      document.getElementById('birthChildDob').value = '';
+      document.getElementById('birthChildTimeOfBirth').value = '';
+      document.getElementById('birthPlaceOfBirth').value = '';
+      document.getElementById('birthChildWeight').value = '';
+      document.getElementById('birthChildLength').value = '';
+      document.getElementById('birthMotherFirstName').value = '';
+      document.getElementById('birthMotherMiddleName').value = '';
+      document.getElementById('birthMotherLastName').value = '';
+      document.getElementById('birthMotherDob').value = '';
+      document.getElementById('birthMotherNationality').value = '';
+      document.getElementById('birthMotherOccupation').value = '';
+      document.getElementById('birthFatherFirstName').value = '';
+      document.getElementById('birthFatherMiddleName').value = '';
+      document.getElementById('birthFatherLastName').value = '';
+      document.getElementById('birthFatherDob').value = '';
+      document.getElementById('birthFatherNationality').value = '';
+      document.getElementById('birthFatherOccupation').value = '';
+       await loadDoctorsForBirthRecord();
+       document.getElementById('birthHospitalFacility').value = '';
+      document.getElementById('birthAdditionalRemarks').value = '';
+      const modal = document.getElementById('modal-addBirthRecord');
+      if (modal) { modal.classList.add('active'); modal.style.display = 'flex'; }
+    }
+
+    function closeAddBirthRecordModal() {
+      const modal = document.getElementById('modal-addBirthRecord');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    async function saveBirthRecord() {
+      const recordId = document.getElementById('editBirthRecordId').value;
+      const body = {
+        child_first_name: document.getElementById('birthChildFirstName').value.trim(),
+        child_middle_name: document.getElementById('birthChildMiddleName').value.trim() || null,
+        child_last_name: document.getElementById('birthChildLastName').value.trim(),
+        child_gender: document.getElementById('birthChildGender').value,
+        child_dob: document.getElementById('birthChildDob').value || null,
+        child_time_of_birth: document.getElementById('birthChildTimeOfBirth').value || null,
+        place_of_birth: document.getElementById('birthPlaceOfBirth').value.trim() || null,
+        child_weight: document.getElementById('birthChildWeight').value || null,
+        child_length: document.getElementById('birthChildLength').value || null,
+        mother_first_name: document.getElementById('birthMotherFirstName').value.trim() || null,
+        mother_middle_name: document.getElementById('birthMotherMiddleName').value.trim() || null,
+        mother_last_name: document.getElementById('birthMotherLastName').value.trim() || null,
+        mother_dob: document.getElementById('birthMotherDob').value || null,
+        mother_nationality: document.getElementById('birthMotherNationality').value.trim() || null,
+        mother_occupation: document.getElementById('birthMotherOccupation').value.trim() || null,
+        father_first_name: document.getElementById('birthFatherFirstName').value.trim() || null,
+        father_middle_name: document.getElementById('birthFatherMiddleName').value.trim() || null,
+        father_last_name: document.getElementById('birthFatherLastName').value.trim() || null,
+        father_dob: document.getElementById('birthFatherDob').value || null,
+        father_nationality: document.getElementById('birthFatherNationality').value.trim() || null,
+        father_occupation: document.getElementById('birthFatherOccupation').value.trim() || null,
+        attending_doctor: document.getElementById('birthAttendingDoctor').value || null,
+        hospital_facility: document.getElementById('birthHospitalFacility').value.trim() || null,
+        additional_remarks: document.getElementById('birthAdditionalRemarks').value.trim() || null
+      };
+
+      if (!body.child_first_name || !body.child_last_name) {
+        alert('Child first name and last name are required');
+        return;
+      }
+
+      try {
+        const url = recordId ? `${API_BASE}/birth-records/${recordId}` : `${API_BASE}/birth-records`;
+        const method = recordId ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+          method: method,
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          closeAddBirthRecordModal();
+          loadBirthRecords();
+        } else {
+          alert(data.message || 'Error saving record');
+        }
+      } catch (error) {
+        console.error('Error saving birth record:', error);
+        alert('Error saving record');
+      }
+    }
+
+    async function editBirthRecord(id) {
+      try {
+        const response = await fetch(`${API_BASE}/birth-records/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const record = data.data;
+          document.getElementById('birthRecordModalTitle').textContent = 'Edit Birth Record';
+          document.getElementById('editBirthRecordId').value = record.id;
+          document.getElementById('birthChildFirstName').value = record.child_first_name || '';
+          document.getElementById('birthChildMiddleName').value = record.child_middle_name || '';
+          document.getElementById('birthChildLastName').value = record.child_last_name || '';
+          document.getElementById('birthChildGender').value = record.child_gender || 'Male';
+          document.getElementById('birthChildDob').value = record.child_dob ? record.child_dob.split('T')[0] : '';
+          document.getElementById('birthChildTimeOfBirth').value = record.child_time_of_birth || '';
+          document.getElementById('birthPlaceOfBirth').value = record.place_of_birth || '';
+          document.getElementById('birthChildWeight').value = record.child_weight || '';
+          document.getElementById('birthChildLength').value = record.child_length || '';
+          document.getElementById('birthMotherFirstName').value = record.mother_first_name || '';
+          document.getElementById('birthMotherMiddleName').value = record.mother_middle_name || '';
+          document.getElementById('birthMotherLastName').value = record.mother_last_name || '';
+          document.getElementById('birthMotherDob').value = record.mother_dob ? record.mother_dob.split('T')[0] : '';
+          document.getElementById('birthMotherNationality').value = record.mother_nationality || '';
+          document.getElementById('birthMotherOccupation').value = record.mother_occupation || '';
+          document.getElementById('birthFatherFirstName').value = record.father_first_name || '';
+          document.getElementById('birthFatherMiddleName').value = record.father_middle_name || '';
+          document.getElementById('birthFatherLastName').value = record.father_last_name || '';
+          document.getElementById('birthFatherDob').value = record.father_dob ? record.father_dob.split('T')[0] : '';
+          document.getElementById('birthFatherNationality').value = record.father_nationality || '';
+          document.getElementById('birthFatherOccupation').value = record.father_occupation || '';
+          await loadDoctorsForBirthRecord();
+          document.getElementById('birthAttendingDoctor').value = record.attending_doctor || '';
+          document.getElementById('birthHospitalFacility').value = record.hospital_facility || '';
+          document.getElementById('birthAdditionalRemarks').value = record.additional_remarks || '';
+          const modal = document.getElementById('modal-addBirthRecord');
+          if (modal) { modal.classList.add('active'); modal.style.display = 'flex'; }
+        }
+      } catch (error) {
+        console.error('Error fetching birth record:', error);
+      }
+    }
+
+    async function viewBirthRecord(id) {
+      try {
+        const response = await fetch(`${API_BASE}/birth-records/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const r = data.data;
+          const info = `Child: ${r.child_first_name} ${r.child_middle_name || ''} ${r.child_last_name}\nGender: ${r.child_gender}\nDOB: ${formatDate(r.child_dob)}\nWeight: ${r.child_weight} kg\nLength: ${r.child_length} cm\n\nMother: ${r.mother_first_name || ''} ${r.mother_last_name || ''}\nFather: ${r.father_first_name || ''} ${r.father_last_name || ''}\nDoctor: ${r.attending_doctor || ''}\nFacility: ${r.hospital_facility || ''}\n\nRemarks: ${r.additional_remarks || 'None'}`;
+          alert(info);
+        }
+      } catch (error) {
+        console.error('Error viewing birth record:', error);
+      }
+    }
+
+    async function deleteBirthRecord(id) {
+      if (!confirm('Are you sure you want to delete this birth record?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/birth-records/${id}`, {
+          method: 'DELETE',
+          headers: getCsrfHeaders(),
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          loadBirthRecords();
+        }
+      } catch (error) {
+        console.error('Error deleting birth record:', error);
+      }
+    }
+
+    // ==================== DEATH RECORDS ====================
+    let deathRecordsPage = 0;
+    let deathRecords = [];
+    let deathRecordsTotal = 0;
+
+    async function loadDeathRecordsStats() {
+      try {
+        const response = await fetch(`${API_BASE}/death-records/stats`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('deathStatTotal').textContent = stats.totalDeaths || 0;
+          document.getElementById('deathStatMale').textContent = stats.maleDeaths || 0;
+          document.getElementById('deathStatFemale').textContent = stats.femaleDeaths || 0;
+          document.getElementById('deathStatThisYear').textContent = stats.thisYearDeaths || 0;
+        }
+      } catch (error) {
+        console.error('Error loading death records stats:', error);
+      }
+    }
+
+    async function loadDeathRecords() {
+      try {
+        const search = document.getElementById('deathSearch').value;
+        let url = `${API_BASE}/death-records?limit=${pageSize}&offset=${deathRecordsPage * pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, { credentials: 'include' });
+        const data = await response.json();
+
+        if (data.success) {
+          deathRecords = data.data;
+          deathRecordsTotal = data.total;
+          renderDeathRecordsTable(data.data);
+          updateDeathRecordsPagination(data.total);
+        }
+      } catch (error) {
+        console.error('Error loading death records:', error);
+      }
+    }
+
+    function renderDeathRecordsTable(items) {
+      const tbody = document.getElementById('deathRecordsTableBody');
+      if (!tbody) return;
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px; color: #94a3b8;">No death records found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.map(record => `
+        <tr>
+          <td>${escapeHtml(record.full_name || '')}</td>
+          <td>${escapeHtml(record.gender || '')}</td>
+          <td>${formatDate(record.date_of_death)}</td>
+          <td>${escapeHtml(record.age_at_death || '')}</td>
+          <td>${escapeHtml(record.immediate_cause_of_death || '')}</td>
+          <td>${escapeHtml(record.manner_of_death || '')}</td>
+          <td>${formatDate(record.created_at)}</td>
+          <td>
+            <button class="btn btn-sm" onclick="viewDeathRecord(${record.id})"><i class="fas fa-eye"></i></button>
+            <button class="btn btn-sm" onclick="editDeathRecord(${record.id})"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteDeathRecord(${record.id})"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateDeathRecordsPagination(total) {
+      const info = document.getElementById('deathRecordsPagination');
+      const prevBtn = document.getElementById('prevDeathRecordsBtn');
+      const nextBtn = document.getElementById('nextDeathRecordsBtn');
+      const start = deathRecordsPage * pageSize + 1;
+      const end = Math.min((deathRecordsPage + 1) * pageSize, total);
+      if (info) info.textContent = total > 0 ? `Showing ${start}-${end} of ${total} items` : 'No items found';
+      if (prevBtn) prevBtn.disabled = deathRecordsPage === 0;
+      if (nextBtn) nextBtn.disabled = (deathRecordsPage + 1) * pageSize >= total;
+    }
+
+    function searchDeathRecords() {
+      deathRecordsPage = 0;
+      loadDeathRecords();
+    }
+
+    function prevDeathRecordsPage() {
+      if (deathRecordsPage > 0) {
+        deathRecordsPage--;
+        loadDeathRecords();
+      }
+    }
+
+    function nextDeathRecordsPage() {
+      if ((deathRecordsPage + 1) * pageSize < deathRecordsTotal) {
+        deathRecordsPage++;
+        loadDeathRecords();
+      }
+     }
+
+      async function openAddDeathRecordModal() {
+       document.getElementById('deathRecordModalTitle').textContent = 'Add Death Record';
+       document.getElementById('editDeathRecordId').value = '';
+       document.getElementById('deathFullName').value = '';
+       document.getElementById('deathGender').value = 'Male';
+       document.getElementById('deathDateOfBirth').value = '';
+       document.getElementById('deathAgeAtDeath').value = '';
+       document.getElementById('deathPlaceOfBirth').value = '';
+       document.getElementById('deathNationality').value = '';
+       document.getElementById('deathLastKnownAddress').value = '';
+       document.getElementById('deathMaritalStatus').value = 'Single';
+       document.getElementById('deathOccupation').value = '';
+       document.getElementById('deathDateOfDeath').value = '';
+       document.getElementById('deathTimeOfDeath').value = '';
+       document.getElementById('deathPlaceOfDeath').value = '';
+       document.getElementById('deathImmediateCause').value = '';
+       document.getElementById('deathManner').value = 'Natural';
+       document.getElementById('deathAttendingPhysician').value = '';
+       document.getElementById('deathAttendingPhysicianOther').style.display = 'none';
+       document.getElementById('deathAttendingPhysicianOther').value = '';
+       document.getElementById('deathMedicalExaminer').value = '';
+       document.getElementById('deathMedicalExaminerOther').style.display = 'none';
+       document.getElementById('deathMedicalExaminerOther').value = '';
+       document.getElementById('deathAutopsyPerformed').value = 'No';
+       document.getElementById('deathAutopsyFindings').value = '';
+       document.getElementById('deathInformantName').value = '';
+       document.getElementById('deathInformantRelationship').value = '';
+       document.getElementById('deathInformantContact').value = '';
+       document.getElementById('deathAdditionalNotes').value = '';
+       await loadDoctorsForDeathRecord();
+       const modal = document.getElementById('modal-addDeathRecord');
+       if (modal) { modal.classList.add('active'); modal.style.display = 'flex'; }
+    }
+
+    function closeAddDeathRecordModal() {
+      const modal = document.getElementById('modal-addDeathRecord');
+      if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    async function saveDeathRecord() {
+      const recordId = document.getElementById('editDeathRecordId').value;
+      const body = {
+        full_name: document.getElementById('deathFullName').value.trim(),
+        gender: document.getElementById('deathGender').value,
+        date_of_birth: document.getElementById('deathDateOfBirth').value || null,
+        age_at_death: document.getElementById('deathAgeAtDeath').value.trim() || null,
+        place_of_birth: document.getElementById('deathPlaceOfBirth').value.trim() || null,
+        nationality: document.getElementById('deathNationality').value.trim() || null,
+        last_known_address: document.getElementById('deathLastKnownAddress').value.trim() || null,
+        marital_status: document.getElementById('deathMaritalStatus').value,
+        occupation: document.getElementById('deathOccupation').value.trim() || null,
+        date_of_death: document.getElementById('deathDateOfDeath').value || null,
+        time_of_death: document.getElementById('deathTimeOfDeath').value || null,
+        place_of_death: document.getElementById('deathPlaceOfDeath').value.trim() || null,
+        immediate_cause_of_death: document.getElementById('deathImmediateCause').value.trim() || null,
+        manner_of_death: document.getElementById('deathManner').value,
+        attending_physician: (() => {
+          const val = document.getElementById('deathAttendingPhysician').value;
+          const other = document.getElementById('deathAttendingPhysicianOther');
+          return val === 'Other' ? (other ? other.value.trim() : '') : (val || null);
+        })(),
+        medical_examiner: (() => {
+          const val = document.getElementById('deathMedicalExaminer').value;
+          const other = document.getElementById('deathMedicalExaminerOther');
+          return val === 'Other' ? (other ? other.value.trim() : '') : (val || null);
+        })(),
+        autopsy_performed: document.getElementById('deathAutopsyPerformed').value,
+        autopsy_findings: document.getElementById('deathAutopsyFindings').value.trim() || null,
+        informant_name: document.getElementById('deathInformantName').value.trim() || null,
+        informant_relationship: document.getElementById('deathInformantRelationship').value.trim() || null,
+        informant_contact: document.getElementById('deathInformantContact').value.trim() || null,
+        additional_notes: document.getElementById('deathAdditionalNotes').value.trim() || null
+      };
+
+      if (!body.full_name) {
+        alert('Full name is required');
+        return;
+      }
+
+      try {
+        const url = recordId ? `${API_BASE}/death-records/${recordId}` : `${API_BASE}/death-records`;
+        const method = recordId ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+          method: method,
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          closeAddDeathRecordModal();
+          loadDeathRecords();
+        } else {
+          alert(data.message || 'Error saving record');
+        }
+      } catch (error) {
+        console.error('Error saving death record:', error);
+        alert('Error saving record');
+      }
+    }
+
+    async function editDeathRecord(id) {
+      try {
+        const response = await fetch(`${API_BASE}/death-records/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const record = data.data;
+          document.getElementById('deathRecordModalTitle').textContent = 'Edit Death Record';
+          document.getElementById('editDeathRecordId').value = record.id;
+          document.getElementById('deathFullName').value = record.full_name || '';
+          document.getElementById('deathGender').value = record.gender || 'Male';
+          document.getElementById('deathDateOfBirth').value = record.date_of_birth ? record.date_of_birth.split('T')[0] : '';
+          document.getElementById('deathAgeAtDeath').value = record.age_at_death || '';
+          document.getElementById('deathPlaceOfBirth').value = record.place_of_birth || '';
+          document.getElementById('deathNationality').value = record.nationality || '';
+          document.getElementById('deathLastKnownAddress').value = record.last_known_address || '';
+          document.getElementById('deathMaritalStatus').value = record.marital_status || 'Single';
+          document.getElementById('deathOccupation').value = record.occupation || '';
+          document.getElementById('deathDateOfDeath').value = record.date_of_death ? record.date_of_death.split('T')[0] : '';
+          document.getElementById('deathTimeOfDeath').value = record.time_of_death || '';
+          document.getElementById('deathPlaceOfDeath').value = record.place_of_death || '';
+          document.getElementById('deathImmediateCause').value = record.immediate_cause_of_death || '';
+          document.getElementById('deathManner').value = record.manner_of_death || 'Natural';
+          await loadDoctorsForDeathRecord();
+          const attendingVal = record.attending_physician || '';
+          const examinerVal = record.medical_examiner || '';
+          const attendingSelect = document.getElementById('deathAttendingPhysician');
+          const examinerSelect = document.getElementById('deathMedicalExaminer');
+          const attendingOther = document.getElementById('deathAttendingPhysicianOther');
+          const examinerOther = document.getElementById('deathMedicalExaminerOther');
+          const attendingOptions = Array.from(attendingSelect.options).map(o => o.value);
+          const examinerOptions = Array.from(examinerSelect.options).map(o => o.value);
+          if (attendingOptions.includes(attendingVal)) {
+            attendingSelect.value = attendingVal;
+            attendingOther.style.display = 'none';
+          } else if (attendingVal) {
+            attendingSelect.value = 'Other';
+            attendingOther.value = attendingVal;
+            attendingOther.style.display = 'block';
+          } else {
+            attendingSelect.value = '';
+            attendingOther.style.display = 'none';
+          }
+          if (examinerOptions.includes(examinerVal)) {
+            examinerSelect.value = examinerVal;
+            examinerOther.style.display = 'none';
+          } else if (examinerVal) {
+            examinerSelect.value = 'Other';
+            examinerOther.value = examinerVal;
+            examinerOther.style.display = 'block';
+          } else {
+            examinerSelect.value = '';
+            examinerOther.style.display = 'none';
+          }
+          document.getElementById('deathAutopsyPerformed').value = record.autopsy_performed || 'No';
+          document.getElementById('deathAutopsyFindings').value = record.autopsy_findings || '';
+          document.getElementById('deathInformantName').value = record.informant_name || '';
+          document.getElementById('deathInformantRelationship').value = record.informant_relationship || '';
+          document.getElementById('deathInformantContact').value = record.informant_contact || '';
+          document.getElementById('deathAdditionalNotes').value = record.additional_notes || '';
+          const modal = document.getElementById('modal-addDeathRecord');
+          if (modal) { modal.classList.add('active'); modal.style.display = 'flex'; }
+        }
+      } catch (error) {
+        console.error('Error fetching death record:', error);
+      }
+    }
+
+    async function viewDeathRecord(id) {
+      try {
+        const response = await fetch(`${API_BASE}/death-records/${id}`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          const r = data.data;
+          const info = `Name: ${r.full_name}\nGender: ${r.gender}\nDOB: ${formatDate(r.date_of_birth)}\nAge at Death: ${r.age_at_death || 'N/A'}\n\nDate of Death: ${formatDate(r.date_of_death)}\nPlace: ${r.place_of_death || ''}\nManner: ${r.manner_of_death || ''}\nCause: ${r.immediate_cause_of_death || ''}\n\nDoctor: ${r.attending_physician || ''}\nExaminer: ${r.medical_examiner || ''}\nAutopsy: ${r.autopsy_performed || 'No'}\n\nInformant: ${r.informant_name || ''}\nNotes: ${r.additional_notes || 'None'}`;
+          alert(info);
+        }
+      } catch (error) {
+        console.error('Error viewing death record:', error);
+      }
+    }
+
+    async function deleteDeathRecord(id) {
+      if (!confirm('Are you sure you want to delete this death record?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/death-records/${id}`, {
+          method: 'DELETE',
+          headers: getCsrfHeaders(),
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          loadDeathRecords();
+        }
+      } catch (error) {
+        console.error('Error deleting death record:', error);
+      }
+    }
   </script>
 
 <!-- Blood Bank Modals - Positioned Outside App Container -->

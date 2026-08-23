@@ -47,6 +47,8 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
   try {
     const { category, subcategory, search, stock_filter, limit = 50, offset = 0 } = req.query;
 
+    const connection = await pool.getConnection();
+
     let query = `SELECT i.*, c.name as category_name, sc.name as subcategory_name,
       s.name as primary_supplier_name
       FROM inventory_items i
@@ -81,7 +83,7 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
 
     const countQuery = `SELECT COUNT(*) as total FROM inventory_items i WHERE 1=1`;
     const countParams = [];
-    let countWhere = ' WHERE 1=1';
+    let countWhere = '';
     if (category && category !== 'all') {
       countWhere += ' AND i.category_id = ?';
       countParams.push(Number(category));
@@ -104,6 +106,8 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
 
     const [[countResult]] = await connection.execute(countQuery + countWhere, countParams);
 
+    const [categories] = await connection.execute('SELECT id, name FROM inventory_categories WHERE parent_id IS NULL ORDER BY name ASC');
+
     const limitNum = Math.floor(Number(limit)) || 50;
     const offsetNum = Math.floor(Number(offset)) || 0;
 
@@ -116,6 +120,7 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
     res.json({
       success: true,
       data: items,
+      categories: categories,
       total: countResult.total,
       limit: limitNum,
       offset: offsetNum
@@ -173,7 +178,7 @@ router.post('/items', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (req,
         reorder_quantity, unit_cost, unit_price, primary_supplier_id, supplier_item_code,
         supplier_price, lead_time_days, min_order_quantity, alternative_suppliers,
         status, enable_low_stock_alerts, enable_expiry_alerts
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         item_name, item_id || null, category_id || null, subcategory_id || null, description || null,
         unit_of_measure || null, unit_quantity || null, storage_location || null,
@@ -202,7 +207,7 @@ router.put('/items/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (r
     const {
       item_name, item_id, category_id, subcategory_id, description, unit_of_measure,
       unit_quantity, storage_location, manufacturer, brand, model_version,
-      expiry_tracking, requires_refrigeration, controlled_substance, hazardous_material,
+      expiry_tracking, expiry_date, requires_refrigeration, controlled_substance, hazardous_material,
       sterile, notes, current_stock, min_stock_level, max_stock_level, reorder_point,
       reorder_quantity, unit_cost, unit_price, primary_supplier_id, supplier_item_code,
       supplier_price, lead_time_days, min_order_quantity, alternative_suppliers,
