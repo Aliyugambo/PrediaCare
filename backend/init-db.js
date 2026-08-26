@@ -92,6 +92,27 @@ async function initializeDatabase() {
       // Column might already exist
     }
 
+    // Ensure reset_token columns exist (for password reset feature)
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM users LIKE 'reset_token'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) DEFAULT NULL AFTER password_hash");
+        console.log('Added reset_token column to users table');
+      }
+    } catch (e) {
+      console.log('users reset_token column check:', e.message);
+    }
+
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM users LIKE 'reset_token_expires'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME DEFAULT NULL AFTER reset_token");
+        console.log('Added reset_token_expires column to users table');
+      }
+    } catch (e) {
+      console.log('users reset_token_expires column check:', e.message);
+    }
+
     // Create sessions table for express-session
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS sessions (

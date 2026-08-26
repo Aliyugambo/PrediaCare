@@ -248,6 +248,134 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
+// Forgot password endpoint - sends reset link to email
+router.post('/forgot-password', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [users] = await connection.execute(
+      'SELECT id, name FROM users WHERE email = ?',
+      [email]
+    );
+
+    // Always return success to prevent email enumeration, but only send email if user exists
+    if (users.length === 0) {
+      connection.release();
+      return res.json({ success: true, message: 'If an account exists with that email, a password reset link has been sent.' });
+    }
+
+    const user = users[0];
+
+    // Generate secure random token
+    const crypto = require('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Store token in database
+    await connection.execute(
+      'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?',
+      [resetToken, resetTokenExpires, user.id]
+    );
+
+    connection.release();
+
+    // Build reset URL
+    const resetUrl = `${process.env.RESET_URL_BASE || 'https://prediacareclinics.com'}/reset-password.html?token=${resetToken}`;
+
+    // Send email
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+          .cta-button { display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+          .footer { background-color: #333; color: white; padding: 15px; text-align: center; border-radius: 0 0 5px 5px; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2>PrediaCare Clinic - Password Reset</h2>
+          </div>
+          <div class="content">
+            <p>Dear <strong>${user.name}</strong>,</p>
+            <p>You requested to reset your password. Click the button below to set a new password:</p>
+            <p style="text-align: center;">
+              <a href="${resetUrl}" class="cta-button">Reset Password</a>
+            </p>
+            <p>This link will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from PrediaCare Clinic.</p>
+            <p>© 2026 PrediaCare Clinic. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await sendEmail(email, 'Password Reset Request - PrediaCare Clinic', emailHtml);
+
+    res.json({ success: true, message: 'If an account exists with that email, a password reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Reset password endpoint
+router.post('/reset-password', authLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Token and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [users] = await connection.execute(
+      'SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()',
+      [token]
+    );
+
+    if (users.length === 0) {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear reset token
+    await connection.execute(
+      'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
+      [hashedPassword, users[0].id]
+    );
+
+    connection.release();
+
+    res.json({ success: true, message: 'Password reset successfully. You can now sign in with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Logout endpoint
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
