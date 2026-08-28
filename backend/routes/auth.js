@@ -85,7 +85,7 @@ router.post('/register', authLimiter, async (req, res) => {
             <p>Thank you for creating an account with <strong>PrediaCare Clinic</strong>. We're excited to have you on board.</p>
             <p>Your account has been successfully registered. You can now log in to access your patient dashboard, book appointments, and manage your health records.</p>
             <p style="text-align: center;">
-              <a href="#" class="cta-button">Proceed to Login</a>
+              <a href="/sign-in.html" class="cta-button">Proceed to Login</a>
             </p>
             <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
           </div>
