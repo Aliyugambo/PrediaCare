@@ -103,7 +103,7 @@ router.post('/register', authLimiter, async (req, res) => {
 
     res.status(201).json({ 
       success: true, 
-      message: 'Registration successful. Please sign in.' 
+      message: 'Registration successful. Please Proceed to email to sign in.' 
     });
   } catch (error) {
     console.error('Registration error:', error);
