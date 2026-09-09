@@ -106,12 +106,13 @@ const sendAppointmentNotificationToDoctor = async (doctor, patient, appointmentD
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <h2>New Appointment Notification</h2>
-        </div>
-        <div class="content">
-          <p>Dear <strong>Dr. ${doctor.name}</strong>,</p>
+         <div class="container">
+         <div class="header">
+           <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+           <h2>New Appointment Notification</h2>
+         </div>
+         <div class="content">
+           <p>Dear <strong>Dr. ${doctor.name}</strong>,</p>
           
           <p>A new appointment has been booked with you. Here are the details:</p>
           
@@ -192,10 +193,11 @@ const sendTestResultNotificationToPatient = async (patient, testName, resultData
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <h2>🧪 Your Test Results Are Ready</h2>
-        </div>
+         <div class="container">
+         <div class="header">
+           <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+           <h2>🧪 Your Test Results Are Ready</h2>
+         </div>
         <div class="content">
           <p>Dear <strong>${patient.name || 'Patient'}</strong>,</p>
           

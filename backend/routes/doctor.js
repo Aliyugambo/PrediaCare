@@ -1933,110 +1933,161 @@ router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_A
       }
     }
 
-    const doc = new PDFDocument({ margin: 50 });
+     const doc = new PDFDocument({
+       margin: 50,
+       lineGap: 2,
+       paragraphGap: 3
+     });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="discharge-${admission.patient_name || 'patient'}.pdf"`);
+     res.setHeader('Content-Type', 'application/pdf');
+     res.setHeader('Content-Disposition', `attachment; filename="discharge-${admission.patient_name || 'patient'}.pdf"`);
 
-    doc.pipe(res);
+     doc.pipe(res);
 
-    const pageWidth = doc.page.width;
-    const margin = 50;
-    const contentWidth = pageWidth - margin * 2;
+     const pageWidth = doc.page.width;
+     const pageHeight = doc.page.height;
+     const margin = 50;
+     const contentWidth = pageWidth - margin * 2;
 
-    const logoPath = path.join(__dirname, '../../assets/images/logo/logo.png');
-    if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, margin, 28, { width: 50 });
-    }
+     const COLORS = {
+       primary: '#b91c1c',
+       primaryLight: '#fee2e2',
+       primaryDark: '#7f1d1d',
+       text: '#1f2937',
+       textMuted: '#6b7280',
+       textDark: '#111827',
+       border: '#e5e7eb',
+       borderAccent: '#fecaca',
+       white: '#ffffff',
+       light: '#f9fafb',
+       headerBg: '#f3f4f6',
+       footerBg: '#1f2937'
+     };
 
-    doc
-      .fontSize(18)
-      .fillColor('#b91c1c')
-      .text('DISCHARGE SUMMARY', { width: contentWidth, align: 'right' });
+     const logoPath = path.join(__dirname, '../../assets/images/logo/logo.png');
 
-    doc
-      .fontSize(9)
-      .fillColor('#6b7280')
-      .text('No. 48, Arsenal Street, Suncity Estate, Galadimawa, Abuja. RC 8004554.', { width: contentWidth, align: 'right' });
+     function drawSeparator(y) {
+       doc.save();
+       doc.strokeColor(COLORS.border).lineWidth(1).moveTo(margin, y).lineTo(margin + contentWidth, y).stroke();
+       doc.restore();
+     }
 
-    doc
-      .fontSize(8)
-      .fillColor('#9ca3af')
-      .text(`Generated on ${new Date().toLocaleString('en-GB')}`, { width: contentWidth, align: 'right' });
+     function drawThickSeparator(y, color) {
+       doc.save();
+       doc.strokeColor(color || COLORS.primary).lineWidth(3).moveTo(margin, y).lineTo(margin + contentWidth, y).stroke();
+       doc.restore();
+     }
 
-    doc.moveDown(0.6);
+     function sectionHeader(title) {
+       doc.moveDown(1);
+       drawThickSeparator(doc.y, COLORS.primary);
+       doc.moveDown(0.3);
+       doc
+         .fontSize(14)
+         .font('Helvetica-Bold')
+         .fillColor(COLORS.primaryDark)
+         .text(title.toUpperCase(), margin, doc.y, { width: contentWidth });
+       drawSeparator(doc.y + 4);
+       doc.moveDown(0.6);
+     }
 
-    function drawLine(y, color) {
-      doc.strokeColor(color || '#e5e7eb').lineWidth(1).moveTo(margin, y).lineTo(margin + contentWidth, y).stroke();
-    }
+      function infoRow(leftLabel, leftValue, rightLabel, rightValue) {
+        const leftX = margin;
+        const rightX = margin + contentWidth / 2 + 10;
+        const leftWidth = contentWidth / 2 - 20;
+        const rightWidth = contentWidth / 2 - 20;
 
-    function sectionHeader(title) {
-      doc.moveDown(0.5);
-      doc
-        .fontSize(12)
-        .fillColor('#7f1d1d')
-        .text(title.toUpperCase(), { width: contentWidth });
+        const startY = doc.y;
 
-      drawLine(doc.y, '#fecaca');
-      doc.moveDown(0.4);
-    }
+        doc
+          .fontSize(9)
+          .font('Helvetica')
+          .fillColor(COLORS.text)
+          .text(leftLabel + ':', leftX, startY);
 
-    function fieldRow(label, value) {
-      doc
-        .fontSize(9)
-        .fillColor('#374151')
-        .text(label + ':', margin, doc.y);
+        doc
+          .fontSize(9)
+          .font('Helvetica')
+          .fillColor(COLORS.text)
+          .text(rightLabel + ':', rightX, startY);
 
-      doc
-        .fontSize(10)
-        .fillColor('#111827')
-        .text(value || 'N/A', margin + 110, doc.y, { width: contentWidth - 110 });
+        doc
+          .fontSize(10)
+          .font('Helvetica')
+          .fillColor(COLORS.textDark)
+          .text(leftValue || 'N/A', leftX + 90, startY, { width: leftWidth - 90 });
 
-      doc.moveDown(0.6);
-    }
+        doc
+          .fontSize(10)
+          .font('Helvetica')
+          .fillColor(COLORS.textDark)
+          .text(rightValue || 'N/A', rightX + 95, startY, { width: rightWidth - 95 });
 
-    function infoRow(leftLabel, leftValue, rightLabel, rightValue) {
-      const leftX = margin;
-      const rightX = margin + contentWidth / 2 + 10;
-      const leftWidth = contentWidth / 2 - 20;
-      const rightWidth = contentWidth / 2 - 20;
+        doc.moveDown(0.7);
+      }
 
-      doc
-        .fontSize(9)
-        .fillColor('#374151')
-        .text(leftLabel + ':', leftX, doc.y);
+      function textBlock(label, value) {
+       doc
+         .fontSize(9)
+         .font('Helvetica')
+         .fillColor(COLORS.text)
+         .text(label + ':', margin, doc.y);
 
-      doc
-        .fontSize(9)
-        .fillColor('#374151')
-        .text(rightLabel + ':', rightX, doc.y);
+       doc
+         .fontSize(10)
+         .font('Helvetica')
+         .fillColor(COLORS.textDark)
+         .text(value || 'N/A', margin, doc.y + 12, { width: contentWidth, align: 'left' });
 
-      doc
-        .fontSize(10)
-        .fillColor('#111827')
-        .text(leftValue || 'N/A', leftX + 90, doc.y, { width: leftWidth - 90 });
+       doc.moveDown(0.8);
+     }
 
-      doc
-        .fontSize(10)
-        .fillColor('#111827')
-        .text(rightValue || 'N/A', rightX + 95, doc.y, { width: rightWidth - 95 });
+     doc
+       .fontSize(22)
+       .font('Helvetica-Bold')
+       .fillColor(COLORS.primaryDark)
+       .text('DISCHARGE SUMMARY', { width: contentWidth, align: 'center' });
 
-      doc.moveDown(0.7);
-    }
+     doc
+       .fontSize(9)
+       .font('Helvetica-Oblique')
+       .fillColor(COLORS.textMuted)
+       .text('A Complete Medical Document - PrediaCare Clinic', { width: contentWidth, align: 'center' });
 
-    function textBlock(label, value) {
-      doc
-        .fontSize(9)
-        .fillColor('#374151')
-        .text(label + ':', margin, doc.y);
+     doc.moveDown(0.8);
+     drawSeparator(doc.y);
+     doc.moveDown(0.8);
 
-      doc
-        .fontSize(10)
-        .fillColor('#111827')
-        .text(value || 'N/A', margin, doc.y + 12, { width: contentWidth, align: 'left' });
+     const startY = doc.y;
 
-      doc.moveDown(0.8);
-    }
+     if (fs.existsSync(logoPath)) {
+       doc.image(logoPath, margin, startY, { width: 60, height: 34 });
+     }
+
+     const headerRightX = margin + contentWidth / 2 + 10;
+     const headerRightWidth = contentWidth / 2 - 20;
+
+     doc
+       .fontSize(9)
+       .font('Helvetica')
+       .fillColor(COLORS.textDark)
+       .text('PrediaCare Specialist Hospital', headerRightX, startY, { width: headerRightWidth, align: 'right' });
+
+     doc
+       .fontSize(8)
+       .font('Helvetica')
+       .fillColor(COLORS.textMuted)
+       .text('No. 48 Arsenal Street, Suncity Estate, Galadimawa, Abuja. RC 8004554.', headerRightX, startY + 12, { width: headerRightWidth, align: 'right' });
+
+     doc
+       .fontSize(8)
+       .font('Helvetica')
+       .fillColor(COLORS.textMuted)
+       .text(`Generated on ${new Date().toLocaleString('en-GB')}`, headerRightX, startY + 22, { width: headerRightWidth, align: 'right' });
+
+     doc.y = startY + 40;
+     drawSeparator(doc.y);
+     doc.moveDown(0.8);
 
     const patientName = dischargeData.patient_name || admission.patient_name || 'N/A';
     const patientId = dischargeData.patient_id || admission.patient_id || 'N/A';
@@ -2062,7 +2113,7 @@ router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_A
     infoRow('Patient Name', patientName, 'Patient ID', `#${patientId}`);
     infoRow('Date Admitted', dateAdmitted, 'Phone', phone);
     textBlock('Address', address);
-    infoRow('Email', email, '', '');
+    infoRow('Email', email, 'Status', patientStatus.charAt(0).toUpperCase() + patientStatus.slice(1));
 
     sectionHeader('Discharge Details');
     infoRow('Date of Discharge', dateDischarge, 'Next Checkup', nextCheckup);
@@ -2079,32 +2130,38 @@ router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_A
 
     sectionHeader('Medications');
     if (medications.length === 0) {
-      doc.fontSize(10).fillColor('#6b7280').text('N/A', margin, doc.y);
+      doc.fontSize(10).fillColor(COLORS.textMuted).text('No medications prescribed.', margin, doc.y, { align: 'left' });
       doc.moveDown(0.6);
     } else {
-      const startY = doc.y;
       const headers = ['Medication Name', 'Dosage', 'Frequency', 'Amount', 'End Date', 'Notes'];
-      const colX = [margin, margin + 140, margin + 210, margin + 270, margin + 320, margin + 370];
-      const colW = [140, 70, 60, 50, 50, contentWidth - 370];
+      const numCols = headers.length;
+      const tableLeft = margin;
+      const tableColWidth = contentWidth / numCols;
+      const tableTop = doc.y;
+      const headerHeight = 22;
+      const rowHeight = 20;
 
-      doc.rect(margin, doc.y, contentWidth, 22).fill('#f3f4f6');
-      doc.y += 2;
-      doc.fontSize(9).fillColor('#374151');
+      doc.save();
+      const clipX = tableLeft;
+      const clipY = tableTop;
+      const clipW = contentWidth;
+      const clipH = headerHeight + medications.length * rowHeight + 2;
+      doc.rect(clipX, clipY, clipW, clipH).clip();
+
+      doc.rect(tableLeft, tableTop, contentWidth, headerHeight).fill(COLORS.primaryDark);
+      doc.y = tableTop + 6;
+      doc.fontSize(9).fillColor(COLORS.white).font('Helvetica-Bold');
       headers.forEach((h, i) => {
-        doc.text(h, colX[i] + 4, doc.y, { width: colW[i] - 8 });
+        doc.text(h, tableLeft + i * tableColWidth + 8, doc.y, { width: tableColWidth - 16 });
       });
-      doc.y += 18;
 
       medications.forEach((med, idx) => {
-        if (doc.y > doc.page.height - 80) {
-          doc.addPage();
-        }
-
-        doc.rect(margin, doc.y, contentWidth, 20).fill('#ffffff');
+        const rowY = tableTop + headerHeight + idx * rowHeight;
         if (idx % 2 === 0) {
-          doc.rect(margin, doc.y, contentWidth, 20).fill('#f9fafb');
+          doc.rect(tableLeft, rowY, contentWidth, rowHeight).fill(COLORS.light);
+        } else {
+          doc.rect(tableLeft, rowY, contentWidth, rowHeight).fill(COLORS.white);
         }
-        doc.y += 3;
 
         const values = [
           med.name || 'N/A',
@@ -2115,27 +2172,56 @@ router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_A
           med.notes || 'N/A'
         ];
 
+        doc.y = rowY + 5;
+        doc.fontSize(9).fillColor(COLORS.textDark).font('Helvetica');
         values.forEach((val, i) => {
-          doc.fontSize(9).fillColor('#111827').text(val, colX[i] + 4, doc.y, { width: colW[i] - 8 });
+          doc.text(val, tableLeft + i * tableColWidth + 8, doc.y, { width: tableColWidth - 16 });
         });
-
-        doc.y += 18;
       });
+
+      drawSeparator(tableTop + headerHeight + medications.length * rowHeight + 2);
+      doc.restore();
+      doc.y = tableTop + headerHeight + medications.length * rowHeight + 6;
     }
 
+    doc.moveDown(1.5);
+    drawSeparator(doc.y);
     doc.moveDown(1);
-    drawLine(doc.y, '#e5e7eb');
-    doc.moveDown(0.6);
 
-    doc.fontSize(10).fillColor('#374151').text('Signature: ___________________', margin, doc.y);
-    doc.fontSize(10).fillColor('#374151').text(`Date: ${signatureDate}`, margin + contentWidth / 2, doc.y, { width: contentWidth / 2, align: 'right' });
-    doc.moveDown(0.8);
+    doc
+      .fontSize(12)
+      .font('Helvetica')
+      .fillColor(COLORS.text)
+      .text('Attending Physician', margin, doc.y);
 
-    doc.y = Math.max(doc.y, doc.page.height - 55);
-    drawLine(doc.y);
-    doc.moveDown(0.4);
+    doc
+      .fontSize(10)
+      .font('Helvetica-Oblique')
+      .fillColor(COLORS.textMuted)
+      .text(signature || 'N/A', margin, doc.y + 14, { width: contentWidth / 2 });
 
-    doc.fontSize(8).fillColor('#9ca3af').text('Email address: Predicareclincisonsult@gmail.com | Mobile number: 08140032892.', margin, doc.y, { width: contentWidth, align: 'center' });
+    doc
+      .fontSize(10)
+      .font('Helvetica')
+      .fillColor(COLORS.textMuted)
+      .text(`Date: ${signatureDate}`, margin, doc.y + 16, { width: contentWidth / 2 });
+
+    doc.y = Math.max(doc.y, doc.page.height - 60);
+    drawSeparator(doc.y);
+    doc.moveDown(0.5);
+
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .fillColor(COLORS.textMuted)
+      .text('Email: Predicareclincisonsult@gmail.com | Mobile: 08140032892', margin, doc.y, { width: contentWidth, align: 'center' });
+
+    doc.moveDown(0.3);
+    doc
+      .fontSize(7)
+      .font('Helvetica-Oblique')
+      .fillColor(COLORS.textMuted)
+      .text('This document was generated electronically from PrediaCare Clinic Management System.', margin, doc.y, { width: contentWidth, align: 'center' });
 
     doc.end();
 

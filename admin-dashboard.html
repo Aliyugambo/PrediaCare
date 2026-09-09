@@ -990,6 +990,14 @@
         </div>
 
         <div class="nav-section">
+          <div class="nav-section-title">Communications</div>
+          <a href="#" class="nav-item" data-section="email-center">
+            <i class="fas fa-envelope"></i>
+            <span>Email Center</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
           <div class="nav-section-title">Medical Records</div>
           <a href="#" class="nav-item" data-section="health-summaries">
             <i class="fas fa-notes-medical"></i>
@@ -2181,6 +2189,90 @@
                   <button class="btn btn-sm" onclick="nextDeathRecordsPage()" id="nextDeathRecordsBtn">Next</button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Center Section -->
+        <div id="section-email-center" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-envelope"></i> Compose Email</h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-label">Filter recipients by role</label>
+                    <select class="form-control" id="emailRoleFilter" onchange="loadUsersForEmail()">
+                      <option value="all">All Users</option>
+                      <option value="patient">Patients</option>
+                      <option value="doctor">Doctors</option>
+                      <option value="nurse">Nurses</option>
+                      <option value="pharmacist">Pharmacists</option>
+                      <option value="diagnostic">Diagnostic Staff</option>
+                      <option value="customer_care">Customer Care</option>
+                      <option value="staff">Staff</option>
+                      <option value="admin">Admins</option>
+                      <option value="bloodbank">Blood Bank Staff</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <div class="search-box" style="margin-bottom: 8px;">
+                      <i class="fas fa-search"></i>
+                      <input type="text" id="emailUserSearch" placeholder="Search users..." onkeyup="searchEmailUsers()">
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                      <button class="btn btn-sm" onclick="selectAllEmailUsers()">Select All</button>
+                      <button class="btn btn-sm" onclick="deselectAllEmailUsers()">Deselect All</button>
+                      <span id="emailSelectedCount" style="margin-left: auto; align-self: center; color: #64748b;">0 selected</span>
+                    </div>
+                    <div id="emailUsersList" style="max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;">
+                      <div class="loading" style="text-align: center; padding: 20px; color: #94a3b8;"><i class="fas fa-spinner"></i> Loading users...</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-label">Subject *</label>
+                    <input type="text" class="form-control" id="emailSubject" placeholder="Email subject">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Message *</label>
+                    <textarea class="form-control" id="emailBody" rows="12" placeholder="Write your message here. You can use line breaks for paragraphs."></textarea>
+                  </div>
+                  <div class="form-group" style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-primary" id="sendEmailBtn" onclick="sendBulkEmail()">
+                      <i class="fas fa-paper-plane"></i> Send Email
+                    </button>
+                    <button class="btn" onclick="clearEmailForm()">Clear</button>
+                    <span id="emailSendStatus" style="margin-left: auto; color: #64748b;"></span>
+                  </div>
+                  <div id="emailAlertBox" class="alert" style="display: none; margin-top: 12px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-history"></i> Sent Email History</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Recipients</th>
+                    <th>Sent By</th>
+                    <th>Status</th>
+                    <th>Sent At</th>
+                  </tr>
+                </thead>
+                <tbody id="emailHistoryTableBody">
+                  <tr><td colspan="5" class="loading" style="text-align: center; padding: 20px;"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -3561,7 +3653,8 @@
         billing: 'Billing',
           inventory: 'Inventory',
           'birth-records': 'Birth Records',
-          'death-records': 'Death Records'
+          'death-records': 'Death Records',
+          'email-center': 'Email Center'
         };
       document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
       
@@ -3638,6 +3731,10 @@
           case 'death-records':
               loadDeathRecordsStats();
               loadDeathRecords();
+              break;
+          case 'email-center':
+              loadUsersForEmail();
+              loadEmailHistory();
               break;
       }
     }
@@ -8352,6 +8449,196 @@ function editUser(userId) {
       } catch (error) {
         console.error('Error deleting death record:', error);
       }
+    }
+
+    // ==================== EMAIL CENTER ====================
+    let allEmailUsers = [];
+
+    async function loadUsersForEmail() {
+      const role = document.getElementById('emailRoleFilter').value;
+      try {
+        const response = await fetch(`${API_BASE}/admin-email/users?role=${role}&limit=200`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          allEmailUsers = data.data;
+          renderEmailUsersList(allEmailUsers);
+          updateEmailSelectedCount();
+        } else {
+          document.getElementById('emailUsersList').innerHTML = '<div style="text-align: center; padding: 20px; color: #dc2626;">Error loading users</div>';
+        }
+      } catch (error) {
+        console.error('Error loading users for email:', error);
+        document.getElementById('emailUsersList').innerHTML = '<div style="text-align: center; padding: 20px; color: #dc2626;">Error loading users</div>';
+      }
+    }
+
+    function renderEmailUsersList(users) {
+      const container = document.getElementById('emailUsersList');
+      if (!users || users.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #94a3b8;">No users found</div>';
+        return;
+      }
+      container.innerHTML = users.map(u => `
+        <label style="display: flex; align-items: center; padding: 6px 8px; border-bottom: 1px solid #f1f5f9; cursor: pointer;">
+          <input type="checkbox" class="email-user-checkbox" value="${u.id}" data-email="${escapeHtml(u.email)}" style="margin-right: 8px;">
+          <div style="flex: 1;">
+            <div style="font-weight: 500;">${escapeHtml(u.name)}</div>
+            <div style="font-size: 12px; color: #64748b;">${escapeHtml(u.email)} <span style="margin-left: 4px; padding: 1px 6px; background: #e0e7ff; color: #4338ca; border-radius: 4px; font-size: 10px;">${escapeHtml(u.role)}</span></div>
+          </div>
+        </label>
+      `).join('');
+      container.querySelectorAll('.email-user-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateEmailSelectedCount);
+      });
+    }
+
+    function searchEmailUsers() {
+      const query = document.getElementById('emailUserSearch').value.toLowerCase();
+      const filtered = allEmailUsers.filter(u =>
+        (u.name || '').toLowerCase().includes(query) ||
+        (u.email || '').toLowerCase().includes(query)
+      );
+      renderEmailUsersList(filtered);
+    }
+
+    function selectAllEmailUsers() {
+      document.querySelectorAll('.email-user-checkbox').forEach(cb => cb.checked = true);
+      updateEmailSelectedCount();
+    }
+
+    function deselectAllEmailUsers() {
+      document.querySelectorAll('.email-user-checkbox').forEach(cb => cb.checked = false);
+      updateEmailSelectedCount();
+    }
+
+    function updateEmailSelectedCount() {
+      const count = document.querySelectorAll('.email-user-checkbox:checked').length;
+      const el = document.getElementById('emailSelectedCount');
+      if (el) el.textContent = `${count} selected`;
+    }
+
+    function clearEmailForm() {
+      document.getElementById('emailSubject').value = '';
+      document.getElementById('emailBody').value = '';
+      deselectAllEmailUsers();
+      const status = document.getElementById('emailSendStatus');
+      const alertBox = document.getElementById('emailAlertBox');
+      if (status) status.textContent = '';
+      if (alertBox) alertBox.style.display = 'none';
+    }
+
+    async function sendBulkEmail() {
+      const subject = document.getElementById('emailSubject').value.trim();
+      const body = document.getElementById('emailBody').value.trim();
+      const checked = Array.from(document.querySelectorAll('.email-user-checkbox:checked'));
+
+      if (!subject || !body) {
+        showEmailAlert('Subject and message are required', 'danger');
+        return;
+      }
+      if (checked.length === 0) {
+        showEmailAlert('Please select at least one recipient', 'danger');
+        return;
+      }
+      if (!confirm(`Send this email to ${checked.length} recipient(s)?`)) return;
+
+      const btn = document.getElementById('sendEmailBtn');
+      const status = document.getElementById('emailSendStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner"></i> Sending...';
+      status.textContent = `Sending to ${checked.length} recipient(s)...`;
+
+      const recipientIds = checked.map(cb => parseInt(cb.value, 10));
+
+      try {
+        const response = await fetch(`${API_BASE}/admin-email/send`, {
+          method: 'POST',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          credentials: 'include',
+          body: JSON.stringify({
+            recipient_ids: recipientIds,
+            subject: subject,
+            body: body,
+            html: false
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          let msg = data.message;
+          if (data.failed > 0) {
+            showEmailAlert(`${msg}. ${data.failed} email(s) failed.`, 'warning');
+            status.textContent = `Sent ${data.sent}/${data.total}`;
+          } else {
+            showEmailAlert(msg, 'success');
+            status.textContent = `Sent to ${data.sent} recipient(s)`;
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailBody').value = '';
+            deselectAllEmailUsers();
+          }
+          loadEmailHistory();
+        } else {
+          showEmailAlert(data.message || 'Error sending email', 'danger');
+          status.textContent = '';
+        }
+      } catch (error) {
+        console.error('Error sending bulk email:', error);
+        showEmailAlert('Server error: ' + error.message, 'danger');
+        status.textContent = '';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+      }
+    }
+
+    function showEmailAlert(message, type) {
+      const alertBox = document.getElementById('emailAlertBox');
+      if (!alertBox) return;
+      const colorMap = {
+        success: { bg: '#d1fae5', color: '#065f46', border: '#a7f3d0' },
+        danger: { bg: '#fee2e2', color: '#991b1b', border: '#fecaca' },
+        warning: { bg: '#fef3c7', color: '#92400e', border: '#fde68a' }
+      };
+      const c = colorMap[type] || colorMap.danger;
+      alertBox.style.backgroundColor = c.bg;
+      alertBox.style.color = c.color;
+      alertBox.style.border = `1px solid ${c.border}`;
+      alertBox.textContent = message;
+      alertBox.style.display = 'block';
+      setTimeout(() => { alertBox.style.display = 'none'; }, 8000);
+    }
+
+    async function loadEmailHistory() {
+      try {
+        const response = await fetch(`${API_BASE}/admin-email/history?limit=50`, { credentials: 'include' });
+        const data = await response.json();
+        if (data.success) {
+          renderEmailHistoryTable(data.data);
+        } else {
+          document.getElementById('emailHistoryTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #dc2626;">Error loading history</td></tr>';
+        }
+      } catch (error) {
+        console.error('Error loading email history:', error);
+        document.getElementById('emailHistoryTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #dc2626;">Error loading history</td></tr>';
+      }
+    }
+
+    function renderEmailHistoryTable(items) {
+      const tbody = document.getElementById('emailHistoryTableBody');
+      if (!tbody) return;
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">No emails sent yet</td></tr>';
+        return;
+      }
+      const statusColors = { sent: '#10b981', failed: '#dc2626', partial: '#f59e0b' };
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td>${escapeHtml(item.subject || '')}</td>
+          <td>${item.recipient_count || 0} recipient(s)</td>
+          <td>${escapeHtml(item.sender_name || 'Unknown')}</td>
+          <td><span style="padding: 2px 8px; background: ${statusColors[item.status] || '#94a3b8'}22; color: ${statusColors[item.status] || '#64748b'}; border-radius: 4px; font-size: 12px;">${escapeHtml(item.status || 'unknown')}</span></td>
+          <td>${formatDate(item.sent_at)}</td>
+        </tr>
+      `).join('');
     }
   </script>
 

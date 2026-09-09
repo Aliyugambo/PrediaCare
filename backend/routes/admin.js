@@ -261,10 +261,11 @@ router.post('/create-user', requireAdmin, async (req, res) => {
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h2>Welcome to PrediaCare Clinic</h2>
-          </div>
+         <div class="container">
+           <div class="header">
+             <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+             <h2>Welcome to PrediaCare Clinic</h2>
+           </div>
           <div class="content">
             <p>Dear <strong>${name}</strong>,</p>
             <p>Welcome aboard! Your account has been created at <strong>PrediaCare Clinic</strong> as a <strong>${roleLabel}</strong>.</p>

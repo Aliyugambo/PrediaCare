@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const pool = require('../config/database');
 const { sendEmail } = require('../config/email');
+const { OAuth2Client } = require('google-auth-library');
 const router = express.Router();
 
 // Rate limiter for auth endpoints
@@ -77,10 +78,11 @@ router.post('/register', authLimiter, async (req, res) => {
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h2>Welcome to PrediaCare Clinic</h2>
-          </div>
+         <div class="container">
+           <div class="header">
+             <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+             <h2>Welcome to PrediaCare Clinic</h2>
+           </div>
           <div class="content">
             <p>Dear <strong>${name}</strong>,</p>
             <p>Thank you for creating an account with <strong>PrediaCare Clinic</strong>. We're excited to have you on board.</p>
@@ -249,6 +251,187 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
+// Google Sign-In/Sign-Up endpoint
+router.post('/google', authLimiter, async (req, res) => {
+  try {
+    const { id_token } = req.body;
+
+    if (!id_token) {
+      return res.status(400).json({ success: false, message: 'Google ID token is required' });
+    }
+
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    let googlePayload;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: id_token,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      googlePayload = ticket.getPayload();
+    } catch (verifyError) {
+      console.error('Google token verification failed:', verifyError);
+      return res.status(401).json({ success: false, message: 'Invalid Google token' });
+    }
+
+    const googleId = googlePayload.sub;
+    const email = googlePayload.email;
+    const name = googlePayload.name;
+    const emailVerified = googlePayload.email_verified;
+
+    if (!email || !name) {
+      return res.status(400).json({ success: false, message: 'Google account must have email and name' });
+    }
+
+    const connection = await pool.getConnection();
+
+    // Check if user exists by google_id
+    const [existingByGoogle] = await connection.execute(
+      'SELECT id, name, email, role, is_active FROM users WHERE google_id = ?',
+      [googleId]
+    );
+
+    if (existingByGoogle.length > 0) {
+      const user = existingByGoogle[0];
+      if (!user.is_active) {
+        connection.release();
+        return res.status(403).json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+      }
+
+      req.session.userId = user.id;
+      req.session.userEmail = user.email;
+      req.session.userName = user.name;
+      req.session.userRole = user.role;
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      connection.release();
+
+      let redirectUrl = '/patient-dashboard.html';
+      if (user.role === 'doctor') redirectUrl = '/doctor-dashboard.html';
+      else if (user.role === 'staff' || user.role === 'nurse') redirectUrl = '/staff-dashboard.html';
+      else if (user.role === 'admin') redirectUrl = '/admin-dashboard.html';
+      else if (user.role === 'customer_care') redirectUrl = '/customer-care-dashboard.html';
+      else if (user.role === 'diagnostic') redirectUrl = '/diagnostic-dashboard.html';
+      else if (user.role === 'pharmacist') redirectUrl = '/pharmacist-dashboard.html';
+      else if (user.role === 'bloodbank') redirectUrl = '/bloodbank-dashboard.html';
+
+      return res.json({
+        success: true,
+        message: 'Google sign-in successful',
+        isNewUser: false,
+        redirectUrl,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+
+    // Check if user exists by email (link accounts)
+    const [existingByEmail] = await connection.execute(
+      'SELECT id, name, email, role, is_active FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (existingByEmail.length > 0) {
+      const user = existingByEmail[0];
+      if (!user.is_active) {
+        connection.release();
+        return res.status(403).json({ success: false, message: 'Your account has been deactivated. Please contact support.' });
+      }
+
+      // Link Google ID to existing account
+      await connection.execute(
+        'UPDATE users SET google_id = ? WHERE id = ?',
+        [googleId, user.id]
+      );
+
+      req.session.userId = user.id;
+      req.session.userEmail = user.email;
+      req.session.userName = user.name;
+      req.session.userRole = user.role;
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      connection.release();
+
+      let redirectUrl = '/patient-dashboard.html';
+      if (user.role === 'doctor') redirectUrl = '/doctor-dashboard.html';
+      else if (user.role === 'staff' || user.role === 'nurse') redirectUrl = '/staff-dashboard.html';
+      else if (user.role === 'admin') redirectUrl = '/admin-dashboard.html';
+      else if (user.role === 'customer_care') redirectUrl = '/customer-care-dashboard.html';
+      else if (user.role === 'diagnostic') redirectUrl = '/diagnostic-dashboard.html';
+      else if (user.role === 'pharmacist') redirectUrl = '/pharmacist-dashboard.html';
+      else if (user.role === 'bloodbank') redirectUrl = '/bloodbank-dashboard.html';
+
+      return res.json({
+        success: true,
+        message: 'Google account linked successfully',
+        isNewUser: false,
+        redirectUrl,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+
+    // Create new user with Google ID (default role: patient)
+    const hashedPassword = bcrypt.hashSync(Math.random().toString(36) + Date.now().toString(), 10);
+    const [result] = await connection.execute(
+      'INSERT INTO users (name, email, password_hash, google_id, role) VALUES (?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, googleId, 'patient']
+    );
+
+    const newUserId = result.insertId;
+
+    req.session.userId = newUserId;
+    req.session.userEmail = email;
+    req.session.userName = name;
+    req.session.userRole = 'patient';
+
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    connection.release();
+
+    res.json({
+      success: true,
+      message: 'Google sign-up successful',
+      isNewUser: true,
+      redirectUrl: '/patient-dashboard.html',
+      user: {
+        id: newUserId,
+        name: name,
+        email: email,
+        role: 'patient'
+      }
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ success: false, message: 'Server error during Google authentication' });
+  }
+});
+
 // Forgot password endpoint - sends reset link to email
 router.post('/forgot-password', authLimiter, async (req, res) => {
   try {
@@ -304,10 +487,11 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h2>PrediaCare Clinic - Password Reset</h2>
-          </div>
+         <div class="container">
+           <div class="header">
+             <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+             <h2>PrediaCare Clinic - Password Reset</h2>
+           </div>
           <div class="content">
             <p>Dear <strong>${user.name}</strong>,</p>
             <p>You requested to reset your password. Click the button below to set a new password:</p>

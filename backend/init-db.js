@@ -26,17 +26,18 @@ async function initializeDatabase() {
 
     // Create users table
     await connection.execute(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse', 'bloodbank') NOT NULL DEFAULT 'patient',
-        is_active BOOLEAN DEFAULT TRUE,
-        patient_status ENUM('active', 'admitted', 'discharged', 'outpost') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
+       CREATE TABLE IF NOT EXISTS users (
+         id INT AUTO_INCREMENT PRIMARY KEY,
+         name VARCHAR(255) NOT NULL,
+         email VARCHAR(255) UNIQUE NOT NULL,
+         password_hash VARCHAR(255) NOT NULL,
+         google_id VARCHAR(255) UNIQUE DEFAULT NULL,
+         role ENUM('patient', 'doctor', 'staff', 'admin', 'customer_care', 'diagnostic', 'pharmacist', 'nurse', 'bloodbank') NOT NULL DEFAULT 'patient',
+         is_active BOOLEAN DEFAULT TRUE,
+         patient_status ENUM('active', 'admitted', 'discharged', 'outpost') DEFAULT 'active',
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+       )
     `);
     console.log('Users table created or already exists');
     
@@ -57,6 +58,17 @@ async function initializeDatabase() {
       }
     } catch (e) {
       // Column might already exist
+    }
+
+    // Ensure google_id column exists (for Google Sign-In)
+    try {
+      const [cols] = await connection.execute("SHOW COLUMNS FROM users LIKE 'google_id'");
+      if (!cols || cols.length === 0) {
+        await connection.execute("ALTER TABLE users ADD COLUMN google_id VARCHAR(255) UNIQUE DEFAULT NULL AFTER password_hash");
+        console.log('Added google_id column to users table');
+      }
+    } catch (e) {
+      console.log('users google_id column check:', e.message);
     }
     
     // Ensure patient_status column exists (for older installations)
@@ -1709,6 +1721,23 @@ if (fs.existsSync(seedSqlPath)) {
       )
     `);
     console.log('Death records table created or already exists');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS email_history (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        sender_id INT,
+        sender_name VARCHAR(255),
+        recipient_emails TEXT,
+        recipient_count INT DEFAULT 0,
+        subject VARCHAR(500) NOT NULL,
+        body TEXT NOT NULL,
+        status ENUM('sent', 'failed', 'partial') DEFAULT 'sent',
+        error_message TEXT,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('Email history table created or already exists');
 
     try {
       const [cols] = await connection.execute("SHOW COLUMNS FROM birth_records LIKE 'child_dob'");

@@ -175,8 +175,9 @@ function generateNewsletterHTML(article, recipientName) {
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>📰 Weekly Health Newspaper</h1>
+     <div class="header">
+       <img src="https://prediacareclinics.com/assets/images/logo/logo_64.svg" alt="PrediaCare Clinic Logo" width="64" height="64" style="display: block; margin: 0 auto 10px;">
+       <h1>📰 Weekly Health Newspaper</h1>
       <div class="date">${formattedDate}</div>
     </div>
     <div class="content">

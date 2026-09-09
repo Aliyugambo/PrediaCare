@@ -65,3 +65,21 @@ CSS TABLE OF CONTENTS
 
 Main Style file-> assets/css/main.css
 -----------------------------------------------------------------------*/
+/* Custom divider for auth pages */
+.divider-line {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+.divider-line::before,
+.divider-line::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+.divider-line span {
+  padding: 0 12px;
+}
