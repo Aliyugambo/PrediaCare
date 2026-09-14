@@ -29,6 +29,7 @@
         <link rel="stylesheet" href="assets/css/main.css">
         <!-- style css -->
         <link rel="stylesheet" href="style.css">
+        <!-- dark theme css -->
     </head>
 
     <body>
@@ -464,8 +465,9 @@
                                                 </div>
 
                                                 <div class="col-lg-12">
-                                                    <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" data-callback="handleGoogleSignIn" data-auto_prompt="false"></div>
-                                                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular" data-width="100%"></div>
+                                                    <div class="google-auth-section">
+                                                        <div id="google-signin-button-container" class="google-signin-button-container"></div>
+                                                    </div>
                                                 </div>
 
                                                 <div class="col-lg-12">
@@ -845,6 +847,49 @@
                 }
             }
         }
+
+        async function initializeGoogleSignIn() {
+            try {
+                const response = await fetch('/api/auth/config', {
+                    credentials: 'include'
+                });
+                const config = await response.json();
+                const clientId = config.clientId;
+
+                if (!clientId) {
+                    console.warn('Google client ID is not configured. Set GOOGLE_CLIENT_ID in backend/.env');
+                    return;
+                }
+
+                const container = document.getElementById('google-signin-button-container');
+                if (!container) return;
+
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: handleGoogleSignIn
+                    });
+
+                    google.accounts.id.renderButton(container, {
+                        type: 'standard',
+                        theme: 'outline',
+                        size: 'large',
+                        text: 'signin_with',
+                        shape: 'rectangular',
+                        width: container.offsetWidth || 350
+                    });
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to initialize Google Sign-In:', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeGoogleSignIn);
     </script>
     </body>
 </html>

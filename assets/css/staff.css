@@ -9,6 +9,11 @@ body {
   background: #f5f6fa;
 }
 
+[data-theme="dark"] body {
+  background: #0a0a0f;
+  color: #e0e0e8;
+}
+
 .container {
   display: flex;
   height: 100vh;
@@ -20,6 +25,11 @@ body {
   background: #fff;
   padding: 20px;
   border-right: 1px solid #eee;
+}
+
+[data-theme="dark"] .sidebar {
+  background: #111118;
+  border-color: #1e1e25;
 }
 
 .logo {

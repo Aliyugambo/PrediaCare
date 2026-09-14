@@ -244,6 +244,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
     connection.release();
 
     const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
+    const loginUrl = `${process.env.RESET_URL_BASE || 'https://prediacareclinics.com'}/sign-in.html`;
     const welcomeHtml = `
       <!DOCTYPE html>
       <html>
@@ -269,9 +270,9 @@ router.post('/create-user', requireAdmin, async (req, res) => {
           <div class="content">
             <p>Dear <strong>${name}</strong>,</p>
             <p>Welcome aboard! Your account has been created at <strong>PrediaCare Clinic</strong> as a <strong>${roleLabel}</strong>.</p>
-            <p>You can now log in to your dashboard to start managing appointments, patient records, and clinic operations.</p>
+            <p>Your initial password has already been set by the clinic administrator. Please sign in with your email and that temporary password, then change it to your own preferred password from your profile settings.</p>
             <p style="text-align: center;">
-              <a href="#" class="cta-button">Proceed to Login</a>
+              <a href="${loginUrl}" class="cta-button">Proceed to Login</a>
             </p>
             <p>If you have any questions or need assistance getting started, please contact the clinic administration.</p>
           </div>

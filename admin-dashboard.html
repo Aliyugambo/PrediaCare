@@ -6,7 +6,9 @@
   <title>Admin Dashboard | Prediacare Medical Clinic</title>
   <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="assets/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700<link href="/>
+  <!-- dark theme -->
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     :root {
       --primary: #0f172a;
@@ -23,8 +25,26 @@
       --slate-700: #334155;
       --border: #e2e8f0;
       --bg-light: #f8fafc;
-      --white: #ffffff;
-    }
+       --white: #ffffff;
+     }
+
+     [data-theme="dark"] {
+       --primary: #015241;
+       --primary-light: #013d35;
+       --accent: #1a1a22;
+       --accent-hover: #22222a;
+       --success: #10b981;
+       --warning: #d97706;
+       --danger: #ef4444;
+       --info: #06b6d4;
+       --slate-400: #7a7a8a;
+       --slate-500: #8a8a98;
+       --slate-600: #9a9ab0;
+       --slate-700: #a5a5b2;
+       --border: #1e1e25;
+       --bg-light: #0a0a0f;
+       --white: #0a0a0f;
+     }
     
     * {
       font-family: 'Inter', sans-serif;
@@ -256,6 +276,7 @@
     
     .user-menu {
       position: relative;
+      padding-bottom: 12px;
     }
     
     .user-avatar {
@@ -285,7 +306,9 @@
       z-index: 100;
     }
     
-    .user-menu:hover .dropdown-menu {
+    .user-menu:hover .dropdown-menu,
+    .user-menu:focus-within .dropdown-menu,
+    .user-menu.active .dropdown-menu {
       display: block;
     }
     
@@ -809,9 +832,21 @@
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+      
+      .header {
+        padding: 14px 18px;
+      }
+      
+      .content {
+        padding: 20px;
+      }
     }
     
-    @media (max-width: 768px) {
+    @media (max-width: 991px) {
+      .main-content {
+        margin-left: 0;
+      }
+      
       .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -829,12 +864,135 @@
         display: block;
       }
       
-      .main-content {
-        margin-left: 0;
+      .header {
+        padding: 14px 16px;
+      }
+      
+      .header-right {
+        gap: 10px;
+      }
+      
+      .header-btn {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .search-box {
+        width: 240px;
+      }
+      
+      .card-header {
+        padding: 18px 20px;
+      }
+      
+      .card-body {
+        padding: 20px;
+      }
+      
+      .modal {
+        max-width: calc(100% - 24px);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+      }
+      
+      .header {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      
+      .header-left,
+      .header-right {
+        width: 100%;
+      }
+      
+      .header-left {
+        justify-content: space-between;
+      }
+      
+      .header-right {
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      
+      .page-title {
+        font-size: 18px;
+      }
+      
+      .content {
+        padding: 16px;
       }
       
       .stats-grid {
         grid-template-columns: 1fr;
+      }
+      
+      .filters {
+        flex-direction: column;
+      }
+      
+      .search-box {
+        width: 100%;
+        max-width: none;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        padding: 0 16px;
+        scrollbar-width: thin;
+      }
+      
+      .tab {
+        white-space: nowrap;
+        padding: 14px 16px;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .card-header h3 {
+        font-size: 15px;
+      }
+      
+      .card-body {
+        padding: 16px;
+      }
+      
+      .table-container {
+        overflow-x: auto;
+      }
+      
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      
+      .modal-footer {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+      
+      .pagination {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .action-btns {
+        flex-wrap: wrap;
+      }
+      
+      .dropdown-menu {
+        right: -8px;
+        min-width: 180px;
       }
     }
     
@@ -886,7 +1044,7 @@
     }
   </style>
 </head>
-  <body>
+  <body class="admin-dashboard">
     <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
     <div class="app-container">
       <!-- Sidebar -->
@@ -1039,6 +1197,10 @@
             <i class="fas fa-envelope"></i>
             <span class="badge" id="messageBadge" style="display:none">0</span>
           </button> -->
+          <button class="header-btn header-theme-toggle" title="Theme" onclick="window.themeToggle.toggle(); return false;">
+            <span class="theme-icon"><i class="far fa-moon"></i></span>
+            <span class="theme-label">Theme</span>
+          </button>
           <div class="user-menu">
             <div class="user-avatar" id="userInitials">A</div>
             <div class="dropdown-menu">
@@ -2872,10 +3034,22 @@
            <label class="form-label">Member Since</label>
             <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
           </div>
-        </div>
-    </div>
-  </div>
-
+          <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <h4 style="margin: 0 0 16px; color: #0f172a; font-size: 16px;">Change Password</h4>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-control" id="profileCurrentPassword" placeholder="Enter current password">
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" id="profileNewPassword" placeholder="Enter new password">
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" id="profileConfirmPassword" placeholder="Confirm new password">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="changeCurrentUserPassword()" style="width: 100%;">Update Password</button>
+          </div>
   <!-- Add/Edit Inventory Item Modal -->
   <div class="modal-overlay" id="modal-addInventoryItem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
@@ -3617,6 +3791,62 @@
     function closeProfileModal() {
       const modal = document.getElementById('profileModal');
       if (modal) { modal.classList.remove('active'); modal.style.display = 'none'; }
+    }
+
+    async function changeCurrentUserPassword() {
+      const currentPassword = document.getElementById('profileCurrentPassword')?.value || '';
+      const newPassword = document.getElementById('profileNewPassword')?.value || '';
+      const confirmPassword = document.getElementById('profileConfirmPassword')?.value || '';
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Please fill in all password fields.');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('New password and confirm password do not match.');
+        return;
+      }
+
+      try {
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+          headers['XSRF-TOKEN'] = csrfToken;
+          headers['X-CSRF-Token'] = csrfToken;
+          headers['CSRF-Token'] = csrfToken;
+        }
+
+        const response = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          alert(data.message || 'Failed to update password.');
+          return;
+        }
+
+        alert('Password updated successfully.');
+        document.getElementById('profileCurrentPassword').value = '';
+        document.getElementById('profileNewPassword').value = '';
+        document.getElementById('profileConfirmPassword').value = '';
+        closeProfileModal();
+      } catch (error) {
+        console.error('Error changing password:', error);
+        alert('Connection error while updating password.');
+      }
     }
     
     // Navigation
@@ -5814,7 +6044,50 @@ function editUser(userId) {
       }
       window.location.href = 'sign-in.html';
     }
-    
+
+    function initializeUserMenu() {
+      const userMenu = document.querySelector('.user-menu');
+      if (!userMenu) return;
+
+      const dropdownMenu = userMenu.querySelector('.dropdown-menu');
+      if (!dropdownMenu) return;
+
+      let hideTimeout = null;
+
+      const showMenu = () => {
+        clearTimeout(hideTimeout);
+        userMenu.classList.add('active');
+      };
+
+      const hideMenu = () => {
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+          userMenu.classList.remove('active');
+        }, 120);
+      };
+
+      userMenu.addEventListener('mouseenter', showMenu);
+      userMenu.addEventListener('mouseleave', hideMenu);
+      userMenu.addEventListener('focusin', showMenu);
+      userMenu.addEventListener('focusout', (event) => {
+        if (!userMenu.contains(event.relatedTarget)) {
+          hideMenu();
+        }
+      });
+
+      dropdownMenu.addEventListener('mouseenter', showMenu);
+      dropdownMenu.addEventListener('mouseleave', hideMenu);
+
+      userMenu.addEventListener('click', (event) => {
+        const avatar = event.target.closest('.user-avatar');
+        if (!avatar) return;
+
+        event.preventDefault();
+        const isActive = userMenu.classList.contains('active');
+        userMenu.classList.toggle('active', !isActive);
+      });
+    }
+
     // Utility Functions
     function escapeHtml(str) {
       if (!str) return '';
@@ -5843,6 +6116,8 @@ function editUser(userId) {
     
     // Add event listeners for modal buttons
     document.addEventListener('DOMContentLoaded', function() {
+      initializeUserMenu();
+
       // Test button for modal
       const testBtn = document.getElementById('testBtn');
       if (testBtn) {
@@ -8966,5 +9241,7 @@ function editUser(userId) {
     </div>
   </div>
 
+    <!-- theme toggle -->
+    <script src="assets/js/theme-toggle.js"></script>
 </body>
 </html>

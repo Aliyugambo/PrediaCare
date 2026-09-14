@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blood Bank Dashboard - Carenix Clinic</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- dark theme -->
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     :root {
       --primary: #0f172a;
@@ -21,8 +23,26 @@
       --slate-700: #334155;
       --border: #e2e8f0;
       --bg-light: #f8fafc;
-      --white: #ffffff;
-    }
+       --white: #ffffff;
+     }
+
+     [data-theme="dark"] {
+       --primary: #015241;
+       --primary-light: #013d35;
+       --accent: #1a1a22;
+       --accent-hover: #22222a;
+       --success: #10b981;
+       --warning: #d97706;
+       --danger: #ef4444;
+       --info: #06b6d4;
+       --slate-400: #7a7a8a;
+       --slate-500: #8a8a98;
+       --slate-600: #9a9ab0;
+       --slate-700: #a5a5b2;
+       --border: #1e1e25;
+       --bg-light: #0a0a0f;
+       --white: #0a0a0f;
+     }
 
     * {
       font-family: 'Inter', sans-serif;
@@ -730,7 +750,7 @@
     }
   </style>
 </head>
-<body>
+<body class="bloodbank-dashboard">
   <div class="app-container">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
@@ -778,6 +798,10 @@
           <h1 class="page-title" id="pageTitle">Blood Bank</h1>
         </div>
         <div class="header-right">
+          <button class="header-btn header-theme-toggle" title="Theme" onclick="window.themeToggle.toggle(); return false;">
+            <span class="theme-icon"><i class="far fa-moon"></i></span>
+            <span class="theme-label">Theme</span>
+          </button>
           <div class="user-menu">
             <div class="user-avatar" id="userInitials">B</div>
             <div class="dropdown-menu">
@@ -1389,6 +1413,22 @@
           <label class="form-label">Member Since</label>
           <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
         </div>
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <h4 style="margin: 0 0 16px; color: #0f172a; font-size: 16px;">Change Password</h4>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="profileCurrentPassword" placeholder="Enter current password">
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" id="profileNewPassword" placeholder="Enter new password">
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="profileConfirmPassword" placeholder="Confirm new password">
+          </div>
+          <button type="button" class="action-btn primary" onclick="changeCurrentUserPassword()" style="width: 100%;">Update Password</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1507,6 +1547,62 @@
       if (modal) {
         modal.classList.remove('active');
         modal.style.display = 'none';
+      }
+    }
+
+    async function changeCurrentUserPassword() {
+      const currentPassword = document.getElementById('profileCurrentPassword')?.value || '';
+      const newPassword = document.getElementById('profileNewPassword')?.value || '';
+      const confirmPassword = document.getElementById('profileConfirmPassword')?.value || '';
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Please fill in all password fields.');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('New password and confirm password do not match.');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (csrfToken) {
+        headers['XSRF-TOKEN'] = csrfToken;
+        headers['X-CSRF-Token'] = csrfToken;
+        headers['CSRF-Token'] = csrfToken;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          alert(data.message || 'Failed to update password.');
+          return;
+        }
+
+        alert('Password updated successfully.');
+        document.getElementById('profileCurrentPassword').value = '';
+        document.getElementById('profileNewPassword').value = '';
+        document.getElementById('profileConfirmPassword').value = '';
+        closeProfileModal();
+      } catch (error) {
+        console.error('Error changing password:', error);
+        alert('Connection error while updating password.');
       }
     }
 
@@ -2385,5 +2481,7 @@
       }
     }
   </script>
+    <!-- theme toggle -->
+    <script src="assets/js/theme-toggle.js"></script>
 </body>
 </html>

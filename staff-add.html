@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="assets/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- dark theme -->
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     body{font-family:'Inter',sans-serif;background:#f8fafc;margin:0}
     .sidebar-slim{position:fixed;left:0;top:0;bottom:0;width:260px;background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;height:100vh}
@@ -31,7 +33,7 @@
     .btn-secondary{background:#f1f5f9;color:#0f172a;border:none;padding:10px 20px;border-radius:8px}
   </style>
 </head>
-<body>
+<body class="staff-dashboard">
   <div class="sidebar-slim">
     <div style="padding:18px;font-weight:700;color:black;font-size:20px">rediacare Clinics</div>
     <nav style="padding:8px 12px">
@@ -142,5 +144,7 @@
       }catch(err){console.error(err);alert('Failed to create user')}
     });
   </script>
+    <!-- theme toggle -->
+    <script src="assets/js/theme-toggle.js"></script>
 </body>
 </html>

@@ -6,6 +6,8 @@
   <title>Staff Management | PrediaCare</title>
   <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="assets/css/all.min.css" />
+  <!-- dark theme -->
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -1333,7 +1335,7 @@
     }
   </style>
 </head>
-<body>
+<body class="staff-dashboard">
   <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
   
   <div class="layout">
@@ -1367,7 +1369,10 @@
           </div>
         </div>
         
-        <button class="header-icon-btn"><i class="far fa-moon"></i></button>
+        <button class="header-icon-btn header-theme-toggle" title="Theme" onclick="window.themeToggle.toggle(); return false;">
+          <span class="theme-icon"><i class="far fa-moon"></i></span>
+          <span class="theme-label">Theme</span>
+        </button>
         <div class="user-dropdown">
           <button class="user-btn">
             <div class="user-avatar" id="userInitials">PC</div>
@@ -2078,6 +2083,22 @@
            <label class="form-label">Member Since</label>
            <input type="text" class="form-control" id="profileCreatedAt" readonly style="background: #f8fafc;">
          </div>
+         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+           <h4 style="margin: 0 0 16px; color: #0f172a; font-size: 16px;">Change Password</h4>
+           <div class="form-group" style="margin-bottom: 16px;">
+             <label class="form-label">Current Password</label>
+             <input type="password" class="form-control" id="profileCurrentPassword" placeholder="Enter current password">
+           </div>
+           <div class="form-group" style="margin-bottom: 16px;">
+             <label class="form-label">New Password</label>
+             <input type="password" class="form-control" id="profileNewPassword" placeholder="Enter new password">
+           </div>
+           <div class="form-group" style="margin-bottom: 16px;">
+             <label class="form-label">Confirm New Password</label>
+             <input type="password" class="form-control" id="profileConfirmPassword" placeholder="Confirm new password">
+           </div>
+           <button type="button" class="action-btn primary" onclick="changeCurrentUserPassword()" style="width: 100%;">Update Password</button>
+         </div>
        </div>
        <div class="modal-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
          <button type="button" class="action-btn secondary" onclick="closeProfileModal()">Close</button>
@@ -2400,6 +2421,62 @@
     function closeProfileModal() {
       const modal = document.getElementById('profileModal');
       if (modal) modal.style.display = 'none';
+    }
+
+    async function changeCurrentUserPassword() {
+      const currentPassword = document.getElementById('profileCurrentPassword')?.value || '';
+      const newPassword = document.getElementById('profileNewPassword')?.value || '';
+      const confirmPassword = document.getElementById('profileConfirmPassword')?.value || '';
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Please fill in all password fields.');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('New password and confirm password do not match.');
+        return;
+      }
+
+      try {
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+          headers['XSRF-TOKEN'] = csrfToken;
+          headers['X-CSRF-Token'] = csrfToken;
+          headers['CSRF-Token'] = csrfToken;
+        }
+
+        const response = await fetch(`${API_BASE}/auth/change-password`, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          alert(data.message || 'Failed to update password.');
+          return;
+        }
+
+        alert('Password updated successfully.');
+        document.getElementById('profileCurrentPassword').value = '';
+        document.getElementById('profileNewPassword').value = '';
+        document.getElementById('profileConfirmPassword').value = '';
+        closeProfileModal();
+      } catch (error) {
+        console.error('Error changing password:', error);
+        alert('Connection error while updating password.');
+      }
     }
 
     function switchTab(tabId) {
@@ -3442,5 +3519,7 @@ async function saveVitals(e) {
       loadDoctorsForVitalsSelect();
     });
   </script>
+    <!-- theme toggle -->
+    <script src="assets/js/theme-toggle.js"></script>
 </body>
 </html>

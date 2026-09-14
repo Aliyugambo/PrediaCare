@@ -4773,7 +4773,8 @@ button:focus {
   display: -webkit-flex;
   display: -moz-flex;
   display: flex;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 .header .header-contact-info ul li {
   margin-right: 25px;
@@ -4839,6 +4840,92 @@ button:focus {
   -webkit-align-items: center;
   align-items: center;
   gap: 20px;
+}
+@media (max-width: 991px) {
+  .header .header-top .row {
+    -webkit-flex-direction: column;
+    -moz-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .header .header-top-left,
+  .header .header-top-right {
+    width: 100%;
+  }
+  .header .header-top-right {
+    -webkit-justify-content: center;
+    -moz-justify-content: center;
+    justify-content: center;
+    -webkit-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .header .header-contact-info ul {
+    -webkit-justify-content: center;
+    -moz-justify-content: center;
+    justify-content: center;
+  }
+  .header .header-contact-info ul li {
+    margin-right: 0;
+  }
+  .header .header-contact-info ul li::before {
+    display: none;
+  }
+  .header .header-search {
+    -webkit-flex: 1 1 100%;
+    -moz-flex: 1 1 100%;
+    flex: 1 1 100%;
+  }
+  .header .header-search form {
+    width: 100%;
+    max-width: 100%;
+  }
+  .header .header-lower .header-content {
+    -webkit-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header .header-lower .header-content .logo-box {
+    width: 100%;
+  }
+  .header .header-lower .header-content .header-navigation {
+    width: 100%;
+    -webkit-order: 3;
+    -moz-order: 3;
+    order: 3;
+  }
+  .header .header-lower .header-content .header-right {
+    margin-left: auto;
+  }
+}
+@media (max-width: 767px) {
+  .header .header-top {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .header .header-top-right {
+    gap: 10px;
+  }
+  .header .header-search form {
+    width: 100%;
+  }
+  .header .header-cart a {
+    height: 44px;
+    padding: 0 12px;
+  }
+  .header .header-lower .header-content {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .header .header-lower .header-content .header-right {
+    width: 100%;
+    -webkit-justify-content: flex-end;
+    -moz-justify-content: flex-end;
+    justify-content: flex-end;
+  }
 }
 @media (max-width: 1400px) {
   .header .header-search form {

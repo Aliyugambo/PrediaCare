@@ -83,3 +83,82 @@ Main Style file-> assets/css/main.css
 .divider-line span {
   padding: 0 12px;
 }
+
+.google-auth-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.google-signin-button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+}
+
+.google-signin-button-container > div {
+  width: 100% !important;
+  max-width: 360px;
+}
+
+.google-signin-button-container iframe {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe,
+embed,
+object {
+  max-width: 100%;
+  height: auto;
+}
+
+.row > * {
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .container,
+  .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-wrapper {
+    overflow-x: hidden;
+  }
+
+  .main,
+  .header,
+  .footer,
+  section,
+  .breadcrumb-section,
+  .pricing-section-1 {
+    overflow-x: hidden;
+  }
+
+  .theme-button,
+  .theme-button.style-1,
+  .theme-button.style-2,
+  .theme-button.style-4 {
+    width: auto;
+    max-width: 100%;
+    white-space: normal;
+  }
+}

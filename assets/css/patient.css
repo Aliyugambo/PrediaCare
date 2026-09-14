@@ -19,6 +19,21 @@
   --slate-500: #64748b;
 }
 
+[data-theme="dark"] {
+  --blue: #014d3f;
+  --blue-light: #012d2f;
+  --emerald: #10b981;
+  --emerald-light: #013d35;
+  --amber: #d97706;
+  --amber-light: #4a3410;
+  --rose: #ef4444;
+  --rose-light: #4a0f0f;
+  --purple: #a78bfa;
+  --purple-light: #4c1d5a;
+  --slate-600: #9a9ab0;
+  --slate-500: #8a8a98;
+}
+
 body {
   font-family: "Inter", sans-serif;
   background: #f8fafc;

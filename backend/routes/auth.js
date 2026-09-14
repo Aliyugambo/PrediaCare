@@ -14,6 +14,14 @@ const authLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Expose Google client configuration to the frontend
+router.get('/config', (req, res) => {
+  res.json({
+    success: true,
+    clientId: process.env.GOOGLE_CLIENT_ID || ''
+  });
+});
+
 // Register endpoint (patients only - doctors and staff must be created by admin)
 router.post('/register', authLimiter, async (req, res) => {
   try {
@@ -557,6 +565,67 @@ router.post('/reset-password', authLimiter, async (req, res) => {
     res.json({ success: true, message: 'Password reset successfully. You can now sign in with your new password.' });
   } catch (error) {
     console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Change password endpoint for users who were created by admin
+router.post('/change-password', authLimiter, async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Current password, new password, and confirmation are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'New password and confirmation do not match' });
+    }
+
+    const connection = await pool.getConnection();
+
+    const [users] = await connection.execute(
+      'SELECT password_hash FROM users WHERE id = ?',
+      [req.session.userId]
+    );
+
+    if (users.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, users[0].password_hash);
+
+    if (!isCurrentPasswordValid) {
+      connection.release();
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    if (currentPassword === newPassword) {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'New password must be different from your current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await connection.execute(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [hashedPassword, req.session.userId]
+    );
+
+    connection.release();
+
+    res.json({ success: true, message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
