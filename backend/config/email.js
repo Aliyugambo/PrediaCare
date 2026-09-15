@@ -41,9 +41,10 @@ const createTransporter = () => {
  * @param {string} to - Recipient email address
  * @param {string} subject - Email subject
  * @param {string} html - Email body in HTML format
+ * @param {string} [text] - Plain-text fallback body
  * @returns {Promise<boolean>} - True if email sent successfully
  */
-const sendEmail = async (to, subject, html) => {
+const sendEmail = async (to, subject, html, text) => {
   const transporter = createTransporter();
   
   if (!transporter) {
@@ -58,7 +59,8 @@ const sendEmail = async (to, subject, html) => {
       from: fromAddress,
       to: to,
       subject: subject,
-      html: html
+      html: html,
+      text: text || undefined
     });
 
     console.log('📧 Email sent successfully:', info.messageId);

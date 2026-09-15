@@ -10,6 +10,13 @@ const { sendEmail } = require('../config/email');
 const router = express.Router();
 const { checkPermission, PERMISSIONS, setUserPermissions, getUserPermissions, clearUserPermissions } = require('../config/permissions');
 
+const escapeEmailHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // All admin endpoints require MANAGE_USERS permission
 const requireAdmin = checkPermission(PERMISSIONS.MANAGE_USERS);
 
@@ -245,6 +252,22 @@ router.post('/create-user', requireAdmin, async (req, res) => {
 
     const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
     const loginUrl = `${process.env.RESET_URL_BASE || 'https://prediacareclinics.com'}/sign-in.html`;
+    const safeName = escapeEmailHtml(name);
+    const safeEmail = escapeEmailHtml(email);
+    const safePassword = escapeEmailHtml(password);
+    const welcomeText = [
+      `Dear ${name},`,
+      '',
+      `Your PrediaCare Clinic account has been created as a ${roleLabel}.`,
+      '',
+      'Login details:',
+      `Username: ${email}`,
+      `Initial password: ${password}`,
+      '',
+      `Login here: ${loginUrl}`,
+      '',
+      'Please sign in with these credentials and change your password from your profile settings.'
+    ].join('\n');
     const welcomeHtml = `
       <!DOCTYPE html>
       <html>
@@ -268,9 +291,14 @@ router.post('/create-user', requireAdmin, async (req, res) => {
              <h2>Welcome to PrediaCare Clinic</h2>
            </div>
           <div class="content">
-            <p>Dear <strong>${name}</strong>,</p>
+            <p>Dear <strong>${safeName}</strong>,</p>
             <p>Welcome aboard! Your account has been created at <strong>PrediaCare Clinic</strong> as a <strong>${roleLabel}</strong>.</p>
-            <p>Your initial password has already been set by the clinic administrator. Please sign in with your email and that temporary password, then change it to your own preferred password from your profile settings.</p>
+            <p>Use the login details below to access your account. Your email address is your username.</p>
+            <div style="background-color: #ffffff; border: 1px solid #dbeafe; border-radius: 5px; padding: 15px; margin: 20px 0;">
+              <p class="detail"><span class="label">Username:</span> <span class="value">${safeEmail}</span></p>
+              <p class="detail"><span class="label">Initial password:</span> <span class="value" style="font-family: monospace; font-size: 16px;">${safePassword}</span></p>
+            </div>
+            <p>For security, sign in with these credentials and change your password from your profile settings.</p>
             <p style="text-align: center;">
               <a href="${loginUrl}" class="cta-button">Proceed to Login</a>
             </p>
@@ -285,7 +313,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
       </html>
     `;
 
-    sendEmail(email, 'Welcome to PrediaCare Clinic', welcomeHtml).catch(() => {});
+    sendEmail(email, 'Welcome to PrediaCare Clinic', welcomeHtml, welcomeText).catch(() => {});
 
     res.status(201).json({ success: true, message: 'User created', userId: result.insertId });
   } catch (err) {

@@ -870,11 +870,28 @@
             }
         }
 
+        const googleConfigUrl = window.GOOGLE_AUTH_CONFIG_URL || '/api/auth/config';
+
         async function initializeGoogleSignIn() {
             try {
-                const response = await fetch('/api/auth/config', {
+                const container = document.getElementById('google-signin-button-container');
+                if (!container) return;
+
+                const response = await fetch(googleConfigUrl, {
                     credentials: 'include'
                 });
+
+                if (!response.ok) {
+                    console.warn('Google Sign-In config request failed:', response.status, response.statusText);
+                    return;
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    console.warn('Google Sign-In config endpoint did not return JSON. Check the deployed backend route.');
+                    return;
+                }
+
                 const config = await response.json();
                 const clientId = config.clientId;
 
@@ -883,19 +900,30 @@
                     return;
                 }
 
-                const container = document.getElementById('google-signin-button-container');
-                if (!container) return;
+                if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+                    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+                    if (!existingScript) {
+                        const script = document.createElement('script');
+                        script.src = 'https://accounts.google.com/gsi/client';
+                        script.async = true;
+                        script.defer = true;
+                        script.onload = () => initializeGoogleSignIn();
+                        document.head.appendChild(script);
+                        return;
+                    }
 
-                const script = document.createElement('script');
-                script.src = 'https://accounts.google.com/gsi/client';
-                script.async = true;
-                script.defer = true;
-                script.onload = () => {
-                    google.accounts.id.initialize({
-                        client_id: clientId,
-                        callback: handleGoogleSignIn
+                    await new Promise((resolve, reject) => {
+                        existingScript.addEventListener('load', resolve, { once: true });
+                        existingScript.addEventListener('error', () => reject(new Error('Failed to load Google Identity script')), { once: true });
                     });
+                }
 
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleSignIn
+                });
+
+                if (!container.dataset.googleRendered) {
                     google.accounts.id.renderButton(container, {
                         type: 'standard',
                         theme: 'outline',
@@ -904,10 +932,10 @@
                         shape: 'rectangular',
                         width: container.offsetWidth || 350
                     });
-                };
-                document.head.appendChild(script);
+                    container.dataset.googleRendered = 'true';
+                }
             } catch (error) {
-                console.error('Failed to initialize Google Sign-In:', error);
+                console.warn('Failed to initialize Google Sign-In:', error.message || error);
             }
         }
 

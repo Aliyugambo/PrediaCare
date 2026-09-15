@@ -261,6 +261,13 @@
       background: var(--bg-light);
       color: var(--primary);
     }
+
+    .header-right .header-theme-toggle {
+      width: auto;
+      min-width: 92px;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
     
     .header-btn .badge {
       position: absolute;
@@ -276,7 +283,15 @@
     
     .user-menu {
       position: relative;
-      padding-bottom: 12px;
+    }
+
+    .user-menu::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 8px;
     }
     
     .user-avatar {
