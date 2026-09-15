@@ -1157,6 +1157,41 @@
   transition: all 0.2s ease;
 }
 
+.header-right .header-theme-toggle {
+  width: auto;
+  min-width: 92px;
+  flex: 0 0 auto;
+  align-self: center;
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.header .header-theme-toggle {
+  width: auto;
+  min-width: 92px;
+  height: 40px;
+  flex: 0 0 auto;
+  align-self: center;
+  margin: 0;
+  padding: 0 12px;
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+@media (max-width: 575px) {
+  .header .header-theme-toggle {
+    min-width: 40px;
+    width: 40px;
+    padding: 0;
+  }
+
+  .header .header-theme-toggle .theme-label {
+    display: none;
+  }
+}
+
 [data-theme="dark"] .header-theme-toggle {
   background: #1a1a22;
   color: #b0b0b8;
