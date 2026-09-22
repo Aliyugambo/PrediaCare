@@ -643,7 +643,7 @@
         </a>
         <a class="menu-item active" data-tab="walkins">
           <i class="fas fa-users"></i>
-          Walk-in Patients
+          Test Patients
         </a>
         <a class="menu-item" data-tab="test-referrals">
           <i class="fas fa-flask"></i>
@@ -732,8 +732,13 @@
         <div class="tab-pane active" id="walkins">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Register New Patient</h3>
+              <h3 class="card-title">New Patient</h3>
             </div>
+            <!-- <div style="margin-bottom: 16px; text-align: right;">
+              <button type="button" class="btn btn-primary" onclick="openIncomingPatientModal()">
+                <i class="fas fa-user-plus"></i> Register Incoming Patient
+              </button>
+            </div> -->
             <form id="registerForm">
               <div class="form-row">
                 <div class="form-group">
@@ -807,7 +812,7 @@
 
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Registered Walk-in Patients</h3>
+              <h3 class="card-title">Registered Patients</h3>
             </div>
             <div class="search-bar">
               <input type="text" id="walkinSearch" placeholder="Search by name, phone, or email...">
@@ -950,6 +955,11 @@
            <div class="card-header">
              <h3 class="card-title">Register Appointment</h3>
            </div>
+           <div style="margin-bottom: 24px; text-align: right;">
+             <button type="button" class="btn btn-primary" onclick="openIncomingPatientModal()">
+               <i class="fas fa-user-plus"></i> Register Incoming Patient
+             </button>
+           </div>
            <form id="appointmentForm">
              <div class="form-row">
                <div class="form-group">
@@ -1032,11 +1042,90 @@
     </div>
   </div>
 
-  <script>
-    // API Base URL
-    const API_BASE = '/api';
-    
-    // Current user data
+  <div class="modal-overlay" id="incomingPatientModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3>Register Incoming Patient</h3>
+        <button type="button" class="notification-close" onclick="closeIncomingPatientModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="incomingPatientForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Patient Name *</label>
+              <input type="text" id="incomingPatientName" required>
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" id="incomingPatientEmail" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="incomingPatientPhone">
+            </div>
+            <div class="form-group">
+              <label>Temporary Password *</label>
+              <input type="password" id="incomingPatientPassword" minlength="6" required>
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Address</label>
+              <textarea id="incomingPatientAddress" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding: 0; border-top: 0;">
+            <button type="button" class="btn btn-secondary" onclick="closeIncomingPatientModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Register Patient</button>
+          </div>
+        </form>
+      </div>
+     </div>
+   </div>
+
+   <!-- Walk-in Patient Details Modal -->
+   <div class="modal-overlay" id="walkinModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+     <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+       <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3 style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 0;">Walk-in Patient Details</h3>
+         <button type="button" onclick="closeWalkinModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">&times;</button>
+       </div>
+       <div id="walkinModalBody" style="padding: 20px;">
+         <!-- Content will be populated by JavaScript -->
+       </div>
+       <div style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button type="button" class="btn btn-secondary" onclick="closeWalkinModal()">Close</button>
+       </div>
+     </div>
+   </div>
+
+   <!-- Appointment Details Modal -->
+   <div class="modal-overlay" id="appointmentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+     <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+       <div style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+         <h3 style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 0;">Appointment Details</h3>
+         <button type="button" onclick="closeAppointmentModal()" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 16px;">&times;</button>
+       </div>
+       <div id="appointmentModalBody" style="padding: 20px;">
+         <!-- Content will be populated by JavaScript -->
+       </div>
+       <div style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+         <button type="button" class="btn btn-secondary" onclick="closeAppointmentModal()">Close</button>
+       </div>
+     </div>
+   </div>
+ 
+   <script>
+     // API Base URL
+     const API_BASE = '/api';
+     
+      // Global state for loaded appointments
+      let loadedAppointments = [];
+      let loadedWalkins = [];
+     
+     // Current user data
      let currentUser = null;
      
      function toggleSidebar() {
@@ -1270,10 +1359,11 @@
           credentials: 'include'
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-          const patients = data.patients || [];
+         const data = await response.json();
+
+         if (data.success) {
+           const patients = data.patients || [];
+           loadedWalkins = patients;
           
           if (patients.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">No walk-in patients found</td></tr>';
@@ -1840,42 +1930,24 @@
       if (!select) return;
 
       try {
-        const [patientsRes, appointmentsRes] = await Promise.all([
-          fetch(`${API_BASE}/admin/users?role=patient&limit=100`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-          }),
-          fetch(`${API_BASE}/customer-care/appointments?limit=200`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-          })
-        ]);
+        const patientsRes = await fetch(`${API_BASE}/admin/users?role=patient&limit=10000`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
 
         const patientsData = await patientsRes.json();
-        const appointmentsData = await appointmentsRes.json();
 
         let patients = [];
         if (patientsData.success) {
           patients = patientsData.users || [];
         }
 
-        const bookedPatientIds = new Set();
-        if (appointmentsData.success && appointmentsData.appointments) {
-          appointmentsData.appointments.forEach(a => {
-            if (a.status === 'scheduled' || a.status === 'confirmed') {
-              bookedPatientIds.add(String(a.patient?.id));
-            }
-          });
-        }
-
-        const availablePatients = patients.filter(p => !bookedPatientIds.has(String(p.id)));
-
-        if (availablePatients.length === 0) {
-          select.innerHTML = '<option value="">No patients available for booking</option>';
+        if (patients.length === 0) {
+          select.innerHTML = '<option value="">No registered patients found</option>';
           return;
         }
 
-        const options = availablePatients.map(u =>
+        const options = patients.map(u =>
           `<option value="${u.id}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
         ).join('');
         select.innerHTML = '<option value="">Select Patient</option>' + options;
@@ -1952,6 +2024,51 @@
       }
     });
 
+    document.getElementById('incomingPatientForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      try {
+        const response = await fetch(`${API_BASE}/customer-care/patients`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('incomingPatientName').value,
+            email: document.getElementById('incomingPatientEmail').value,
+            phone: document.getElementById('incomingPatientPhone').value,
+            password: document.getElementById('incomingPatientPassword').value,
+            address: document.getElementById('incomingPatientAddress').value
+          })
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          alert(data.message || 'Failed to register patient');
+          return;
+        }
+
+        document.getElementById('incomingPatientForm').reset();
+        await loadPatientsForAppointment();
+        document.getElementById('appointmentPatient').value = String(data.patient.id);
+        closeIncomingPatientModal();
+        alert('Patient registered successfully. You can now complete the appointment form.');
+      } catch (error) {
+        console.error('Error registering patient:', error);
+        alert('Failed to register patient');
+      }
+    });
+
+    function openIncomingPatientModal() {
+      const modal = document.getElementById('incomingPatientModal');
+      if (modal) modal.style.display = 'flex';
+      document.getElementById('incomingPatientName')?.focus();
+    }
+
+    function closeIncomingPatientModal() {
+      const modal = document.getElementById('incomingPatientModal');
+      if (modal) modal.style.display = 'none';
+    }
+
     async function loadAppointments() {
       const tbody = document.getElementById('appointmentsTable');
       if (!tbody) return;
@@ -1967,10 +2084,11 @@
           headers: { 'Content-Type': 'application/json' }
         });
 
-        const data = await response.json();
+         const data = await response.json();
 
-        if (data.success) {
-          let appointments = data.appointments || [];
+         if (data.success) {
+           let appointments = data.appointments || [];
+           loadedAppointments = appointments;
 
           if (search) {
             const q = search.toLowerCase();
@@ -2010,9 +2128,106 @@
       }
     }
 
-    function viewAppointment(id) {
-      alert('Appointment ID: ' + id);
-    }
+     function viewAppointment(id) {
+       const apt = loadedAppointments.find(a => a.id == id);
+       
+       if (!apt) {
+         alert('Appointment not found');
+         return;
+       }
+       
+       const modal = document.getElementById('appointmentModal');
+       const modalBody = document.getElementById('appointmentModalBody');
+       
+       if (!modal || !modalBody) return;
+       
+       const appointmentDate = apt.date || apt.appointment_date;
+       const appointmentTime = apt.time || apt.appointment_time;
+       
+       const statusClass = {
+         'scheduled': 'badge-registered',
+         'confirmed': 'badge-registered',
+         'completed': 'badge-completed',
+         'cancelled': 'badge-pending',
+         'no_show': 'badge-pending'
+       }[apt.status] || 'badge-registered';
+       
+       const statusLabel = {
+         'scheduled': 'Scheduled',
+         'confirmed': 'Confirmed',
+         'completed': 'Completed',
+         'cancelled': 'Cancelled',
+         'no_show': 'No Show'
+       }[apt.status] || apt.status;
+       
+       const patientName = apt.patient?.name || 'N/A';
+       const patientEmail = apt.patient?.email || 'N/A';
+       const patientPhone = apt.patient?.phone || 'N/A';
+       const doctorName = apt.doctor?.name || 'N/A';
+       const doctorSpecialization = apt.doctor?.specialization || 'N/A';
+       
+       const initials = patientName !== 'N/A' 
+         ? patientName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+         : 'NA';
+       
+       modalBody.innerHTML = `
+         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+           <div style="width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600;">
+             ${initials}
+           </div>
+           <div style="flex: 1;">
+             <h4 style="font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 4px;">${escapeHtml(patientName)}</h4>
+             <p style="font-size: 13px; color: #64748b; margin: 0;">${escapeHtml(patientEmail)}</p>
+           </div>
+           <div style="text-align: right;">
+             <span class="badge ${statusClass}" style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;">${statusLabel}</span>
+           </div>
+         </div>
+         
+         <div style="margin-bottom: 16px;">
+           <h5 style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-transform: uppercase;">Appointment Details</h5>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Date</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${apt.date ? new Date(apt.date).toLocaleDateString() : 'N/A'}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Time</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${apt.time || 'N/A'}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Doctor</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(doctorName)}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Specialization</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(doctorSpecialization)}</p>
+             </div>
+             <div style="grid-column: 1 / -1;">
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Reason</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(apt.reason || 'No reason provided')}</p>
+             </div>
+             <div style="grid-column: 1 / -1;">
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Location</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(apt.location || 'Not specified')}</p>
+             </div>
+             ${apt.notes ? `
+             <div style="grid-column: 1 / -1;">
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Notes</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(apt.notes)}</p>
+             </div>
+             ` : ''}
+           </div>
+         </div>
+       `;
+       
+       modal.style.display = 'flex';
+     }
+     
+     function closeAppointmentModal() {
+       const modal = document.getElementById('appointmentModal');
+       if (modal) modal.style.display = 'none';
+     }
   </script>
 
   <!-- Profile Modal -->

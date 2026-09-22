@@ -4,10 +4,57 @@
  */
 
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 const pool = require('../config/database');
 const { checkPermission, PERMISSIONS } = require('../config/permissions');
 const { sendAppointmentNotificationToDoctor } = require('../config/email');
+
+// POST register a new patient account for an incoming patient
+router.post('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email and password are required'
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    const connection = await pool.getConnection();
+    const [existing] = await connection.execute('SELECT id FROM users WHERE email = ?', [email]);
+
+    if (existing.length > 0) {
+      connection.release();
+      return res.status(409).json({ success: false, message: 'Email already exists' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const [result] = await connection.execute(
+      'INSERT INTO users (name, email, password_hash, role, phone, address) VALUES (?, ?, ?, \'patient\', ?, ?)',
+      [name.trim(), email.trim().toLowerCase(), passwordHash, phone || null, address || null]
+    );
+
+    connection.release();
+
+    res.status(201).json({
+      success: true,
+      message: 'Patient registered successfully',
+      patient: { id: result.insertId, name: name.trim(), email: email.trim().toLowerCase() }
+    });
+  } catch (error) {
+    console.error('Error registering patient account:', error);
+    res.status(500).json({ success: false, message: 'Failed to register patient account' });
+  }
+});
 
 // GET all test referrals (both doctor referrals and walk-ins)
 router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_ALL_TEST_REFERRALS), async (req, res) => {
@@ -332,8 +379,6 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_ALL_APPOINTMENTS), 
     }
 
     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
-    params.push(parseInt(limit), parseInt(offset));
-
     const connection = await pool.getConnection();
     const [appointments] = await connection.query(query, params);
 
