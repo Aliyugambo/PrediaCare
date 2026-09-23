@@ -305,8 +305,6 @@ if (exam.vitalSigns) {
    }
   
   document.getElementById('chiefComplaint').value = exam.chiefComplaint || '';
-  document.getElementById('examinationNotes').value = exam.examinationNotes || '';
-  document.getElementById('findings').value = exam.findings || '';
   document.getElementById('diagnosis').value = exam.diagnosis || '';
   document.getElementById('treatmentPlan').value = exam.treatmentPlan || '';
   document.getElementById('recommendations').value = exam.recommendations || '';
@@ -378,8 +376,6 @@ var vitalSigns = {
     examination_date: new Date().toISOString().split('T')[0],
     vital_signs: vitalSigns,
     chief_complaint: document.getElementById('chiefComplaint').value,
-    examination_notes: document.getElementById('examinationNotes').value,
-    findings: document.getElementById('findings').value,
     diagnosis: diagnosis,
     treatment_plan: document.getElementById('treatmentPlan').value,
     status: 'pending'

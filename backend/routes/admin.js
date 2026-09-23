@@ -1465,8 +1465,8 @@ router.get('/patients/:id/history', requireAdmin, async (req, res) => {
     `, [id]);
 
     const [examinations] = await connection.execute(`
-      SELECT id, examination_date, vital_signs, chief_complaint, examination_notes,
-             findings, diagnosis, treatment_plan, status
+      SELECT id, examination_date, vital_signs, chief_complaint,
+             diagnosis, treatment_plan, status
       FROM examinations
       WHERE patient_id = ?
       ORDER BY examination_date DESC

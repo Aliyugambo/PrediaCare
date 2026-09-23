@@ -3634,13 +3634,6 @@ const hr = vitalData?.heartRate || '--';
                 </div>
                 ` : ''}
                 
-                ${exam.findings ? `
-                <div style="margin-bottom: 12px;">
-                  <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #06b6d4;">Findings</h4>
-                  <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(exam.findings)}</p>
-                </div>
-                ` : ''}
-                
                 <div style="margin-bottom: 12px;">
                   <h4 style="margin: 0 0 6px; color: #0f172a; font-size: 13px; font-weight: 600; color: #ef4444;">Diagnosis</h4>
                   <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${escapeHtml(diagnosisText)}</p>

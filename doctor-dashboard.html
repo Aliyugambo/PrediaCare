@@ -2812,10 +2812,8 @@
           </div>
           <div class="form-section">
             <div class="form-section-title"><i class="fas fa-clipboard"></i> Clinical Notes</div>
-            <div class="form-row single"><div class="form-group"><label>Complaint</label><textarea id="chiefComplaint" placeholder="Patient's main concern"></textarea></div></div>
-            <div class="form-row single"><div class="form-group"><label>Examination Notes</label><textarea id="examinationNotes" placeholder="Detailed examination findings"></textarea></div></div>
-            <div class="form-row single"><div class="form-group"><label>Findings</label><textarea id="findings" placeholder="Clinical findings"></textarea></div></div>
-            <div class="form-row"><div class="form-group"><label>Diagnosis</label><textarea id="diagnosis" placeholder="Diagnosis"></textarea></div><div class="form-group"><label>Treatment Plan</label><textarea id="treatmentPlan" placeholder="Treatment plan"></textarea></div></div>
+             <div class="form-row single"><div class="form-group"><label>Complaint</label><textarea id="chiefComplaint" placeholder="Patient's main concern"></textarea></div></div>
+             <div class="form-row"><div class="form-group"><label>Diagnosis</label><textarea id="diagnosis" placeholder="Diagnosis"></textarea></div><div class="form-group"><label>Treatment Plan</label><textarea id="treatmentPlan" placeholder="Treatment plan"></textarea></div></div>
             <div class="form-row single"><div class="form-group"><label>Recommendations</label><textarea id="recommendations" placeholder="Additional recommendations"></textarea></div></div>
             <div class="form-row"><div class="form-group"><label>Next Visit</label><input type="date" id="nextVisitDate"></div><div class="form-group"><label>Follow-up</label><select id="followUpRequired"><option value="yes">Yes</option><option value="no">No</option><option value="as_needed">As Needed</option></select></div></div>
           </div>
@@ -5069,7 +5067,6 @@
                       </div>
                       ${vitalsText ? `<div style="font-size: 12px; color: #475569; margin-bottom: 4px;">Vitals: ${vitalsText}</div>` : ''}
                       ${exam.chiefComplaint ? `<div style="font-size: 12px; color: #334155;"><strong>Complaint:</strong> ${exam.chiefComplaint}</div>` : ''}
-                      ${exam.findings ? `<div style="font-size: 12px; color: #334155;"><strong>Findings:</strong> ${exam.findings}</div>` : ''}
                       ${exam.diagnosis ? `<div style="font-size: 12px; color: #334155;"><strong>Diagnosis:</strong> ${exam.diagnosis}</div>` : ''}
                       ${exam.treatmentPlan ? `<div style="font-size: 12px; color: #334155;"><strong>Treatment:</strong> ${exam.treatmentPlan}</div>` : ''}
                     </div>

@@ -881,15 +881,14 @@ router.post('/appointments/:id/vitals', checkPermission(PERMISSIONS.MANAGE_ROUND
 
     await connection.execute(`
       INSERT INTO examinations
-      (patient_id, doctor_id, appointment_id, examination_date, vital_signs, examination_notes, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'reviewed')
+      (patient_id, doctor_id, appointment_id, examination_date, vital_signs, status)
+      VALUES (?, ?, ?, ?, ?, 'reviewed')
     `, [
       appointment.patient_id,
       appointment.doctor_id,
       id,
       appointment.appointment_date,
-      vitalsJson,
-      `Pre-examination vitals recorded by nurse/staff. ${notes ? 'Notes: ' + notes : ''}`
+      vitalsJson
     ]);
 
     connection.release();
@@ -1130,7 +1129,6 @@ router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECOR
         e.examination_date,
         e.diagnosis,
         e.treatment_plan,
-        e.findings,
         e.status,
         e.created_at,
         u.name as doctor_name
@@ -1184,7 +1182,6 @@ router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECOR
           examinationDate: e.examination_date,
           diagnosis: e.diagnosis,
           treatmentPlan: e.treatment_plan,
-          findings: e.findings,
           status: e.status,
           doctorName: e.doctor_name,
           date: e.created_at

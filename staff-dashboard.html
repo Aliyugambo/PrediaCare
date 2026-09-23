@@ -2713,7 +2713,6 @@
                     <span style="font-size: 12px; color: #64748b;">${new Date(e.date).toLocaleDateString()}</span>
                   </div>
                   ${e.diagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Diagnosis:</strong> ${escapeHtml(e.diagnosis)}</p>` : ''}
-                  ${e.findings ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Findings:</strong> ${escapeHtml(e.findings)}</p>` : ''}
                   ${e.treatmentPlan ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Treatment Plan:</strong> ${escapeHtml(e.treatmentPlan)}</p>` : ''}
                   <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(e.doctorName || 'Unknown')} | Status: ${escapeHtml(e.status || 'N/A')}</p>
                 </div>

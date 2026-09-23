@@ -1389,9 +1389,122 @@
       }
     }
     
-    function viewWalkin(id) {
-      alert('View patient details - ID: ' + id);
-    }
+     function viewWalkin(id) {
+       const patient = loadedWalkins.find(p => p.id == id);
+       
+       if (!patient) {
+         alert('Patient not found');
+         return;
+       }
+       
+       const modal = document.getElementById('walkinModal');
+       const modalBody = document.getElementById('walkinModalBody');
+       
+       if (!modal || !modalBody) return;
+       
+       const fullName = `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'N/A';
+       const displayName = (patient.first_name || '') + (patient.last_name ? ' ' + patient.last_name : '');
+       const initials = displayName ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'NA';
+       
+       const genderLabel = {
+         'male': 'Male',
+         'female': 'Female',
+         'other': 'Other'
+       }[patient.gender] || patient.gender || 'N/A';
+       
+       const statusClass = {
+         'registered': 'badge-registered',
+         'sample_collected': 'badge-pending',
+         'testing': 'badge-testing',
+         'completed': 'badge-completed',
+         'cancelled': 'badge-pending'
+       }[patient.status] || 'badge-registered';
+       
+       const statusLabel = patient.status ? patient.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Registered';
+       
+       const dob = patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString() : 'N/A';
+       const regDate = patient.registration_date ? new Date(patient.registration_date).toLocaleDateString() : 'N/A';
+       
+       modalBody.innerHTML = `
+         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+           <div style="width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600;">
+             ${initials}
+           </div>
+           <div style="flex: 1;">
+             <h4 style="font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 4px;">${escapeHtml(fullName)}</h4>
+             <p style="font-size: 13px; color: #64748b; margin: 0;">${escapeHtml(patient.email || patient.phone || '')}</p>
+           </div>
+           <div style="text-align: right;">
+             <span class="badge ${statusClass}" style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;">${escapeHtml(statusLabel)}</span>
+           </div>
+         </div>
+         
+         <div style="margin-bottom: 16px;">
+           <h5 style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-transform: uppercase;">Patient Information</h5>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Full Name</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(fullName)}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Date of Birth</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${dob}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Gender</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(genderLabel)}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Phone</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(patient.phone || 'N/A')}</p>
+             </div>
+             <div style="grid-column: 1 / -1;">
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Email</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(patient.email || 'N/A')}</p>
+             </div>
+             <div style="grid-column: 1 / -1;">
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Address</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(patient.address || 'N/A')}</p>
+             </div>
+           </div>
+         </div>
+         
+         <div style="margin-bottom: 16px;">
+           <h5 style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-transform: uppercase;">Test Information</h5>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Test Type</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(patient.test_type || 'N/A')}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Test Name</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${escapeHtml(patient.test_name || 'N/A')}</p>
+             </div>
+           </div>
+         </div>
+         
+         <div>
+           <h5 style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-transform: uppercase;">Registration Info</h5>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Registration Date</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${regDate}</p>
+             </div>
+             <div>
+               <p style="font-size: 12px; color: #64748b; margin: 0 0 4px;">Referred By Doctor</p>
+               <p style="font-size: 14px; color: #0f172a; margin: 0;">${patient.referred_by_doctor ? 'Yes' : 'No'}</p>
+             </div>
+           </div>
+         </div>
+       `;
+       
+       modal.style.display = 'flex';
+     }
+     
+     function closeWalkinModal() {
+       const modal = document.getElementById('walkinModal');
+       if (modal) modal.style.display = 'none';
+     }
     
     // Logout
     async function handleLogout() {

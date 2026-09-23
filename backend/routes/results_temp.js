@@ -841,7 +841,7 @@ router.get('/medical-reports', checkPermission(PERMISSIONS.VIEW_RESULTS), async 
     const connection = await pool.getConnection();
     
     const [reports] = await connection.query(`
-      SELECT e.id, e.examination_date as report_date, e.chief_complaint, e.vital_signs, e.findings, e.diagnosis, e.treatment_plan, e.status, e.created_at, d.id as doctor_id, d.specialization, u.name as doctor_name
+      SELECT e.id, e.examination_date as report_date, e.chief_complaint, e.vital_signs, e.diagnosis, e.treatment_plan, e.status, e.created_at, d.id as doctor_id, d.specialization, u.name as doctor_name
       FROM examinations e
       JOIN doctors d ON e.doctor_id = d.id
       JOIN users u ON d.user_id = u.id
@@ -864,7 +864,7 @@ router.get('/medical-reports', checkPermission(PERMISSIONS.VIEW_RESULTS), async 
         id: report.id,
         reportType: 'Medical Examination',
         reportTitle: report.chief_complaint || 'Medical Examination',
-        reportDescription: report.findings || report.diagnosis,
+        reportDescription: report.diagnosis,
         diagnosis: report.diagnosis,
         treatmentPlan: report.treatment_plan,
         vitalSigns: report.vital_signs,

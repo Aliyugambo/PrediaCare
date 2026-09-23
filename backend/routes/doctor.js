@@ -708,8 +708,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         e.examination_date,
         e.vital_signs,
         e.chief_complaint,
-        e.examination_notes,
-        e.findings,
         e.diagnosis,
         e.treatment_plan,
         e.status
@@ -849,8 +847,6 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
           examinationDate: e.examination_date,
           vitalSigns,
           chiefComplaint: e.chief_complaint,
-          examinationNotes: e.examination_notes,
-          findings: e.findings,
           diagnosis: e.diagnosis,
           treatmentPlan: e.treatment_plan,
           status: e.status,
@@ -1041,8 +1037,6 @@ router.post('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asy
       examination_date,
       vital_signs,
       chief_complaint,
-      examination_notes,
-      findings,
       diagnosis,
       treatment_plan,
       status
@@ -1059,8 +1053,8 @@ router.post('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asy
 
     const [result] = await connection.execute(`
       INSERT INTO examinations 
-      (patient_id, doctor_id, appointment_id, examination_date, vital_signs, chief_complaint, examination_notes, findings, diagnosis, treatment_plan, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (patient_id, doctor_id, appointment_id, examination_date, vital_signs, chief_complaint, diagnosis, treatment_plan, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       patient_id,
       doctorId,
@@ -1068,8 +1062,6 @@ router.post('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asy
       examination_date,
       vital_signs ? JSON.stringify(vital_signs) : null,
       chief_complaint || null,
-      examination_notes || null,
-      findings || null,
       diagnosis || null,
       treatment_plan || null,
       status || 'completed'
@@ -1165,8 +1157,6 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
     const {
       vital_signs,
       chief_complaint,
-      examination_notes,
-      findings,
       diagnosis,
       treatment_plan,
       status
@@ -1197,14 +1187,6 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
     if (chief_complaint !== undefined) {
       updateParts.push('chief_complaint = ?');
       updateParams.push(chief_complaint);
-    }
-    if (examination_notes !== undefined) {
-      updateParts.push('examination_notes = ?');
-      updateParams.push(examination_notes);
-    }
-    if (findings !== undefined) {
-      updateParts.push('findings = ?');
-      updateParams.push(findings);
     }
     if (diagnosis !== undefined) {
       updateParts.push('diagnosis = ?');
@@ -1468,10 +1450,8 @@ if (exams.length > 0) {
            appointmentId: exam.appointment_id,
            examinationDate: exam.examination_date,
            vitalSigns: vitalSigns,
-           chiefComplaint: exam.chief_complaint,
-           examinationNotes: exam.examination_notes,
-           findings: exam.findings,
-           diagnosis: exam.diagnosis,
+            chiefComplaint: exam.chief_complaint,
+            diagnosis: exam.diagnosis,
            treatmentPlan: exam.treatment_plan,
            status: exam.status,
            createdAt: exam.created_at

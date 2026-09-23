@@ -355,8 +355,6 @@ async function initializeDatabase() {
         examination_date DATE NOT NULL,
         vital_signs JSON,
         chief_complaint TEXT,
-        examination_notes TEXT,
-        findings TEXT,
         diagnosis TEXT,
         treatment_plan TEXT,
         status ENUM('pending', 'completed', 'reviewed') DEFAULT 'pending',
