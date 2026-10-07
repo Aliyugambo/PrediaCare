@@ -4962,8 +4962,12 @@
       }
     }
 
+    let activePatientProfileId = null;
+    let patientProfileRefreshTimer = null;
+    let patientProfileRequestSequence = 0;
+
     // View patient profile
-    async function viewPatientProfile(patientId) {
+    async function viewPatientProfile(patientId, isRefresh = false) {
       console.log('viewPatientProfile called with id:', patientId);
       const modal = document.getElementById('patientProfileModal');
       const modalBody = document.getElementById('patientProfileModalBody');
@@ -4973,8 +4977,27 @@
         return;
       }
       
-      modal.style.display = 'flex';
-      modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      if (!isRefresh) {
+        activePatientProfileId = patientId;
+        if (patientProfileRefreshTimer) clearInterval(patientProfileRefreshTimer);
+        modal.style.display = 'flex';
+        modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+        patientProfileRefreshTimer = setInterval(() => {
+          if (activePatientProfileId === patientId && modal.style.display === 'flex') {
+            viewPatientProfile(patientId, true);
+          }
+        }, 30000);
+      } else if (activePatientProfileId !== patientId || modal.style.display !== 'flex') {
+        return;
+      }
+
+      const requestSequence = ++patientProfileRequestSequence;
+      const previousScrollTop = modalBody.scrollTop;
+      const refreshStatus = document.getElementById('patientProfileRefreshStatus');
+      if (isRefresh && refreshStatus) {
+        refreshStatus.textContent = 'Refreshing patient history...';
+        refreshStatus.style.color = '#64748b';
+      }
       
       try {
         const response = await fetch(`${API_BASE}/doctor/patients/${patientId}`, {
@@ -4984,6 +5007,7 @@
         
         if (response.ok) {
           const data = await response.json();
+          if (requestSequence !== patientProfileRequestSequence || activePatientProfileId !== patientId) return;
           if (data.success && data.patient) {
             const p = data.patient;
             const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
@@ -5185,18 +5209,44 @@
               `) : ''}
               
               <div style="margin-top: 6px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #e2e8f0; color: #64748b; font-size: 12px; text-align: center;">
-                Profile updates automatically as new records are added to the system.
+                <span id="patientProfileRefreshStatus">Updated ${new Date().toLocaleTimeString()}</span> · Refreshes automatically every 30 seconds while open.
               </div>
             `;
+            modalBody.scrollTop = previousScrollTop;
+          } else {
+            if (isRefresh) {
+              const status = document.getElementById('patientProfileRefreshStatus');
+              if (status) {
+                status.textContent = 'Could not refresh history. Retrying automatically.';
+                status.style.color = '#dc2626';
+              }
+            } else {
+              modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Failed to load patient details</div>';
+            }
+          }
+        } else {
+          if (isRefresh) {
+            const status = document.getElementById('patientProfileRefreshStatus');
+            if (status) {
+              status.textContent = 'Could not refresh history. Retrying automatically.';
+              status.style.color = '#dc2626';
+            }
           } else {
             modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Failed to load patient details</div>';
           }
-        } else {
-          modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Failed to load patient details</div>';
         }
       } catch (error) {
         console.error('Error loading patient profile:', error);
-        modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Error loading patient details</div>';
+        if (requestSequence !== patientProfileRequestSequence || activePatientProfileId !== patientId) return;
+        if (isRefresh) {
+          const status = document.getElementById('patientProfileRefreshStatus');
+          if (status) {
+            status.textContent = 'Could not refresh history. Retrying automatically.';
+            status.style.color = '#dc2626';
+          }
+        } else {
+          modalBody.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 24px;">Error loading patient details</div>';
+        }
       }
     }
 
@@ -5206,6 +5256,12 @@
       if (modal) {
         modal.style.display = 'none';
       }
+      if (patientProfileRefreshTimer) {
+        clearInterval(patientProfileRefreshTimer);
+        patientProfileRefreshTimer = null;
+      }
+      activePatientProfileId = null;
+      patientProfileRequestSequence += 1;
     }
     
     // Complete appointment

@@ -1532,12 +1532,34 @@
         <div class="tabs-container">
           <div class="tabs-header">
             <!-- <button class="tab-btn" data-tab="test-referrals">Test Referrals</button> -->
+            <button class="tab-btn active" data-tab="nurse-vitals">Vitals Records</button>
             <button class="tab-btn" data-tab="round-checks">Round Checks</button>
             <button class="tab-btn" data-tab="appointment-vitals">Appointment Vitals</button>
             <button class="tab-btn" data-tab="patients">Patients</button>
           </div>
           
           <div class="tab-content">
+            <div class="tab-pane active" id="nurse-vitals">
+              <div class="content-grid">
+                <div class="content-card" style="grid-column: span 2;">
+                  <div class="content-card-header">
+                    <h3>My Vitals Records</h3>
+                    <p>Review vitals you recorded for each patient</p>
+                  </div>
+                  <div class="content-card-body">
+                    <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+                      <select id="nurseVitalsPatientFilter" class="form-select" onchange="filterNurseVitalsByPatient()" style="max-width:360px;">
+                        <option value="all">All patients</option>
+                      </select>
+                      <button class="action-btn secondary" onclick="loadNurseVitalsHistory()"><i class="fas fa-sync"></i> Refresh</button>
+                    </div>
+                    <div id="nurseVitalsHistory">
+                      <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
            
             <!-- <div class="tab-pane active" id="staff">
               <div class="content-grid">
@@ -1741,19 +1763,31 @@
                 <div class="content-card" style="grid-column: span 2;">
                   <div class="content-card-header">
                     <h3>Appointment Vitals</h3>
-                    <p>Record vitals for patients with scheduled appointments</p>
+                    <p>View booked appointments across doctors and record patient vitals</p>
                   </div>
                   <div class="content-card-body">
                     <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
                       <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Select Doctor</label>
-                        <select id="vitalsDoctorSelect" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Doctor</label>
+                        <select id="vitalsDoctorSelect" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
                           <option value="">Loading doctors...</option>
                         </select>
                       </div>
                       <div class="form-group" style="flex: 1; min-width: 160px;">
-                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Date</label>
-                        <input type="date" id="vitalsDatePicker" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Appointment date</label>
+                        <input type="date" id="vitalsDatePicker" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                      </div>
+                      <div class="form-group" style="flex: 1; min-width: 170px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Appointment status</label>
+                        <select id="vitalsStatusFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                          <option value="active">Needs vitals (scheduled / confirmed)</option>
+                          <option value="all">All statuses</option>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="no_show">No-show</option>
+                        </select>
                       </div>
                       <button onclick="loadAppointmentsForVitals()" style="padding: 10px 20px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; white-space: nowrap;"><i class="fas fa-search"></i> Load Appointments</button>
                     </div>
@@ -2036,11 +2070,11 @@
     </div>
   </div>
 
-  <!-- Diagnoses Modal -->
+  <!-- Patient History Modal -->
   <div id="diagnosesModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
-    <div style="background:white;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
+    <div style="background:white;border-radius:12px;width:100%;max-width:900px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;">
       <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="diagnosesModalTitle" style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Patient Diagnoses</h3>
+        <h3 id="diagnosesModalTitle" style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Patient History</h3>
         <button onclick="closeDiagnosesModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
       </div>
       <div id="diagnosesModalBody" style="padding: 20px; overflow-y: auto; flex: 1;">
@@ -2489,15 +2523,21 @@
       const pane = document.getElementById(tabId);
       if (pane) {
         pane.classList.add('active');
-        if (tabId === 'test-referrals') {
-          loadTestReferrals();
-        } else if (tabId === 'patients') {
-          loadPatients();
-        } else if (tabId === 'round-checks') {
-          loadNurseRoundChecks();
-        } else if (tabId === 'appointment-vitals') {
-          loadAppointmentsForVitals();
-        }
+        loadTabData(tabId);
+      }
+    }
+
+    function loadTabData(tabId) {
+      if (tabId === 'test-referrals') {
+        loadTestReferrals();
+      } else if (tabId === 'patients') {
+        loadPatients();
+      } else if (tabId === 'round-checks') {
+        loadNurseRoundChecks();
+      } else if (tabId === 'appointment-vitals') {
+        loadAppointmentsForVitals();
+      } else if (tabId === 'nurse-vitals') {
+        loadNurseVitalsHistory();
       }
     }
 
@@ -2511,9 +2551,7 @@
           const pane = document.getElementById(this.dataset.tab);
           if (pane) {
             pane.classList.add('active');
-            if (this.dataset.tab === 'patients') {
-              loadPatients();
-            }
+            loadTabData(this.dataset.tab);
           }
         });
       });
@@ -2542,6 +2580,118 @@
       loadNurseStats();
       fetchStaffList();
       loadTestReferrals();
+      loadNurseVitalsHistory();
+    }
+
+    let nurseVitalsRecords = [];
+
+    async function loadNurseVitalsHistory() {
+      const container = document.getElementById('nurseVitalsHistory');
+      const patientFilter = document.getElementById('nurseVitalsPatientFilter');
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      try {
+        const response = await fetch(`${API_BASE}/staff/nurse-vitals`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to fetch vitals history');
+        }
+
+        nurseVitalsRecords = data.records || [];
+        if (patientFilter) {
+          const selectedPatient = patientFilter.value;
+          const patients = new Map();
+          nurseVitalsRecords.forEach(record => {
+            patients.set(String(record.patientId), record.patientName);
+          });
+          patientFilter.innerHTML = '<option value="all">All patients</option>' +
+            Array.from(patients.entries()).map(([id, name]) =>
+              `<option value="${escapeHtml(id)}">${escapeHtml(name || 'Patient')}</option>`
+            ).join('');
+          if (patients.has(selectedPatient)) patientFilter.value = selectedPatient;
+        }
+        renderNurseVitalsHistory();
+      } catch (error) {
+        console.error('Error loading nurse vitals history:', error);
+        container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Unable to load vitals records. Please try again.</p>';
+      }
+    }
+
+    function filterNurseVitalsByPatient() {
+      renderNurseVitalsHistory();
+    }
+
+    function renderNurseVitalsHistory() {
+      const container = document.getElementById('nurseVitalsHistory');
+      if (!container) return;
+
+      const patientFilter = document.getElementById('nurseVitalsPatientFilter');
+      const selectedPatient = patientFilter ? patientFilter.value : 'all';
+      const records = selectedPatient === 'all'
+        ? nurseVitalsRecords
+        : nurseVitalsRecords.filter(record => String(record.patientId) === selectedPatient);
+
+      if (records.length === 0) {
+        const message = selectedPatient === 'all'
+          ? 'No vitals records have been recorded yet.'
+          : 'No vitals records found for this patient.';
+        container.innerHTML = `<p style="color:#64748b;text-align:center;padding:20px;">${message}</p>`;
+        return;
+      }
+
+      const patients = new Map();
+      records.forEach(record => {
+        if (!patients.has(String(record.patientId))) patients.set(String(record.patientId), []);
+        patients.get(String(record.patientId)).push(record);
+      });
+
+      const metric = (label, value, unit = '') => {
+        const displayValue = value === null || value === undefined || value === '' ? '—' : `${escapeHtml(String(value))}${unit}`;
+        return `<div style="padding:8px 10px;background:#f8fafc;border-radius:6px;"><span style="display:block;font-size:11px;color:#64748b;">${label}</span><strong style="font-size:13px;color:#0f172a;">${displayValue}</strong></div>`;
+      };
+
+      container.innerHTML = Array.from(patients.entries()).map(([patientId, patientRecords]) => `
+        <section style="margin-bottom:20px;">
+          <h4 style="margin:0 0 10px;color:#0f172a;">${escapeHtml(patientRecords[0].patientName || 'Patient')} <span style="font-size:12px;font-weight:400;color:#64748b;">(${patientRecords.length} record${patientRecords.length === 1 ? '' : 's'})</span></h4>
+          <div style="display:grid;gap:12px;">
+            ${patientRecords.map(record => {
+              const vitals = record.vitalSigns || {};
+              const systolic = vitals.bpSystolic;
+              const diastolic = vitals.bpDiastolic;
+              const hasBloodPressure = (systolic !== null && systolic !== undefined && systolic !== '') ||
+                (diastolic !== null && diastolic !== undefined && diastolic !== '');
+              const bloodPressure = hasBloodPressure
+                ? `${systolic === null || systolic === undefined || systolic === '' ? '—' : systolic}/${diastolic === null || diastolic === undefined || diastolic === '' ? '—' : diastolic} mmHg`
+                : '';
+              const respiratory = vitals.respiratoryRate || vitals.respiratory;
+              return `
+                <article style="padding:14px;border:1px solid #e2e8f0;border-radius:10px;">
+                  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                    <strong style="color:#334155;">${escapeHtml(formatDateTime(record.recordedAt))}</strong>
+                    <span class="badge badge-active">${record.source === 'appointment' ? 'Appointment' : 'Nursing round'}</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;">
+                    ${metric('Blood pressure', bloodPressure)}
+                    ${metric('Heart rate', vitals.heartRate, ' bpm')}
+                    ${metric('Temperature', vitals.temperature, ' °C')}
+                    ${metric('SpO2', vitals.spo2, '%')}
+                    ${metric('Respiratory rate', respiratory, ' /min')}
+                    ${metric('Glucose', vitals.glucose, ' mg/dL')}
+                    ${metric('Weight', vitals.weight, ' kg')}
+                    ${metric('Height', vitals.height, ' cm')}
+                    ${metric('BMI', vitals.bmi)}
+                  </div>
+                  ${record.notes ? `<p style="margin:10px 0 0;color:#475569;font-size:13px;"><strong>Notes:</strong> ${escapeHtml(record.notes)}</p>` : ''}
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </section>
+      `).join('');
     }
 
     // Load nurse stats for dashboard cards
@@ -2610,7 +2760,7 @@
              <td style="font-size: 13px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.latestDiagnosis || '')}">${p.latestDiagnosis ? escapeHtml(p.latestDiagnosis) : '<span style="color:#94a3b8;">None</span>'}</td>
              <td>
                <button class="action-btn" onclick="viewDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
-                 <i class="fas fa-eye"></i> View Diagnoses
+                 <i class="fas fa-eye"></i> View History
                </button>
              </td>
            </tr>
@@ -2629,6 +2779,10 @@
       loadPatients();
     }
 
+    let activeHistoryPatientId = null;
+    let patientHistoryRefreshTimer = null;
+    const patientHistoryRequests = new Set();
+
     async function viewDiagnoses(patientId, patientName) {
       const modal = document.getElementById('diagnosesModal');
       const title = document.getElementById('diagnosesModalTitle');
@@ -2636,10 +2790,29 @@
       
       if (!modal || !body) return;
       
-      title.textContent = `Diagnoses - ${patientName}`;
+      activeHistoryPatientId = patientId;
+      title.textContent = `Patient History - ${patientName}`;
       modal.style.display = 'flex';
       body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-      
+
+      if (patientHistoryRefreshTimer) clearInterval(patientHistoryRefreshTimer);
+      await loadPatientHistory(patientId, true);
+      patientHistoryRefreshTimer = setInterval(() => {
+        if (activeHistoryPatientId === patientId && modal.style.display === 'flex') {
+          loadPatientHistory(patientId);
+        }
+      }, 30000);
+    }
+
+    async function loadPatientHistory(patientId, showLoading = false) {
+      const body = document.getElementById('diagnosesModalBody');
+      const requestKey = String(patientId);
+      if (!body || patientHistoryRequests.has(requestKey)) return;
+      patientHistoryRequests.add(requestKey);
+      const previousScrollTop = body.scrollTop;
+
+      if (showLoading) body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
       try {
         const response = await fetch(`${API_BASE}/staff/patients/${patientId}/diagnoses`, {
           credentials: 'include',
@@ -2647,95 +2820,166 @@
         });
         const data = await response.json();
         
-        if (!data.success) {
-          body.innerHTML = `<p style="color: #dc2626;">${data.message || 'Failed to load diagnoses'}</p>`;
-          return;
+        if (!response.ok || !data.success || !data.history) {
+          throw new Error(data.message || 'Failed to load patient history');
         }
-        
-        const diagnoses = data.diagnoses;
-        const isAdmin = currentUser && currentUser.role === 'admin';
-        let html = '';
-        
-        if (!isAdmin) {
-          html = '<p style="color: #64748b; text-align: center; padding: 20px;">Admission diagnoses are visible to nursing staff. Full examination and health summary records are restricted to administrators.</p>';
-        }
-        
-        if (diagnoses.admissions.length > 0 || isAdmin) {
-          html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
-          
-          if (diagnoses.admissions.length > 0) {
-            html += `<h4 style="margin: 0 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Admissions (${diagnoses.admissions.length})</h4>`;
-            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
-            diagnoses.admissions.forEach(a => {
-              html += `
-                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <strong style="color: #0f172a; font-size: 14px;">Admission</strong>
-                    <span style="font-size: 12px; color: #64748b;">${new Date(a.admissionDate).toLocaleDateString()}</span>
-                  </div>
-                  ${a.admittingDiagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Admitting Diagnosis:</strong> ${escapeHtml(a.admittingDiagnosis)}</p>` : ''}
-                  ${a.reasonForAdmission ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Reason:</strong> ${escapeHtml(a.reasonForAdmission)}</p>` : ''}
-                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(a.doctorName || 'Unknown')} | Status: ${escapeHtml(a.admissionStatus || 'N/A')}</p>
-                </div>
-              `;
-            });
-            html += '</div>';
-          }
-          
-          if (isAdmin && diagnoses.healthSummaries.length > 0) {
-            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Health Summaries (${diagnoses.healthSummaries.length})</h4>`;
-            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
-            diagnoses.healthSummaries.forEach(h => {
-              html += `
-                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <strong style="color: #0f172a; font-size: 14px;">${escapeHtml(h.summaryType || 'General')}</strong>
-                    <span style="font-size: 12px; color: #64748b;">${new Date(h.date).toLocaleDateString()}</span>
-                  </div>
-                  ${h.diagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Diagnosis:</strong> ${escapeHtml(h.diagnosis)}</p>` : ''}
-                  ${h.treatmentPlan ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Treatment Plan:</strong> ${escapeHtml(h.treatmentPlan)}</p>` : ''}
-                  ${h.recommendations ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Recommendations:</strong> ${escapeHtml(h.recommendations)}</p>` : ''}
-                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(h.doctorName || 'Unknown')}</p>
-                </div>
-              `;
-            });
-            html += '</div>';
-          }
-          
-          if (isAdmin && diagnoses.examinations.length > 0) {
-            html += `<h4 style="margin: 12px 0 8px; color: #0f172a; font-size: 14px; font-weight: 600;">Examinations (${diagnoses.examinations.length})</h4>`;
-            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
-            diagnoses.examinations.forEach(e => {
-              html += `
-                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <strong style="color: #0f172a; font-size: 14px;">Examination</strong>
-                    <span style="font-size: 12px; color: #64748b;">${new Date(e.date).toLocaleDateString()}</span>
-                  </div>
-                  ${e.diagnosis ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Diagnosis:</strong> ${escapeHtml(e.diagnosis)}</p>` : ''}
-                  ${e.treatmentPlan ? `<p style="margin: 4px 0; font-size: 13px;"><strong>Treatment Plan:</strong> ${escapeHtml(e.treatmentPlan)}</p>` : ''}
-                  <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">By ${escapeHtml(e.doctorName || 'Unknown')} | Status: ${escapeHtml(e.status || 'N/A')}</p>
-                </div>
-              `;
-            });
-            html += '</div>';
-          }
-          
-          html += '</div>';
-        } else {
-          html = '<p style="color: #64748b; text-align: center; padding: 20px;">No admission diagnoses found for this patient</p>';
-        }
-        
-        body.innerHTML = html;
+
+        const history = data.history;
+        const patient = data.patient || {};
+        const entries = [
+          ...(history.appointments || []),
+          ...(history.healthSummaries || []),
+          ...(history.examinations || []),
+          ...(history.admissions || []),
+          ...(history.medications || []),
+          ...(history.results || []),
+          ...(history.testReferrals || []),
+          ...(history.reports || []),
+          ...(history.roundChecks || [])
+        ].length;
+        const detail = (label, value) => value === null || value === undefined || value === ''
+          ? ''
+          : `<p style="margin:4px 0;font-size:13px;color:#334155;"><strong>${label}:</strong> ${escapeHtml(String(value))}</p>`;
+        const statusBadge = value => value
+          ? `<span class="badge badge-active">${escapeHtml(String(value).replace(/_/g, ' '))}</span>`
+          : '';
+        const recordCard = (titleText, date, byline, content, status) => `
+          <article style="padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+              <strong style="font-size:14px;color:#0f172a;">${escapeHtml(titleText)}</strong>
+              <span style="font-size:12px;color:#64748b;">${escapeHtml(formatDateTime(date))}</span>
+            </div>
+            ${status ? `<div style="margin-bottom:6px;">${statusBadge(status)}</div>` : ''}
+            ${content}
+            ${byline ? `<p style="margin:6px 0 0;font-size:12px;color:#64748b;">By ${escapeHtml(byline)}</p>` : ''}
+          </article>
+        `;
+        const section = (titleText, items, renderItem) => `
+          <section style="margin-bottom:16px;">
+            <h4 style="margin:0 0 8px;font-size:14px;color:#0f172a;">${titleText} <span style="color:#64748b;font-weight:400;">(${items.length})</span></h4>
+            ${items.length
+              ? `<div style="display:grid;gap:8px;">${items.map(renderItem).join('')}</div>`
+              : '<p style="margin:0;padding:10px 12px;color:#94a3b8;font-size:13px;background:#f8fafc;border-radius:8px;">No records</p>'}
+          </section>
+        `;
+        const vitalDetails = value => {
+          if (!value) return '';
+          const vitals = typeof value === 'string' ? (() => {
+            try { return JSON.parse(value); } catch (error) { return { details: value }; }
+          })() : value;
+          if (typeof vitals !== 'object' || Array.isArray(vitals)) return detail('Vitals', String(vitals));
+          const values = [
+            ['Blood pressure', vitals.bpSystolic || vitals.bp_systolic ? `${vitals.bpSystolic || vitals.bp_systolic}/${vitals.bpDiastolic || vitals.bp_diastolic || '—'} mmHg` : null],
+            ['Heart rate', vitals.heartRate || vitals.heart_rate, ' bpm'],
+            ['Temperature', vitals.temperature, ' °C'],
+            ['SpO2', vitals.spo2, '%'],
+            ['Respiratory rate', vitals.respiratory || vitals.respiratoryRate || vitals.respiratory_rate, ' /min'],
+            ['Glucose', vitals.glucose, ' mg/dL'],
+            ['Weight', vitals.weight, ' kg'],
+            ['Height', vitals.height, ' cm'],
+            ['BMI', vitals.bmi]
+          ];
+          const rendered = values
+            .filter(([, value]) => value !== null && value !== undefined && value !== '')
+            .map(([label, value, unit = '']) => `<span style="display:inline-block;margin:2px 8px 2px 0;font-size:12px;color:#475569;"><strong>${label}:</strong> ${escapeHtml(String(value))}${unit}</span>`)
+            .join('');
+          return rendered ? `<div style="margin:4px 0;">${rendered}</div>` : '';
+        };
+        const objectDetails = (label, value) => {
+          if (!value) return '';
+          const parsed = typeof value === 'string' ? (() => {
+            try { return JSON.parse(value); } catch (error) { return value; }
+          })() : value;
+          const text = typeof parsed === 'object'
+            ? Object.entries(parsed).map(([key, entry]) => `${key.replace(/([A-Z])/g, ' $1')}: ${entry}`).join(' · ')
+            : parsed;
+          return detail(label, text);
+        };
+        const listDetails = (label, value) => {
+          if (!value) return '';
+          const parsed = typeof value === 'string' ? (() => {
+            try { return JSON.parse(value); } catch (error) { return value; }
+          })() : value;
+          const items = Array.isArray(parsed) ? parsed : [parsed];
+          return items.map(item => detail(label, typeof item === 'object' ? Object.entries(item).map(([key, entry]) => `${key}: ${entry}`).join(' · ') : item)).join('');
+        };
+
+        const identity = `
+          <div style="padding:14px;margin-bottom:14px;background:#eff6ff;border-radius:10px;">
+            <strong style="font-size:18px;color:#0f172a;">${escapeHtml(patient.name || 'Patient')}</strong>
+            <div style="margin-top:4px;color:#475569;font-size:13px;">${escapeHtml(patient.email || '')}${patient.phone ? ` · ${escapeHtml(patient.phone)}` : ''}</div>
+            <div style="margin-top:4px;color:#64748b;font-size:12px;">Patient ID #${escapeHtml(String(patient.id || patientId))}${patient.patientStatus ? ` · Status: ${escapeHtml(patient.patientStatus)}` : ''}${patient.address ? ` · ${escapeHtml(patient.address)}` : ''}</div>
+            <div style="margin-top:4px;color:#64748b;font-size:12px;">${entries} care-history record${entries === 1 ? '' : 's'} · Profile updates every 30 seconds while open</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <span id="patientHistoryRefreshStatus" style="font-size:12px;color:#64748b;">Updated ${escapeHtml(new Date().toLocaleTimeString())}</span>
+            <button type="button" class="action-btn secondary" onclick="loadPatientHistory(activeHistoryPatientId)"><i class="fas fa-sync"></i> Refresh history</button>
+          </div>
+        `;
+        const content = `
+          ${section('Appointments', history.appointments || [], item => recordCard(
+            'Appointment', item.date ? `${item.date} ${item.time || ''}` : item.createdAt,
+            item.doctorName, `${detail('Reason', item.reason)}${detail('Notes', item.notes)}${vitalDetails(item.vitals)}`, item.status
+          ))}
+          ${section('Examination history', history.examinations || [], item => recordCard(
+            'Examination', item.examinationDate || item.date, item.doctorName,
+            `${detail('Complaint', item.chiefComplaint)}${vitalDetails(item.vitalSigns)}${detail('Diagnosis', item.diagnosis)}${detail('Treatment plan', item.treatmentPlan)}`, item.status
+          ))}
+          ${section('Health summaries', history.healthSummaries || [], item => recordCard(
+            item.summaryType || 'Health summary', item.date, item.doctorName,
+            `${detail('Chief complaint', item.chiefComplaint)}${detail('Vitals', item.vitalSigns)}${detail('Diagnosis', item.diagnosis)}${detail('Treatment plan', item.treatmentPlan)}${detail('Recommendations', item.recommendations)}${detail('Next visit', item.nextVisitDate)}`
+          ))}
+          ${section('Admissions and discharge', history.admissions || [], item => recordCard(
+            item.admissionType ? `${item.admissionType} admission` : 'Admission', item.admissionDate, item.doctorName,
+            `${detail('Room / bed', [item.roomNumber, item.bedNumber].filter(Boolean).join(' / '))}${detail('Reason', item.reason)}${detail('Admitting diagnosis', item.admittingDiagnosis)}${detail('Notes', item.notes)}${detail('Discharge date', item.dischargeDate)}${objectDetails('Discharge information', item.dischargeData)}`, item.status
+          ))}
+          ${section('Nursing and doctor rounds', history.roundChecks || [], item => recordCard(
+            `${item.checkType || 'Clinical'} round`, item.checkDate, item.checkedByName,
+            `${vitalDetails(item.vitalSigns)}${objectDetails('Fluid balance', item.fluidBalance)}${listDetails('Medication details', item.drugChat)}${detail('Notes', item.notes)}${listDetails('Follow-up notes', item.followUpNotes)}${detail('Next plan', item.nextPlan)}`, item.status
+          ))}
+          ${section('Medications', history.medications || [], item => recordCard(
+            item.medicationName || 'Medication', item.prescribedDate, item.doctorName,
+            `${detail('Dose', item.dosage)}${detail('Frequency', item.frequency)}${detail('Duration', item.duration)}${detail('Instructions', item.instructions)}${detail('Expiry date', item.expiryDate)}`, item.status
+          ))}
+          ${section('Test referrals', history.testReferrals || [], item => recordCard(
+            item.testName || item.testType || 'Test referral', item.createdAt, item.doctorName,
+            `${detail('Type', item.testType)}${detail('Reason', item.reason)}${detail('Urgency', item.urgency)}${detail('Notes', item.notes)}${detail('Last updated', item.updatedAt)}`, item.status
+          ))}
+          ${section('Test results', history.results || [], item => recordCard(
+            item.testName || item.testType || 'Test result', item.resultDate, item.doctorName,
+            `${detail('Type', item.testType)}${detail('Result', item.resultData)}${detail('Notes', item.notes)}`, item.status
+          ))}
+          ${section('Reports and documents', history.reports || [], item => recordCard(
+            item.title || item.reportType || 'Report', item.createdAt, item.doctorName,
+            `${detail('Type', item.reportType)}${detail('Description', item.description)}${detail('File', item.fileName)}`, item.status
+          ))}
+        `;
+
+        if (activeHistoryPatientId !== patientId) return;
+        body.innerHTML = `${identity}${content}`;
+        body.scrollTop = previousScrollTop;
       } catch (error) {
-        console.error('Error loading diagnoses:', error);
-        body.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 20px;">Error loading diagnoses</p>';
+        console.error('Error loading patient history:', error);
+        const refreshStatus = document.getElementById('patientHistoryRefreshStatus');
+        if (refreshStatus) {
+          refreshStatus.textContent = 'Could not refresh history. Retrying automatically.';
+          refreshStatus.style.color = '#dc2626';
+        } else {
+          body.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Unable to load patient history. Please try again.</p>';
+        }
+      } finally {
+        patientHistoryRequests.delete(requestKey);
       }
     }
 
     function closeDiagnosesModal() {
       const modal = document.getElementById('diagnosesModal');
       if (modal) modal.style.display = 'none';
+      if (patientHistoryRefreshTimer) {
+        clearInterval(patientHistoryRefreshTimer);
+        patientHistoryRefreshTimer = null;
+      }
+      activeHistoryPatientId = null;
     }
 
     // Toggle between list and grid view
@@ -3360,6 +3604,11 @@
     }
 
     // ==================== APPOINTMENT VITALS (Staff) ====================
+    const nurseAppointmentsPageSize = 100;
+    let nurseAppointmentsOffset = 0;
+    let nurseAppointmentsHasMore = false;
+    let nurseAppointments = [];
+
     async function loadDoctorsForVitalsSelect() {
       const select = document.getElementById('vitalsDoctorSelect');
       if (!select) return;
@@ -3368,42 +3617,65 @@
         const data = await res.json();
         if (data.success) {
           const doctors = data.doctors || [];
-          select.innerHTML = '<option value="">Select Doctor</option>' + doctors.map(d => `<option value="${d.id}">${d.name}${d.specialization ? ' - ' + d.specialization : ''}</option>`).join('');
+          select.innerHTML = '<option value="">All doctors</option>' + doctors.map(d => `<option value="${d.id}">${escapeHtml(d.name)}${d.specialization ? ' - ' + escapeHtml(d.specialization) : ''}</option>`).join('');
         } else {
-          select.innerHTML = '<option value="">No doctors found</option>';
+          select.innerHTML = '<option value="">All doctors</option>';
         }
       } catch (err) {
         console.error('Error loading doctors:', err);
-        select.innerHTML = '<option value="">Error loading doctors</option>';
+        select.innerHTML = '<option value="">All doctors</option>';
       }
     }
 
-    async function loadAppointmentsForVitals() {
-      const doctorId = document.getElementById('vitalsDoctorSelect').value;
-      const date = document.getElementById('vitalsDatePicker').value;
+    async function loadAppointmentsForVitals(append = false) {
+      const doctorId = document.getElementById('vitalsDoctorSelect')?.value || '';
+      const date = document.getElementById('vitalsDatePicker')?.value || '';
+      const status = document.getElementById('vitalsStatusFilter')?.value || 'active';
       const container = document.getElementById('appointmentsForVitalsList');
       if (!container) return;
 
-      if (!doctorId || !date) {
-        container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Please select a doctor and date</p>';
-        return;
+      if (!append) {
+        nurseAppointmentsOffset = 0;
+        nurseAppointments = [];
+        nurseAppointmentsHasMore = false;
+        container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
       }
 
-      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
       try {
-        const res = await fetch(`${API_BASE}/staff/appointments?doctor_id=${doctorId}&date=${date}&status=all`, {
+        const params = new URLSearchParams({
+          status,
+          limit: String(nurseAppointmentsPageSize),
+          offset: String(nurseAppointmentsOffset)
+        });
+        if (doctorId) params.set('doctor_id', doctorId);
+        if (date) params.set('date', date);
+
+        const res = await fetch(`${API_BASE}/staff/appointments?${params}`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
-        if (data.success) {
-          renderAppointmentsForVitals(data.appointments || []);
-        } else {
-          container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Failed to load appointments</p>';
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Failed to load appointments');
         }
+
+        nurseAppointments = append
+          ? nurseAppointments.concat(data.appointments || [])
+          : (data.appointments || []);
+        nurseAppointmentsOffset = Number(data.offset || 0) + (data.appointments || []).length;
+        nurseAppointmentsHasMore = Boolean(data.hasMore);
+        renderAppointmentsForVitals(nurseAppointments);
       } catch (err) {
         console.error('Error loading appointments for vitals:', err);
-        container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Error loading appointments</p>';
+        if (!append) {
+          container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Unable to load appointments. Please try again.</p>';
+        } else {
+          const loadMoreButton = document.getElementById('loadMoreVitalsAppointments');
+          if (loadMoreButton) {
+            loadMoreButton.disabled = false;
+            loadMoreButton.textContent = 'Load more appointments';
+          }
+        }
       }
     }
 
@@ -3412,28 +3684,54 @@
       if (!container) return;
 
       if (appointments.length === 0) {
-        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">No appointments found for this doctor on the selected date</p>';
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">No appointments match these filters.</p>';
         return;
       }
 
-      container.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">' + appointments.map(apt => {
+      const cards = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">' + appointments.map(apt => {
         const vitalsRecorded = apt.vitalsData && (apt.vitalsData.bpSystolic || apt.vitalsData.heartRate || apt.vitalsData.temperature);
         const vitalsBadge = vitalsRecorded ? '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#d1fae5;color:#059669;margin-left:8px;"><i class="fas fa-heartbeat"></i> Vitals Recorded</span>' : '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fef3c7;color:#d97706;margin-left:8px;">Pending Vitals</span>';
+        const appointmentDate = apt.appointmentDate ? formatDate(apt.appointmentDate) : '';
+        const patientName = escapeHtml(apt.patientName || 'Patient');
+        const doctorName = escapeHtml(apt.doctorName || 'Doctor');
+        const appointmentStatus = escapeHtml(String(apt.status || '').replace(/_/g, ' '));
         return `
           <div class="appointment-item" style="flex-direction:column;align-items:flex-start;">
             <div class="appointment-info" style="width:100%;">
-              <p class="patient-name">${apt.patientName || 'Patient'}</p>
-              <span class="appointment-time">${apt.appointmentTime || apt.appointmentTime || ''}</span>
+              <p class="patient-name">${patientName}</p>
+              <span class="appointment-time">${appointmentDate} ${escapeHtml(apt.appointmentTime || '')} · ${doctorName} · ${appointmentStatus}</span>
               ${vitalsBadge}
             </div>
             <div class="appointment-actions" style="margin-top:8px;">
-              <button class="action-btn" onclick="openVitalsModal(${apt.id}, ${apt.patientId}, '${(apt.patientName || 'Patient').replace(/'/g, "\\'")}', '${apt.appointmentTime || apt.appointmentTime || ''}')" ${vitalsRecorded ? 'style="background:#059669;"' : ''}>
+              <button class="action-btn record-appointment-vitals" data-appointment-id="${Number(apt.id)}" data-patient-id="${Number(apt.patientId)}" data-patient-name="${patientName}" data-appointment-time="${escapeHtml(apt.appointmentTime || '')}" ${vitalsRecorded ? 'style="background:#059669;"' : ''} ${['completed', 'cancelled', 'no_show'].includes(apt.status) ? 'disabled title="Vitals cannot be recorded for this appointment status"' : ''}>
                 <i class="fas fa-${vitalsRecorded ? 'edit' : 'stethoscope'}"></i> ${vitalsRecorded ? 'Edit Vitals' : 'Record Vitals'}
               </button>
             </div>
           </div>
         `;
       }).join('') + '</div>';
+
+      const loadMore = nurseAppointmentsHasMore
+        ? '<div style="text-align:center;margin-top:16px;"><button id="loadMoreVitalsAppointments" class="action-btn secondary" onclick="loadMoreVitalsAppointments()">Load more appointments</button></div>'
+        : '';
+      container.innerHTML = `<p style="margin:0 0 12px;color:#64748b;font-size:13px;">Showing ${appointments.length} appointment${appointments.length === 1 ? '' : 's'}${nurseAppointmentsHasMore ? ' (more available)' : ''}</p>${cards}${loadMore}`;
+      container.querySelectorAll('.record-appointment-vitals').forEach(button => {
+        button.addEventListener('click', () => openVitalsModal(
+          Number(button.dataset.appointmentId),
+          Number(button.dataset.patientId),
+          button.dataset.patientName || 'Patient',
+          button.dataset.appointmentTime || ''
+        ));
+      });
+    }
+
+    async function loadMoreVitalsAppointments() {
+      const button = document.getElementById('loadMoreVitalsAppointments');
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Loading...';
+      }
+      await loadAppointmentsForVitals(true);
     }
 
     function openVitalsModal(appointmentId, patientId, patientName, appointmentTime) {
@@ -3504,17 +3802,10 @@ async function saveVitals(e) {
       if (vitalsForm) {
         vitalsForm.addEventListener('submit', saveVitals);
       }
-      const vitalsDoctorSelect = document.getElementById('vitalsDoctorSelect');
-      if (vitalsDoctorSelect) {
-        vitalsDoctorSelect.addEventListener('change', function() {
-          if (this.value) loadAppointmentsForVitals();
-        });
-      }
-      const vitalsDatePicker = document.getElementById('vitalsDatePicker');
-      if (vitalsDatePicker) {
-        const today = new Date().toISOString().split('T')[0];
-        vitalsDatePicker.value = today;
-      }
+      ['vitalsDoctorSelect', 'vitalsDatePicker', 'vitalsStatusFilter'].forEach(id => {
+        const filter = document.getElementById(id);
+        if (filter) filter.addEventListener('change', () => loadAppointmentsForVitals());
+      });
       loadDoctorsForVitalsSelect();
     });
   </script>

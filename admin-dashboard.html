@@ -1128,6 +1128,10 @@
             <i class="fas fa-file-invoice-dollar"></i>
             <span>Billing</span>
           </a>
+          <a href="#" class="nav-item" data-section="invoice-services">
+            <i class="fas fa-list-alt"></i>
+            <span>Invoice Service Catalog</span>
+          </a>
         </div>
         
         <div class="nav-section">
@@ -2575,6 +2579,49 @@
   </div>
 </div>
 
+        <!-- Invoice Service Catalog -->
+        <div id="section-invoice-services" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h3>Invoice Service Catalog</h3>
+              <button class="btn btn-primary" onclick="openBillingServiceModal()">
+                <i class="fas fa-plus"></i> Add Service
+              </button>
+            </div>
+            <div class="filters" style="padding: 16px 24px;">
+              <select id="billingServiceCategoryFilter" onchange="renderBillingServices()">
+                <option value="all">All Categories</option>
+                <option value="General Services">General Services</option>
+                <option value="Medical Test">Medical Test</option>
+                <option value="Surgery">Surgery</option>
+                <option value="Endoscopy">Endoscopy</option>
+              </select>
+              <select id="billingServiceStatusFilter" onchange="renderBillingServices()">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="billingServicesTable">
+                  <tr><td colspan="6" class="loading"><i class="fas fa-spinner"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
 </div> <!-- close .content -->
 
     </div> <!-- close main-content -->
@@ -3017,6 +3064,47 @@
     </div>
   </div>
 
+  <!-- Billing Service Modal -->
+  <div class="modal-overlay" id="modal-billingService" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="billingServiceModalTitle">Add Billing Service</h3>
+        <button class="modal-close" onclick="closeModal('billingService')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="billingServiceId">
+        <div class="form-group">
+          <label class="form-label" for="billingServiceName">Service Name *</label>
+          <input type="text" class="form-control" id="billingServiceName" maxlength="255" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="billingServiceDescription">Description</label>
+          <textarea class="form-control" id="billingServiceDescription" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="billingServiceCategory">Category *</label>
+          <select class="form-control" id="billingServiceCategory" required>
+            <option value="General Services">General Services</option>
+            <option value="Medical Test">Medical Test</option>
+            <option value="Surgery">Surgery</option>
+            <option value="Endoscopy">Endoscopy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="billingServicePrice">Price (₦) *</label>
+          <input type="number" class="form-control" id="billingServicePrice" min="0" max="99999999.99" step="0.01" required>
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; margin-top: 12px;">
+          <input type="checkbox" id="billingServiceActive" checked>
+          Available for new invoices
+        </label>
+      </div>
+      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" onclick="closeModal('billingService')">Cancel</button>
+        <button class="btn btn-primary" id="billingServiceSaveButton" onclick="saveBillingService()">Save Service</button>
+      </div>
+    </div>
+  </div>
 
    <!-- Profile Modal -->
    <div class="modal-overlay" id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
@@ -3065,6 +3153,9 @@
             </div>
             <button type="button" class="btn btn-primary" onclick="changeCurrentUserPassword()" style="width: 100%;">Update Password</button>
           </div>
+        </div>
+      </div>
+    </div>
   <!-- Add/Edit Inventory Item Modal -->
   <div class="modal-overlay" id="modal-addInventoryItem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
     <div class="modal" style="display: block; background: white; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
@@ -3702,6 +3793,7 @@
     // Data cache
     let allUsers = [];
     let allAppointments = [];
+    let allBillingServices = [];
     
     // Sidebar toggle
     function toggleSidebar() {
@@ -3896,6 +3988,7 @@
          'test-referrals': 'Test Referrals',
          pharmacy: 'Pharmacy',
         billing: 'Billing',
+        'invoice-services': 'Invoice Service Catalog',
           inventory: 'Inventory',
           'birth-records': 'Birth Records',
           'death-records': 'Death Records',
@@ -3963,6 +4056,9 @@
           case 'billing':
            loadBillingStats();
            loadInvoices();
+           break;
+          case 'invoice-services':
+           loadBillingServices();
            break;
           case 'inventory':
               loadInventoryStats();
@@ -7002,6 +7098,169 @@ function editUser(userId) {
         }
       } catch (error) {
         console.error('Error loading billing stats:', error);
+      }
+    }
+
+    async function loadBillingServices() {
+      const tbody = document.getElementById('billingServicesTable');
+      if (!tbody) return;
+      try {
+        const response = await fetch(`${API_BASE}/billing/services/manage`, { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Unable to load billing services');
+        }
+        allBillingServices = data.services || [];
+        renderBillingServices();
+      } catch (error) {
+        console.error('Error loading billing services:', error);
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${escapeHtml(error.message || 'Unable to load billing services')}</td></tr>`;
+      }
+    }
+
+    function renderBillingServices() {
+      const tbody = document.getElementById('billingServicesTable');
+      if (!tbody) return;
+      const category = document.getElementById('billingServiceCategoryFilter').value;
+      const status = document.getElementById('billingServiceStatusFilter').value;
+      const services = allBillingServices.filter(service => {
+        const isActive = Number(service.is_active) === 1;
+        return (category === 'all' || service.category === category) &&
+          (status === 'all' || (status === 'active' ? isActive : !isActive));
+      });
+
+      if (services.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No billing services match these filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = services.map(service => {
+        const isActive = Number(service.is_active) === 1;
+        const action = isActive
+          ? `<button class="btn btn-sm" onclick="deleteBillingService(${Number(service.id)})">Delete</button>`
+          : `<button class="btn btn-sm btn-primary" onclick="reactivateBillingService(${Number(service.id)})">Reactivate</button>`;
+        return `
+          <tr>
+            <td><strong>${escapeHtml(service.service_name || '')}</strong></td>
+            <td>${escapeHtml(service.description || '—')}</td>
+            <td>${escapeHtml(service.category || '')}</td>
+            <td>₦${Number(service.unit_price || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td><span class="badge ${isActive ? 'badge-paid' : 'badge-cancelled'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+            <td>
+              <button class="btn btn-sm" onclick="editBillingService(${Number(service.id)})"><i class="fas fa-edit"></i> Edit</button>
+              ${action}
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openBillingServiceModal(service = null) {
+      document.getElementById('billingServiceId').value = service?.id || '';
+      document.getElementById('billingServiceName').value = service?.service_name || '';
+      document.getElementById('billingServiceDescription').value = service?.description || '';
+      document.getElementById('billingServiceCategory').value = service?.category || 'General Services';
+      document.getElementById('billingServicePrice').value = service?.unit_price ?? '';
+      document.getElementById('billingServiceActive').checked = service ? Number(service.is_active) === 1 : true;
+      document.getElementById('billingServiceModalTitle').textContent = service ? 'Edit Billing Service' : 'Add Billing Service';
+      document.getElementById('billingServiceSaveButton').textContent = service ? 'Update Service' : 'Save Service';
+      openModal('billingService');
+    }
+
+    function editBillingService(id) {
+      const service = allBillingServices.find(item => Number(item.id) === Number(id));
+      if (!service) {
+        alert('This billing service could not be found. Refresh the list and try again.');
+        return;
+      }
+      openBillingServiceModal(service);
+    }
+
+    async function saveBillingService() {
+      const id = document.getElementById('billingServiceId').value;
+      const payload = {
+        service_name: document.getElementById('billingServiceName').value.trim(),
+        description: document.getElementById('billingServiceDescription').value.trim(),
+        category: document.getElementById('billingServiceCategory').value,
+        unit_price: document.getElementById('billingServicePrice').value,
+        is_active: document.getElementById('billingServiceActive').checked
+      };
+
+      if (!payload.service_name || payload.unit_price === '' || Number(payload.unit_price) < 0) {
+        alert('Enter a service name and a valid non-negative price.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/billing/services${id ? `/${id}` : ''}`, {
+          method: id ? 'PUT' : 'POST',
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Unable to save billing service');
+        }
+        closeModal('billingService');
+        await loadBillingServices();
+        const patientSelect = document.getElementById('invoicePatient');
+        if (patientSelect?.value) loadPatientServices();
+      } catch (error) {
+        console.error('Error saving billing service:', error);
+        alert(error.message || 'Unable to save billing service.');
+      }
+    }
+
+    async function deleteBillingService(id) {
+      if (!confirm('Delete this service from the active catalog? It will be archived so existing invoices remain unchanged.')) return;
+      try {
+        const response = await fetch(`${API_BASE}/billing/services/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: getCsrfHeaders()
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Unable to delete billing service');
+        }
+        await loadBillingServices();
+      } catch (error) {
+        console.error('Error deleting billing service:', error);
+        alert(error.message || 'Unable to delete billing service.');
+      }
+    }
+
+    async function reactivateBillingService(id) {
+      await updateBillingServiceStatus(id, true);
+    }
+
+    async function updateBillingServiceStatus(id, isActive) {
+      const service = allBillingServices.find(item => Number(item.id) === Number(id));
+      if (!service) {
+        alert('This billing service could not be found. Refresh the list and try again.');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_BASE}/billing/services/${id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getCsrfHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            service_name: service.service_name,
+            description: service.description || '',
+            category: service.category,
+            unit_price: service.unit_price,
+            is_active: isActive
+          })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Unable to update service status');
+        }
+        await loadBillingServices();
+      } catch (error) {
+        console.error('Error updating billing service status:', error);
+        alert(error.message || 'Unable to update service status.');
       }
     }
 

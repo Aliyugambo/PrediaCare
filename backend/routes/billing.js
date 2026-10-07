@@ -93,6 +93,136 @@ router.get('/stats', checkPermission(PERMISSIONS.VIEW_BILLING), async (req, res)
 
 // ==================== BILLING SERVICES ====================
 
+const BILLING_SERVICE_CATEGORIES = ['General Services', 'Medical Test', 'Surgery', 'Endoscopy'];
+
+function validateBillingService(body) {
+  const serviceName = typeof body.service_name === 'string' ? body.service_name.trim() : '';
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const category = typeof body.category === 'string' ? body.category.trim() : '';
+  const unitPrice = body.unit_price;
+  const price = typeof unitPrice === 'number' || (typeof unitPrice === 'string' && unitPrice.trim() !== '')
+    ? Number(unitPrice)
+    : NaN;
+
+  if (!serviceName || serviceName.length > 255) {
+    return { error: 'Service name is required and must be no more than 255 characters' };
+  }
+  if (!BILLING_SERVICE_CATEGORIES.includes(category)) {
+    return { error: 'Select a valid service category' };
+  }
+  if (!Number.isFinite(price) || price < 0 || price > 99999999.99) {
+    return { error: 'Price must be between 0 and 99,999,999.99' };
+  }
+  if (body.is_active !== undefined && ![true, false, 0, 1, '0', '1'].includes(body.is_active)) {
+    return { error: 'Active status must be true or false' };
+  }
+
+  return {
+    value: {
+      serviceName,
+      description: description || null,
+      category,
+      price,
+      isActive: body.is_active === undefined ? 1 : (body.is_active === true || body.is_active === 1 || body.is_active === '1' ? 1 : 0)
+    }
+  };
+}
+
+/**
+ * GET /api/billing/services/manage
+ * List active and inactive catalog entries for billing administrators.
+ */
+router.get('/services/manage', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
+  try {
+    const [services] = await pool.execute(
+      'SELECT id, service_name, description, category, unit_price, is_active FROM billing_services ORDER BY category ASC, service_name ASC'
+    );
+    res.json({ success: true, services });
+  } catch (err) {
+    console.error('Error fetching billing service catalog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/billing/services
+ * Add an entry to the invoice service catalog.
+ */
+router.post('/services', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
+  const { error, value } = validateBillingService(req.body || {});
+  if (error) return res.status(400).json({ success: false, message: error });
+
+  try {
+    const [result] = await pool.execute(
+      'INSERT INTO billing_services (service_name, description, category, unit_price, is_active) VALUES (?, ?, ?, ?, ?)',
+      [value.serviceName, value.description, value.category, value.price, value.isActive]
+    );
+    res.status(201).json({ success: true, message: 'Billing service created', id: result.insertId });
+  } catch (err) {
+    console.error('Error creating billing service:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * PUT /api/billing/services/:id
+ * Update a service or change its active status.
+ */
+router.put('/services/:id', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid billing service id' });
+  }
+
+  const { error, value } = validateBillingService(req.body || {});
+  if (error) return res.status(400).json({ success: false, message: error });
+
+  try {
+    const [result] = await pool.execute(
+      'UPDATE billing_services SET service_name = ?, description = ?, category = ?, unit_price = ?, is_active = ? WHERE id = ?',
+      [value.serviceName, value.description, value.category, value.price, value.isActive, id]
+    );
+    if (result.affectedRows === 0) {
+      const [existing] = await pool.execute('SELECT id FROM billing_services WHERE id = ?', [id]);
+      if (existing.length === 0) {
+        return res.status(404).json({ success: false, message: 'Billing service not found' });
+      }
+    }
+    res.json({ success: true, message: 'Billing service updated' });
+  } catch (err) {
+    console.error('Error updating billing service:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * DELETE /api/billing/services/:id
+ * Deactivate a service so it is not offered on new invoices; retain historical references.
+ */
+router.delete('/services/:id', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid billing service id' });
+  }
+
+  try {
+    const [result] = await pool.execute(
+      'UPDATE billing_services SET is_active = 0 WHERE id = ?',
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      const [existing] = await pool.execute('SELECT id FROM billing_services WHERE id = ?', [id]);
+      if (existing.length === 0) {
+        return res.status(404).json({ success: false, message: 'Billing service not found' });
+      }
+    }
+    res.json({ success: true, message: 'Billing service deactivated' });
+  } catch (err) {
+    console.error('Error deactivating billing service:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 /**
  * GET /api/billing/services
  * Get all billing services
@@ -669,7 +799,7 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
     if (service_ids && service_ids.length > 0) {
       const placeholders = service_ids.map(() => '?').join(',');
       const [services] = await connection.execute(
-        `SELECT * FROM billing_services WHERE id IN (${placeholders})`,
+        `SELECT * FROM billing_services WHERE is_active = 1 AND id IN (${placeholders})`,
         service_ids
       );
 

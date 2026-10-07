@@ -705,14 +705,26 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
  * Permission: VIEW_TEST_REFERRALS (staff)
  */
 router.get('/appointments', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), async (req, res) => {
+  let connection;
   try {
-    const { doctor_id, date, status = 'all', limit = 50, offset = 0 } = req.query;
+    const { doctor_id, date, status = 'all' } = req.query;
+    const parsedDoctorId = doctor_id ? Number(doctor_id) : null;
+    const parsedOffset = Number.parseInt(req.query.offset, 10);
+    const parsedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isInteger(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), 100) : 50;
+    const offset = Number.isInteger(parsedOffset) ? Math.max(parsedOffset, 0) : 0;
 
-    if (!doctor_id) {
-      return res.status(400).json({ success: false, message: 'doctor_id is required' });
+    if (doctor_id && (!Number.isInteger(parsedDoctorId) || parsedDoctorId < 1)) {
+      return res.status(400).json({ success: false, message: 'doctor_id must be a valid doctor ID' });
+    }
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ success: false, message: 'date must use YYYY-MM-DD format' });
+    }
+    if (!['active', 'all', 'scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid appointment status filter' });
     }
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
 
     let query = `
       SELECT
@@ -734,44 +746,55 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), as
       JOIN users u_patient ON a.patient_id = u_patient.id
       JOIN doctors d ON a.doctor_id = d.id
       JOIN users u_doctor ON d.user_id = u_doctor.id
-      WHERE a.doctor_id = ?
+      WHERE 1 = 1
     `;
+    const params = [];
 
-    const params = [parseInt(doctor_id)];
-
+    if (doctor_id) {
+      query += ' AND a.doctor_id = ?';
+      params.push(parsedDoctorId);
+    }
     if (date) {
       query += ' AND a.appointment_date = ?';
       params.push(date);
     }
 
-    if (status !== 'all') {
+    if (status === 'active') {
+      query += " AND a.status IN ('scheduled', 'confirmed')";
+    } else if (status !== 'all') {
       query += ' AND a.status = ?';
       params.push(status);
     }
 
-    query += ` ORDER BY a.appointment_date DESC, a.appointment_time ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
-    params.push(parseInt(limit), parseInt(offset));
+    query += ` ORDER BY a.appointment_date ASC, a.appointment_time ASC LIMIT ${limit} OFFSET ${offset}`;
+    const [appointments] = await connection.execute(query, params);
 
-    const [appointments] = await connection.query(query, params);
-
-    let countQuery = 'SELECT COUNT(*) as total FROM appointments WHERE doctor_id = ?';
-    const countParams = [parseInt(doctor_id)];
+    let countQuery = 'SELECT COUNT(*) as total FROM appointments WHERE 1 = 1';
+    const countParams = [];
+    if (doctor_id) {
+      countQuery += ' AND doctor_id = ?';
+      countParams.push(parsedDoctorId);
+    }
     if (date) {
       countQuery += ' AND appointment_date = ?';
       countParams.push(date);
     }
-    if (status !== 'all') {
+
+    if (status === 'active') {
+      countQuery += " AND status IN ('scheduled', 'confirmed')";
+    } else if (status !== 'all') {
       countQuery += ' AND status = ?';
       countParams.push(status);
     }
     const [countResult] = await connection.execute(countQuery, countParams);
 
-    connection.release();
-
     res.json({
       success: true,
       count: appointments.length,
       total: countResult[0].total,
+      offset,
+      limit,
+      hasMore: offset + appointments.length < countResult[0].total,
       appointments: appointments.map(apt => {
         let vitalsData = null;
         if (apt.vitals_data) {
@@ -802,6 +825,8 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), as
   } catch (error) {
     console.error('Error fetching staff appointments:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch appointments' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
@@ -902,6 +927,83 @@ router.post('/appointments/:id/vitals', checkPermission(PERMISSIONS.MANAGE_ROUND
   } catch (error) {
     console.error('Error recording vitals:', error);
     res.status(500).json({ success: false, message: 'Failed to record vitals' });
+  }
+});
+
+/**
+ * GET /api/staff/nurse-vitals
+ * Get vitals records entered by the signed-in nurse, grouped by patient on the client
+ * Permission: VIEW_ROUND_CHECKS (staff)
+ */
+router.get('/nurse-vitals', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), async (req, res) => {
+  let connection;
+  try {
+    const nurseId = String(req.session.userId);
+    connection = await pool.getConnection();
+
+    const [appointmentRecords] = await connection.execute(`
+      SELECT
+        a.id,
+        a.patient_id,
+        u.name AS patient_name,
+        a.vitals_data,
+        JSON_UNQUOTE(JSON_EXTRACT(a.vitals_data, '$.recordedAt')) AS recorded_at
+      FROM appointments a
+      JOIN users u ON u.id = a.patient_id
+      WHERE a.vitals_data IS NOT NULL
+        AND JSON_UNQUOTE(JSON_EXTRACT(a.vitals_data, '$.recordedBy')) = ?
+    `, [nurseId]);
+
+    const [roundRecords] = await connection.execute(`
+      SELECT
+        rc.id,
+        rc.patient_id,
+        u.name AS patient_name,
+        rc.vital_signs,
+        rc.notes,
+        rc.check_date AS recorded_at
+      FROM round_checks rc
+      JOIN users u ON u.id = rc.patient_id
+      WHERE rc.checked_by = ?
+        AND rc.check_type = 'nurse'
+        AND rc.vital_signs IS NOT NULL
+    `, [req.session.userId]);
+
+    const parseJson = value => {
+      if (!value) return null;
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    };
+
+    const records = [
+      ...appointmentRecords.map(record => {
+        const vitalSigns = parseJson(record.vitals_data);
+        return {
+          id: `appointment-${record.id}`,
+          patientId: record.patient_id,
+          patientName: record.patient_name,
+          source: 'appointment',
+          recordedAt: record.recorded_at,
+          vitalSigns,
+          notes: vitalSigns?.notes || null
+        };
+      }),
+      ...roundRecords.map(record => ({
+        id: `round-${record.id}`,
+        patientId: record.patient_id,
+        patientName: record.patient_name,
+        source: 'round',
+        recordedAt: record.recorded_at,
+        vitalSigns: parseJson(record.vital_signs),
+        notes: record.notes
+      }))
+    ].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime());
+
+    res.json({ success: true, records });
+  } catch (error) {
+    console.error('Error fetching nurse vitals history:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch vitals history' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
@@ -1084,37 +1186,41 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
 
 /**
  * GET /api/staff/patients/:id/diagnoses
- * Get all diagnoses for a patient from health summaries, examinations, and admissions
- * Permission: VIEW_ALL_RECORDS (staff, nurse, admin)
+ * Get the patient's clinical history for staff, nursing staff, and administrators
+ * Permission: VIEW_ALL_RECORDS
  */
 router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECORDS), async (req, res) => {
+  let connection;
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     // Get patient info
     const [patients] = await connection.execute(
-      'SELECT id, name, email FROM users WHERE id = ? AND role = ?',
+      'SELECT id, name, email, phone, address, patient_status, created_at FROM users WHERE id = ? AND role = ?',
       [id, 'patient']
     );
     
     if (patients.length === 0) {
-      connection.release();
       return res.status(404).json({ success: false, message: 'Patient not found' });
     }
     
     const patient = patients[0];
+
+    const [appointments] = await connection.execute(`
+      SELECT a.id, a.appointment_date, a.appointment_time, a.status, a.reason, a.notes,
+        a.vitals_data, a.created_at, du.name AS doctor_name
+      FROM appointments a
+      JOIN doctors d ON a.doctor_id = d.id
+      JOIN users du ON d.user_id = du.id
+      WHERE a.patient_id = ?
+      ORDER BY a.appointment_date DESC, a.appointment_time DESC
+    `, [id]);
     
-    // Get diagnoses from health_summaries
     const [healthSummaries] = await connection.execute(`
-      SELECT 
-        hs.id,
-        hs.summary_type,
-        hs.diagnosis,
-        hs.treatment_plan,
-        hs.recommendations,
-        hs.created_at,
-        u.name as doctor_name
+      SELECT hs.id, hs.summary_type, hs.chief_complaint, hs.vital_signs, hs.diagnosis,
+        hs.treatment_plan, hs.recommendations, hs.next_visit_date, hs.created_at,
+        u.name AS doctor_name
       FROM health_summaries hs
       JOIN doctors d ON hs.doctor_id = d.id
       JOIN users u ON d.user_id = u.id
@@ -1122,16 +1228,9 @@ router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECOR
       ORDER BY hs.created_at DESC
     `, [id]);
     
-    // Get diagnoses from examinations
     const [examinations] = await connection.execute(`
-      SELECT 
-        e.id,
-        e.examination_date,
-        e.diagnosis,
-        e.treatment_plan,
-        e.status,
-        e.created_at,
-        u.name as doctor_name
+      SELECT e.id, e.examination_date, e.vital_signs, e.chief_complaint, e.diagnosis,
+        e.treatment_plan, e.status, e.created_at, u.name AS doctor_name
       FROM examinations e
       JOIN doctors d ON e.doctor_id = d.id
       JOIN users u ON d.user_id = u.id
@@ -1139,31 +1238,195 @@ router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECOR
       ORDER BY e.created_at DESC
     `, [id]);
     
-    // Get diagnoses from admissions
     const [admissions] = await connection.execute(`
-      SELECT 
-        a.id,
-        a.admission_date,
-        a.admitting_diagnosis,
-        a.reason_for_admission,
-        a.status as admission_status,
-        a.discharge_date,
-        u.name as doctor_name
+      SELECT a.id, a.admission_type, a.admission_date, a.admitting_diagnosis,
+        a.reason_for_admission, a.status, a.discharge_date, a.discharge_data,
+        a.room_number, a.bed_number, a.notes, u.name AS doctor_name
       FROM admissions a
       LEFT JOIN doctors d ON a.doctor_id = d.id
       LEFT JOIN users u ON d.user_id = u.id
       WHERE a.patient_id = ?
       ORDER BY a.admission_date DESC
     `, [id]);
+
+    const [medications] = await connection.execute(`
+      SELECT m.id, m.medication_name, m.dosage, m.frequency, m.duration, m.instructions,
+        m.status, m.prescribed_date, m.expiry_date, u.name AS doctor_name
+      FROM medications m
+      JOIN doctors d ON m.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE m.patient_id = ?
+      ORDER BY m.prescribed_date DESC
+    `, [id]);
+
+    const [results] = await connection.execute(`
+      SELECT r.id, r.test_name, r.test_type, r.result_data, r.status, r.result_date,
+        r.notes, u.name AS doctor_name
+      FROM results r
+      JOIN doctors d ON r.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE r.patient_id = ?
+      ORDER BY r.result_date DESC, r.id DESC
+    `, [id]);
+
+    const [testReferrals] = await connection.execute(`
+      SELECT tr.id, tr.test_type, tr.test_name, tr.reason_for_test, tr.urgency,
+        tr.status, tr.notes, tr.created_at, tr.updated_at, u.name AS doctor_name
+      FROM test_referrals tr
+      JOIN doctors d ON tr.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE tr.patient_id = ?
+      ORDER BY tr.created_at DESC
+    `, [id]);
+
+    const [reports] = await connection.execute(`
+      SELECT r.id, r.report_type, r.report_title, r.report_description, r.file_name,
+        r.status, r.created_at, u.name AS doctor_name
+      FROM reports r
+      JOIN doctors d ON r.doctor_id = d.id
+      JOIN users u ON d.user_id = u.id
+      WHERE r.patient_id = ?
+      ORDER BY r.created_at DESC
+    `, [id]);
+
+    const [roundChecks] = await connection.execute(`
+      SELECT rc.id, rc.check_type, rc.status, rc.check_date, rc.vital_signs,
+        rc.fluid_balance, rc.drug_chat, rc.follow_up_notes, rc.next_plan, rc.notes,
+        u.name AS checked_by_name
+      FROM round_checks rc
+      LEFT JOIN users u ON rc.checked_by = u.id
+      WHERE rc.patient_id = ?
+      ORDER BY rc.check_date DESC
+    `, [id]);
     
-    connection.release();
+    const parseJson = (value, label, recordId) => {
+      if (!value) return null;
+      if (typeof value !== 'string') return value;
+      try {
+        return JSON.parse(value);
+      } catch (error) {
+        console.warn(`Failed to parse ${label} for patient history record ${recordId}`);
+        return null;
+      }
+    };
     
     res.json({
       success: true,
       patient: {
         id: patient.id,
         name: patient.name,
-        email: patient.email
+        email: patient.email,
+        phone: patient.phone,
+        address: patient.address,
+        patientStatus: patient.patient_status,
+        createdAt: patient.created_at
+      },
+      history: {
+        appointments: appointments.map(a => ({
+          id: a.id,
+          date: a.appointment_date,
+          time: a.appointment_time,
+          status: a.status,
+          reason: a.reason,
+          notes: a.notes,
+          vitals: parseJson(a.vitals_data, 'appointment vitals', a.id),
+          doctorName: a.doctor_name,
+          createdAt: a.created_at
+        })),
+        healthSummaries: healthSummaries.map(h => ({
+          id: h.id,
+          summaryType: h.summary_type,
+          chiefComplaint: h.chief_complaint,
+          vitalSigns: h.vital_signs,
+          diagnosis: h.diagnosis,
+          treatmentPlan: h.treatment_plan,
+          recommendations: h.recommendations,
+          nextVisitDate: h.next_visit_date,
+          doctorName: h.doctor_name,
+          date: h.created_at
+        })),
+        examinations: examinations.map(e => ({
+          id: e.id,
+          examinationDate: e.examination_date,
+          vitalSigns: parseJson(e.vital_signs, 'examination vitals', e.id),
+          chiefComplaint: e.chief_complaint,
+          diagnosis: e.diagnosis,
+          treatmentPlan: e.treatment_plan,
+          status: e.status,
+          doctorName: e.doctor_name,
+          date: e.created_at
+        })),
+        admissions: admissions.map(a => ({
+          id: a.id,
+          admissionType: a.admission_type,
+          admissionDate: a.admission_date,
+          admittingDiagnosis: a.admitting_diagnosis,
+          reason: a.reason_for_admission,
+          status: a.status,
+          dischargeDate: a.discharge_date,
+          dischargeData: parseJson(a.discharge_data, 'discharge data', a.id),
+          roomNumber: a.room_number,
+          bedNumber: a.bed_number,
+          notes: a.notes,
+          doctorName: a.doctor_name
+        })),
+        medications: medications.map(m => ({
+          id: m.id,
+          medicationName: m.medication_name,
+          dosage: m.dosage,
+          frequency: m.frequency,
+          duration: m.duration,
+          instructions: m.instructions,
+          status: m.status,
+          prescribedDate: m.prescribed_date,
+          expiryDate: m.expiry_date,
+          doctorName: m.doctor_name
+        })),
+        results: results.map(r => ({
+          id: r.id,
+          testName: r.test_name,
+          testType: r.test_type,
+          resultData: r.result_data,
+          status: r.status,
+          resultDate: r.result_date,
+          notes: r.notes,
+          doctorName: r.doctor_name
+        })),
+        testReferrals: testReferrals.map(tr => ({
+          id: tr.id,
+          testType: tr.test_type,
+          testName: tr.test_name,
+          reason: tr.reason_for_test,
+          urgency: tr.urgency,
+          status: tr.status,
+          notes: tr.notes,
+          createdAt: tr.created_at,
+          updatedAt: tr.updated_at,
+          doctorName: tr.doctor_name
+        })),
+        reports: reports.map(r => ({
+          id: r.id,
+          reportType: r.report_type,
+          title: r.report_title,
+          description: r.report_description,
+          fileName: r.file_name,
+          status: r.status,
+          createdAt: r.created_at,
+          doctorName: r.doctor_name
+        })),
+        roundChecks: roundChecks.map(rc => ({
+          id: rc.id,
+          checkType: rc.check_type,
+          status: rc.status,
+          checkDate: rc.check_date,
+          vitalSigns: parseJson(rc.vital_signs, 'round-check vitals', rc.id),
+          fluidBalance: parseJson(rc.fluid_balance, 'round-check fluid balance', rc.id),
+          drugChat: parseJson(rc.drug_chat, 'round-check medication details', rc.id),
+          followUpNotes: parseJson(rc.follow_up_notes, 'round-check follow-up notes', rc.id) || [],
+          nextPlan: rc.next_plan,
+          notes: rc.notes,
+          checkedByName: rc.checked_by_name
+        }))
       },
       diagnoses: {
         healthSummaries: healthSummaries.map(h => ({
@@ -1192,16 +1455,20 @@ router.get('/patients/:id/diagnoses', checkPermission(PERMISSIONS.VIEW_ALL_RECOR
           admissionDate: a.admission_date,
           admittingDiagnosis: a.admitting_diagnosis,
           reasonForAdmission: a.reason_for_admission,
-          admissionStatus: a.admission_status,
+          admissionStatus: a.status,
           dischargeDate: a.discharge_date,
           doctorName: a.doctor_name
         }))
       },
-      total: healthSummaries.length + examinations.length + admissions.length
+      total: appointments.length + healthSummaries.length + examinations.length +
+        admissions.length + medications.length + results.length + testReferrals.length +
+        reports.length + roundChecks.length
     });
   } catch (error) {
     console.error('Error fetching patient diagnoses:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch patient diagnoses' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
