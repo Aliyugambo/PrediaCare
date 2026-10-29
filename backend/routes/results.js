@@ -521,9 +521,9 @@ router.get('/doctor/pending', checkPermission(PERMISSIONS.ADD_RESULTS), async (r
         u.email as patient_email
       FROM results r
       JOIN users u ON r.patient_id = u.id
-      WHERE r.doctor_id = ? AND r.status = 'completed'
+      WHERE r.status = 'completed'
       ORDER BY r.result_date DESC
-    `, [doctorId]);
+    `, []);
     
     connection.release();
     
@@ -566,10 +566,10 @@ router.post('/:id/review', checkPermission(PERMISSIONS.ADD_RESULTS), async (req,
     
     const connection = await pool.getConnection();
     
-    // Verify result exists and belongs to this doctor
+    // Verify result exists
     const [results] = await connection.execute(`
-      SELECT id, status FROM results WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      SELECT id, status FROM results WHERE id = ?
+    `, [id]);
     
     if (results.length === 0) {
       connection.release();

@@ -2431,14 +2431,15 @@
                                <th style="width: 10%;">Phone</th>
                                <th style="width: 10%;">Status</th>
                                <th style="width: 14%;">Admission</th>
-                               <th style="width: 14%;">Last Visit</th>
+                                <th style="width: 10%;">Assigned</th>
+                                <th style="width: 12%;">Last Visit</th>
                                <th style="width: 16%;">Latest Diagnosis</th>
                                <th style="width: 10%;">Actions</th>
                              </tr>
                            </thead>
-                           <tbody id="patientsTableBody">
-                             <tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
-                          </tbody>
+                            <tbody id="patientsTableBody">
+                              <tr><td colspan="9" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>
+                           </tbody>
                         </table>
                       </div>
                    </div>
@@ -2765,6 +2766,7 @@
       </div>
       <div style="padding: 12px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: white; border-radius: 0 0 16px 16px; position: sticky; bottom: 0;">
         <button onclick="closePatientProfileModal()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; font-size: 13px; font-weight: 500;">Close</button>
+        <button onclick="openExaminationFromProfile()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #2563eb; color: white; cursor: pointer; font-size: 13px; font-weight: 500;"><i class="fas fa-stethoscope"></i> Examine Patient</button>
         <button onclick="window.print()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #0284c7; color: white; cursor: pointer; font-size: 13px; font-weight: 500;"><i class="fas fa-print"></i> Print Profile</button>
       </div>
     </div>
@@ -4469,7 +4471,7 @@
      async function loadPatients() {
        const tbody = document.getElementById('patientsTableBody');
        if (!tbody) return;
-       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#64748b;padding:20px;">Loading patients...</td></tr>';
        
        const searchInput = document.getElementById('patientSearch');
        const statusFilter = document.getElementById('patientStatusFilter');
@@ -4486,61 +4488,67 @@
          });
          const data = await response.json();
          if (!data.success) {
-           tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
+         tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#dc2626;">Failed to load patients</td></tr>';
            return;
          }
          
          const patients = data.patients || [];
          if (patients.length === 0) {
-           tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
+             tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
            return;
          }
          
           tbody.innerHTML = patients.map(p => {
-            let statusCell = '';
-            if (p.status === 'admitted') {
-              statusCell = `<span class="badge badge-active">Admitted</span><br><small style="color:#64748b;">Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>`;
-            } else if (p.status === 'discharged') {
-              statusCell = `<span class="badge badge-inactive">Discharged</span><br><small style="color:#64748b;">${p.dischargeDate ? formatDate(p.dischargeDate) : 'N/A'}</small>`;
-            } else if (p.status === 'transferred') {
-              statusCell = `<span class="badge badge-scheduled">Transferred</span>`;
-            } else {
-              statusCell = '<span class="badge badge-inactive">Non-Admitted</span>';
-            }
+             let statusCell = '';
+             if (p.status === 'admitted') {
+               statusCell = `<span class="badge badge-active">Admitted</span><br><small style="color:#64748b;">Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>`;
+             } else if (p.status === 'discharged') {
+               statusCell = `<span class="badge badge-inactive">Discharged</span><br><small style="color:#64748b;">${p.dischargeDate ? formatDate(p.dischargeDate) : 'N/A'}</small>`;
+             } else if (p.status === 'transferred') {
+               statusCell = `<span class="badge badge-scheduled">Transferred</span>`;
+             } else {
+               statusCell = '<span class="badge badge-inactive">Non-Admitted</span>';
+             }
 
-            let actionBtns = `
-                <button class="view-btn" onclick="event.stopPropagation(); viewPatientProfile(${p.id})">
-                  <i class="fas fa-user"></i> Profile
-                </button>
-                <button class="view-btn light" onclick="event.stopPropagation(); viewPatientProfile(${p.id})">
-                  <i class="fas fa-eye"></i> History
-                </button>`;
+             const assignedBadge = p.assignedToDoctor ? '<span class="badge badge-active" style="font-size:10px;">My Patient</span>' : '<span class="badge badge-inactive" style="font-size:10px;">Other Doctor</span>';
 
-            if (p.status === 'discharged' && p.admissionId) {
-              actionBtns += `
-                <button class="view-btn light" onclick="event.stopPropagation(); downloadDischargePdf(${p.admissionId})" title="Download Discharge PDF">
-                  <i class="fas fa-download"></i> PDF
-                </button>`;
-            }
+              let actionBtns = `
+                  <button class="view-btn" onclick="event.stopPropagation(); viewPatientProfile(${p.id})">
+                    <i class="fas fa-user"></i> Profile
+                  </button>
+                  <button class="view-btn light" onclick="event.stopPropagation(); openExamination(null, '${(p.name || 'Patient').replace(/'/g, "\\'")}', ${p.id}, false)">
+                    <i class="fas fa-stethoscope"></i> Examine
+                  </button>
+                  <button class="view-btn light" onclick="event.stopPropagation(); viewPatientProfile(${p.id})">
+                    <i class="fas fa-eye"></i> History
+                  </button>`;
 
-            return `
-            <tr style="cursor: pointer;" onclick="viewPatientProfile(${p.id})">
-              <td><strong style="color: #2563eb;">${escapeHtml(p.name)}</strong></td>
-              <td>${escapeHtml(p.email)}</td>
-              <td>${escapeHtml(p.phone || '-')}</td>
-              <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
-              <td>${statusCell}</td>
-              <td style="color: #64748b; font-size: 13px;">${p.lastVisitDate ? formatDate(p.lastVisitDate) : 'No visits'}</td>
-              <td style="font-size: 13px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.latestDiagnosis || '')}">${p.latestDiagnosis ? escapeHtml(p.latestDiagnosis) : '<span style="color:#94a3b8;">None</span>'}</td>
-              <td>
-                ${actionBtns}
-              </td>
-            </tr>
-            `;
-          }).join('');
+             if (p.status === 'discharged' && p.admissionId) {
+               actionBtns += `
+                 <button class="view-btn light" onclick="event.stopPropagation(); downloadDischargePdf(${p.admissionId})" title="Download Discharge PDF">
+                   <i class="fas fa-download"></i> PDF
+                 </button>`;
+             }
+
+             return `
+             <tr style="cursor: pointer;" onclick="viewPatientProfile(${p.id})">
+               <td><strong style="color: #2563eb;">${escapeHtml(p.name)}</strong></td>
+               <td>${escapeHtml(p.email)}</td>
+               <td>${escapeHtml(p.phone || '-')}</td>
+               <td><span class="badge ${p.isActive ? 'badge-active' : 'badge-inactive'}">${p.isActive ? 'Active' : 'Inactive'}</span></td>
+               <td>${statusCell}</td>
+               <td>${assignedBadge}</td>
+               <td style="color: #64748b; font-size: 13px;">${p.lastVisitDate ? formatDate(p.lastVisitDate) : 'No visits'}</td>
+               <td style="font-size: 13px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.latestDiagnosis || '')}">${p.latestDiagnosis ? escapeHtml(p.latestDiagnosis) : '<span style="color:#94a3b8;">None</span>'}</td>
+               <td>
+                 ${actionBtns}
+               </td>
+             </tr>
+             `;
+           }).join('');
        } catch (error) {
          console.error('Error loading patients:', error);
-         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
        }
       }
 
@@ -5388,6 +5396,54 @@
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
     
+    async function openExaminationFromProfile() {
+      const patientId = activePatientProfileId;
+      if (!patientId) return;
+      
+      const patientNameEl = document.querySelector('#patientProfileModalBody strong');
+      const patientName = patientNameEl ? patientNameEl.textContent : 'Patient';
+      
+      const response = await fetch(`${API_BASE}/doctor/patients/${patientId}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.patient) {
+          const p = data.patient;
+          const patientName = p.name || 'Patient';
+          const initial = patientName.charAt(0).toUpperCase();
+          
+          document.getElementById('examPatientId').value = p.id;
+          document.getElementById('examAppointmentId').value = '';
+          document.getElementById('examPatientName').textContent = patientName;
+          document.getElementById('examPatientAvatar').textContent = getInitials(patientName);
+          document.getElementById('examPatientDetails').textContent = 'Age: -- - Blood Type: --';
+          
+          selectedAppointment = { id: null, patientName: patientName, patientId: p.id, hasPreRecordedVitals: false };
+          
+          resetExaminationForm();
+          
+          if (data.appointments && data.appointments.length > 0) {
+            const latestApt = data.appointments[0];
+            if (latestApt.vitals_data) {
+              try {
+                const vitals = typeof latestApt.vitals_data === 'string' ? JSON.parse(latestApt.vitals_data) : latestApt.vitals_data;
+                if (vitals) {
+                  showStaffVitalsBanner(vitals);
+                  populateStaffVitalsInForm(vitals);
+                }
+              } catch (e) {}
+            }
+          }
+          
+          const modal = document.getElementById('examinationModal');
+          modal.classList.add('active');
+        }
+      }
+    }
+     
     function getBadgeClass(status) {
       const classes = { 'scheduled': 'checkup', 'confirmed': 'confirmed', 'completed': 'followup', 'cancelled': 'pending', 'pending': 'pending' };
       return classes[status] || 'checkup';

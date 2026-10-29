@@ -466,24 +466,23 @@ router.get('/doctor/pending', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION),
         u.email as patient_email
       FROM medications m
       JOIN users u ON m.patient_id = u.id
-      WHERE m.doctor_id = ? AND m.status = 'active'
+      WHERE m.status = 'active'
       ORDER BY m.prescribed_date DESC
-    `, [doctorId]);
+    `, []);
     
     // Get prescriptions expiring soon
     const [expiringSoon] = await connection.execute(`
       SELECT COUNT(*) as count FROM medications 
-      WHERE doctor_id = ? 
-        AND status = 'active' 
+      WHERE status = 'active' 
         AND expiry_date IS NOT NULL 
         AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-    `, [doctorId]);
+    `, []);
     
     // Get medications with no refills remaining
     const [noRefills] = await connection.execute(`
       SELECT COUNT(*) as count FROM medications 
-      WHERE doctor_id = ? AND status = 'active' AND refills_remaining <= 0
-    `, [doctorId]);
+      WHERE status = 'active' AND refills_remaining <= 0
+    `, []);
     
     connection.release();
     
@@ -531,10 +530,10 @@ router.post('/:id/refill', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), as
     
     const connection = await pool.getConnection();
     
-    // Verify medication exists and belongs to this doctor
+    // Verify medication exists
     const [medications] = await connection.execute(`
-      SELECT id, refills_remaining FROM medications WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      SELECT id, refills_remaining FROM medications WHERE id = ?
+    `, [id]);
     
     if (medications.length === 0) {
       connection.release();
@@ -577,10 +576,10 @@ router.post('/:id/stop', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), asyn
     
     const connection = await pool.getConnection();
     
-    // Verify medication exists and belongs to this doctor
+    // Verify medication exists
     const [medications] = await connection.execute(`
-      SELECT id, status FROM medications WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      SELECT id, status FROM medications WHERE id = ?
+    `, [id]);
     
     if (medications.length === 0) {
       connection.release();

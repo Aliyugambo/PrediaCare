@@ -180,17 +180,60 @@ async function openExamination(appointmentId, patientName, patientId, hasVitals)
   selectedAppointment = { id: appointmentId, patientName: patientName, patientId: patientId, hasPreRecordedVitals: hasVitals };
 
   document.getElementById('examPatientId').value = patientId;
-  document.getElementById('examAppointmentId').value = appointmentId;
+  document.getElementById('examAppointmentId').value = appointmentId || '';
   document.getElementById('examPatientName').textContent = patientName;
   document.getElementById('examPatientAvatar').textContent = getInitials(patientName);
   document.getElementById('examPatientDetails').textContent = 'Loading patient details...';
 
   resetExaminationForm();
-  await loadExaminationData(appointmentId, hasVitals);
+  
+  if (appointmentId) {
+    await loadExaminationData(appointmentId, hasVitals);
+  } else {
+    // For patients without an appointment, load patient details from patient profile
+    await loadPatientDetails(patientId);
+  }
 
   var modal = document.getElementById('examinationModal');
   modal.classList.add('active');
- }
+}
+
+// Load patient details for patients without an appointment
+async function loadPatientDetails(patientId) {
+  try {
+    var response = await fetch(API_BASE + '/doctor/patients/' + patientId, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (response.ok) {
+      var data = await response.json();
+      if (data.success && data.patient) {
+        var p = data.patient;
+        var detailsText = '';
+        if (p.email) detailsText += p.email;
+        
+        document.getElementById('examPatientDetails').textContent = detailsText || 'No additional details';
+        
+        // Load any available vitals from recent examination or appointment
+        if (data.appointments && data.appointments.length > 0) {
+          var latestApt = data.appointments[0];
+          if (latestApt.vitals_data) {
+            try {
+              var vitals = typeof latestApt.vitals_data === 'string' ? JSON.parse(latestApt.vitals_data) : latestApt.vitals_data;
+              if (vitals) {
+                showStaffVitalsBanner(vitals);
+                populateStaffVitalsInForm(vitals);
+              }
+            } catch (e) {}
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading patient details:', error);
+  }
+}
 
 // Load existing examination data
  async function loadExaminationData(appointmentId, hasVitals) {

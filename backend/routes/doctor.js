@@ -25,40 +25,40 @@ router.get('/dashboard/stats', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), a
     // Get today's appointments count
     const [todayAppointments] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
-      WHERE doctor_id = ? AND appointment_date = CURDATE() AND status IN ('scheduled', 'confirmed')
-    `, [doctorId]);
+      WHERE appointment_date = CURDATE() AND status IN ('scheduled', 'confirmed')
+    `, []);
     
     // Get urgent appointments count (by reason containing 'urgent' or 'emergency')
     const [urgentAppointments] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
-      WHERE doctor_id = ? AND appointment_date = CURDATE() 
+      WHERE appointment_date = CURDATE() 
       AND status IN ('scheduled', 'confirmed') 
       AND (reason LIKE '%urgent%' OR reason LIKE '%emergency%' OR reason LIKE '%Urgent%' OR reason LIKE '%Emergency%')
-    `, [doctorId]);
+    `, []);
     
     // Get pending reports count (results with pending status - awaiting upload)
     const [pendingReports] = await connection.execute(`
       SELECT COUNT(*) as count FROM results 
-      WHERE doctor_id = ? AND (status = 'pending' OR report_file IS NULL OR report_file = '')
-    `, [doctorId]);
+      WHERE (status = 'pending' OR report_file IS NULL OR report_file = '')
+    `, []);
     
     // Get pending tasks count (appointments waiting for follow-up)
     const [pendingTasks] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
-      WHERE doctor_id = ? AND status = 'completed' AND updated_at < DATE_SUB(NOW(), INTERVAL 7 DAY)
-    `, [doctorId]);
+      WHERE status = 'completed' AND updated_at < DATE_SUB(NOW(), INTERVAL 7 DAY)
+    `, []);
     
     // Get completed appointments today
     const [completedToday] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
-      WHERE doctor_id = ? AND appointment_date = CURDATE() AND status = 'completed'
-    `, [doctorId]);
+      WHERE appointment_date = CURDATE() AND status = 'completed'
+    `, []);
     
     // Get total patients this week
     const [patientsThisWeek] = await connection.execute(`
       SELECT COUNT(DISTINCT patient_id) as count FROM appointments 
-      WHERE doctor_id = ? AND appointment_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    `, [doctorId]);
+      WHERE appointment_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    `, []);
     
     connection.release();
     
@@ -111,10 +111,9 @@ router.get('/appointments/today', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
         u.email as patient_email
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
-      WHERE a.doctor_id = ?
-        AND a.appointment_date = CURDATE()
+      WHERE a.appointment_date = CURDATE()
       ORDER BY a.appointment_time ASC
-    `, [doctorId]);
+    `, []);
     
     connection.release();
     
@@ -198,10 +197,9 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOINTMENT
         u.email as patient_email
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
-      WHERE a.doctor_id = ?
-        AND a.appointment_date = ?
+      WHERE a.appointment_date = ?
       ORDER BY a.appointment_time ASC
-    `, [doctorId, date]);
+    `, [date]);
 
     connection.release();
 
@@ -270,8 +268,8 @@ router.get('/appointments/count', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
     
     const [result] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
-      WHERE doctor_id = ? AND appointment_date = ? AND status IN ('scheduled', 'confirmed')
-    `, [doctorId, date]);
+      WHERE appointment_date = ? AND status IN ('scheduled', 'confirmed')
+    `, [date]);
     
     connection.release();
     
@@ -319,10 +317,9 @@ router.get('/appointments/upcoming', checkPermission(PERMISSIONS.VIEW_PATIENT_AP
         u.email as patient_email
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
-      WHERE a.doctor_id = ? 
-        AND a.status IN ('scheduled', 'confirmed')
-    `;
-    const params = [doctorId];
+       WHERE a.status IN ('scheduled', 'confirmed')
+     `;
+     const params = [];
     if (startDate) {
       sql += ` AND a.appointment_date >= ?`;
       params.push(startDate);
@@ -392,12 +389,11 @@ router.get('/appointments/urgent', checkPermission(PERMISSIONS.VIEW_PATIENT_APPO
         u.email as patient_email
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
-      WHERE a.doctor_id = ? 
-        AND a.appointment_date >= CURDATE()
+      WHERE a.appointment_date >= CURDATE()
         AND a.status IN ('scheduled', 'confirmed')
         AND (a.reason LIKE '%urgent%' OR a.reason LIKE '%emergency%' OR a.notes LIKE '%urgent%')
       ORDER BY a.appointment_date ASC, a.appointment_time ASC
-    `, [doctorId]);
+    `, []);
     
     connection.release();
     
@@ -444,10 +440,10 @@ router.post('/appointments/:id/complete', checkPermission(PERMISSIONS.MANAGE_APP
     
     const connection = await pool.getConnection();
     
-    // Verify appointment exists and belongs to this doctor
+    // Verify appointment exists
     const [appointments] = await connection.execute(`
-      SELECT id, status FROM appointments WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      SELECT id, status FROM appointments WHERE id = ?
+    `, [id]);
     
     if (appointments.length === 0) {
       connection.release();
@@ -498,10 +494,10 @@ router.post('/appointments/:id/cancel', checkPermission(PERMISSIONS.MANAGE_APPOI
     
     const connection = await pool.getConnection();
     
-    // Verify appointment exists and belongs to this doctor
+    // Verify appointment exists
     const [appointments] = await connection.execute(`
-      SELECT id, status FROM appointments WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      SELECT id, status FROM appointments WHERE id = ?
+    `, [id]);
     
     if (appointments.length === 0) {
       connection.release();
@@ -562,13 +558,13 @@ router.get('/patients/today', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), as
         m.medication_name,
         m.dosage,
         m.frequency,
-        (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as total_visits
+        (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id) as total_visits
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
       LEFT JOIN medications m ON u.id = m.patient_id AND m.status = 'active'
-      WHERE a.doctor_id = ? AND a.appointment_date = CURDATE() AND a.status IN ('scheduled', 'confirmed')
+      WHERE a.appointment_date = CURDATE() AND a.status IN ('scheduled', 'confirmed')
       ORDER BY a.appointment_time ASC
-    `, [doctorId, doctorId]);
+    `, []);
     
     console.log(`patients/today query result: found ${patients.length} patients`);
     
@@ -627,10 +623,11 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
     
     const patient = patients[0];
     
-    // Get patient's appointments with this doctor
+    // Get patient's appointments
     const [appointments] = await connection.execute(`
       SELECT 
         id,
+        doctor_id,
         appointment_date,
         appointment_time,
         status,
@@ -638,10 +635,10 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
         notes,
         created_at
       FROM appointments
-      WHERE doctor_id = ? AND patient_id = ?
+      WHERE patient_id = ?
       ORDER BY appointment_date DESC, appointment_time DESC
       LIMIT 10
-    `, [doctorId, id]);
+    `, [id]);
     
     // Get patient's medications
     const [medications] = await connection.execute(`
@@ -945,9 +942,8 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asyn
       SELECT e.*, u.name as patient_name, u.email as patient_email
       FROM examinations e
       LEFT JOIN users u ON e.patient_id = u.id AND u.role = 'patient'
-      WHERE e.doctor_id = ?
     `;
-    const params = [doctorId];
+    const params = [];
     
     // Add date range filter
     if (dateRange && dateRange !== '') {
@@ -1101,8 +1097,8 @@ router.get('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
       SELECT e.*, u.name as patient_name, u.email as patient_email
       FROM examinations e
       LEFT JOIN users u ON e.patient_id = u.id AND u.role = 'patient'
-      WHERE e.id = ? AND e.doctor_id = ?
-    `, [id, doctorId]);
+      WHERE e.id = ?
+    `, [id]);
     
     if (exams.length === 0) {
       connection.release();
@@ -1164,16 +1160,16 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
 
     const connection = await pool.getConnection();
 
-    // Verify the examination belongs to this doctor
+    // Verify the examination exists
     const [exams] = await connection.execute(`
-      SELECT doctor_id FROM examinations WHERE id = ?
+      SELECT id FROM examinations WHERE id = ?
     `, [id]);
 
-    if (exams.length === 0 || exams[0].doctor_id !== doctorId) {
+    if (exams.length === 0) {
       connection.release();
-      return res.status(403).json({
+      return res.status(404).json({
         success: false,
-        message: 'Not authorized to update this examination'
+        message: 'Examination not found'
       });
     }
 
@@ -1348,10 +1344,9 @@ router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), as
         u.name as patient_name
       FROM test_referrals tr
       JOIN users u ON tr.patient_id = u.id
-      WHERE tr.doctor_id = ?
     `;
     
-    const params = [doctorId];
+    const params = [];
     
     if (search) {
       query += ' AND u.name LIKE ?';
@@ -1399,8 +1394,8 @@ router.get('/appointments/:appointmentId/examination', checkPermission(PERMISSIO
              u.name as patient_name, a.vitals_data
       FROM appointments a
       JOIN users u ON a.patient_id = u.id
-      WHERE a.id = ? AND a.doctor_id = ?
-    `, [appointmentId, doctorId]);
+      WHERE a.id = ?
+    `, [appointmentId]);
 
     if (appointments.length === 0) {
       connection.release();
@@ -1415,8 +1410,8 @@ router.get('/appointments/:appointmentId/examination', checkPermission(PERMISSIO
     // Look for existing examination
     const [exams] = await connection.execute(`
       SELECT * FROM examinations
-      WHERE appointment_id = ? AND doctor_id = ?
-    `, [appointmentId, doctorId]);
+      WHERE appointment_id = ?
+    `, [appointmentId]);
 
     connection.release();
 
@@ -1497,39 +1492,40 @@ if (exams.length > 0) {
   * Get all patients for the logged-in doctor with optional search
   * Permission: VIEW_OWN_PATIENTS (doctor)
   */
- router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (req, res) => {
-   try {
-     const doctorId = req.session.doctorId;
-     const { search, status } = req.query;
-     console.log('patients called for doctorId=', doctorId, 'search=', search, 'status=', status);
-     
-     const connection = await pool.getConnection();
-     
-       let query = `
-        SELECT DISTINCT
-          u.id as patient_id,
-          u.name as patient_name,
-          u.email as patient_email,
-          u.phone as patient_phone,
-          u.is_active as is_active,
-          u.patient_status as user_patient_status,
-          adm.id as admission_id,
-          adm.status as admission_status,
-          adm.room_number,
-          adm.bed_number,
-          adm.admission_date,
-          adm.discharge_date,
-          (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as total_visits,
-          (SELECT MAX(appointment_date) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as last_visit_date,
-          (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id AND e.doctor_id = ? ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
-          (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id AND e.doctor_id = ? ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date
-        FROM appointments a
-        JOIN users u ON a.patient_id = u.id
-        LEFT JOIN admissions adm ON adm.patient_id = u.id AND adm.status IN ('admitted', 'discharged')
-        WHERE a.doctor_id = ?
-      `;
-       
-       const params = [doctorId, doctorId, doctorId, doctorId, doctorId];
+router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (req, res) => {
+    try {
+      const doctorId = req.session.doctorId;
+      const { search, status } = req.query;
+      console.log('patients called for doctorId=', doctorId, 'search=', search, 'status=', status);
+      
+      const connection = await pool.getConnection();
+      
+        let query = `
+         SELECT DISTINCT
+           u.id as patient_id,
+           u.name as patient_name,
+           u.email as patient_email,
+           u.phone as patient_phone,
+           u.is_active as is_active,
+           u.patient_status as user_patient_status,
+           adm.id as admission_id,
+           adm.status as admission_status,
+           adm.room_number,
+           adm.bed_number,
+           adm.admission_date,
+           adm.discharge_date,
+         (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id) as total_visits,
+           (SELECT MAX(appointment_date) FROM appointments WHERE patient_id = u.id) as last_visit_date,
+           (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
+           (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date,
+           (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as assigned_to_doctor
+          FROM users u
+          LEFT JOIN admissions adm ON adm.patient_id = u.id AND adm.status IN ('admitted', 'discharged')
+          WHERE u.role = 'patient'
+       `;
+        
+        let params = [doctorId];
+
       
       if (search) {
         query += ` AND (u.name LIKE ? OR u.email LIKE ?)`;
@@ -1573,7 +1569,8 @@ if (exams.length > 0) {
           totalVisits: p.total_visits,
           lastVisitDate: p.last_visit_date,
           latestDiagnosis: p.latest_diagnosis,
-          latestDiagnosisDate: p.latest_diagnosis_date
+          latestDiagnosisDate: p.latest_diagnosis_date,
+          assignedToDoctor: p.assigned_to_doctor > 0
         }))
      });
    } catch (error) {
@@ -1615,17 +1612,18 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (re
         r.updated_at,
         u.name as patient_name,
         u.email as patient_email
-      FROM reports r
-      JOIN users u ON r.patient_id = u.id
-      WHERE r.doctor_id = ?
-    `;
+       FROM reports r
+       JOIN users u ON r.patient_id = u.id
+     `;
 
-    const params = [doctorId];
+    const params = [];
 
     if (search) {
-      query += ` AND (r.report_title LIKE ? OR r.report_description LIKE ? OR u.name LIKE ?)`;
+      query += ` WHERE (r.report_title LIKE ? OR r.report_description LIKE ? OR u.name LIKE ?)`;
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern, searchPattern);
+    } else {
+      query += ` WHERE 1=1`;
     }
 
     if (patient_id) {
@@ -1652,14 +1650,15 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (re
       SELECT COUNT(*) as total 
       FROM reports r
       JOIN users u ON r.patient_id = u.id
-      WHERE r.doctor_id = ?
     `;
-    const countParams = [doctorId];
+    const countParams = [];
     
     if (search) {
-      countQuery += ` AND (r.report_title LIKE ? OR r.report_description LIKE ? OR u.name LIKE ?)`;
+      countQuery += ` WHERE (r.report_title LIKE ? OR r.report_description LIKE ? OR u.name LIKE ?)`;
       const searchPattern = `%${search}%`;
       countParams.push(searchPattern, searchPattern, searchPattern);
+    } else {
+      countQuery += ` WHERE 1=1`;
     }
     
     if (patient_id) {
@@ -1800,9 +1799,9 @@ router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async 
       JOIN users u ON a.patient_id = u.id
       JOIN doctors d ON a.doctor_id = d.id
       JOIN users du ON d.user_id = du.id
-      WHERE a.doctor_id = ? ${status !== 'all' ? 'AND a.status = ?' : ''}
+      WHERE 1=1 ${status !== 'all' ? 'AND a.status = ?' : ''}
       ORDER BY a.admission_date DESC
-    `, status !== 'all' ? [doctorId, status] : [doctorId]);
+    `, status !== 'all' ? [status] : []);
 
     connection.release();
 
@@ -2229,12 +2228,9 @@ router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), as
       FROM round_checks rc
       JOIN users u ON rc.patient_id = u.id
       LEFT JOIN admissions a ON rc.admission_id = a.id
-      WHERE rc.checked_by = ?
-         OR rc.admission_id IN (
-            SELECT id FROM admissions WHERE doctor_id = ? AND status = 'admitted'
-         )
-    `;
-    const params = [doctorId, doctorId];
+       WHERE 1=1
+     `;
+     const params = [];
 
     if (patient_id) {
       query += ' AND rc.patient_id = ?';
@@ -2496,16 +2492,15 @@ router.get('/medications', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async 
       JOIN users u_patient ON m.patient_id = u_patient.id
       JOIN doctors d ON m.doctor_id = d.id
       JOIN users u_doctor ON d.user_id = u_doctor.id
-      WHERE m.doctor_id = ?
     `;
-    const params = [doctorId];
+    const params = [];
 
     if (patient_id) {
-      query += ' AND m.patient_id = ?';
+      query += ' WHERE m.patient_id = ?';
       params.push(patient_id);
     }
     if (status && status !== 'all') {
-      query += ' AND m.status = ?';
+      query += `${patient_id ? ' AND' : ' WHERE'} m.status = ?`;
       params.push(status);
     }
 
@@ -2559,8 +2554,8 @@ router.get('/medications/:id', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), as
       JOIN users u_patient ON m.patient_id = u_patient.id
       JOIN doctors d ON m.doctor_id = d.id
       JOIN users u_doctor ON d.user_id = u_doctor.id
-      WHERE m.id = ? AND m.doctor_id = ?
-    `, [id, doctorId]);
+      WHERE m.id = ?
+     `, [id]);
 
     connection.release();
 
@@ -2656,8 +2651,8 @@ router.put('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION)
     const [result] = await connection.execute(`
       UPDATE medications SET 
         medication_name = ?, dosage = ?, frequency = ?, duration = ?, instructions = ?, refills_remaining = ?, updated_at = NOW()
-      WHERE id = ? AND doctor_id = ?
-    `, [medication_name, dosage, frequency, duration || null, instructions || null, refills_remaining || 0, id, doctorId]);
+      WHERE id = ?
+    `, [medication_name, dosage, frequency, duration || null, instructions || null, refills_remaining || 0, id]);
 
     connection.release();
 
@@ -2686,8 +2681,8 @@ router.post('/medications/:id/cancel', checkPermission(PERMISSIONS.PRESCRIBE_MED
 
     const [result] = await connection.execute(`
       UPDATE medications SET status = 'stopped', updated_at = NOW()
-      WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      WHERE id = ?
+    `, [id]);
 
     connection.release();
 
@@ -2716,8 +2711,8 @@ router.post('/medications/:id/renew', checkPermission(PERMISSIONS.PRESCRIBE_MEDI
 
     const [result] = await connection.execute(`
       UPDATE medications SET status = 'active', refills_remaining = refills_remaining + 1, updated_at = NOW()
-      WHERE id = ? AND doctor_id = ?
-    `, [id, doctorId]);
+      WHERE id = ?
+    `, [id]);
 
     connection.release();
 
@@ -2744,8 +2739,8 @@ router.delete('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATI
 
     const connection = await pool.getConnection();
     const [result] = await connection.execute(
-      'DELETE FROM medications WHERE id = ? AND doctor_id = ?',
-      [id, doctorId]
+      'DELETE FROM medications WHERE id = ?',
+      [id]
     );
     connection.release();
 
@@ -2775,8 +2770,8 @@ router.post('/medications/:id/refill', checkPermission(PERMISSIONS.PRESCRIBE_MED
 
     const [result] = await connection.execute(`
       UPDATE medications SET refills_remaining = refills_remaining + ?, updated_at = NOW()
-      WHERE id = ? AND doctor_id = ?
-    `, [refills, id, doctorId]);
+      WHERE id = ?
+    `, [refills, id]);
 
     connection.release();
 
@@ -2808,9 +2803,9 @@ router.get('/patients/:id/medications', checkPermission(PERMISSIONS.VIEW_PATIENT
       FROM medications m
       JOIN doctors d ON m.doctor_id = d.id
       JOIN users u_doctor ON d.user_id = u_doctor.id
-      WHERE m.patient_id = ? AND m.doctor_id = ?
+      WHERE m.patient_id = ?
       ORDER BY m.created_at DESC
-    `, [patientId, doctorId]);
+    `, [patientId]);
 
     connection.release();
 
