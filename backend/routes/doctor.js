@@ -938,12 +938,17 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asyn
     connection = await pool.getConnection();
     
     // Join with users table (where role = 'patient') instead of non-existent patients table
+    // Only show examinations for patients who have appointments with this doctor
     let query = `
       SELECT e.*, u.name as patient_name, u.email as patient_email
       FROM examinations e
       LEFT JOIN users u ON e.patient_id = u.id AND u.role = 'patient'
+      WHERE e.patient_id IN (
+        SELECT DISTINCT a.patient_id FROM appointments a 
+        WHERE a.doctor_id = ? AND a.status IN ('scheduled', 'confirmed', 'pending', 'completed')
+      )
     `;
-    const params = [];
+    const params = [doctorId];
     
     // Add date range filter
     if (dateRange && dateRange !== '') {
@@ -1518,7 +1523,8 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (r
            (SELECT MAX(appointment_date) FROM appointments WHERE patient_id = u.id) as last_visit_date,
            (SELECT e.diagnosis FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis,
            (SELECT e.examination_date FROM examinations e WHERE e.patient_id = u.id ORDER BY e.examination_date DESC, e.id DESC LIMIT 1) as latest_diagnosis_date,
-           (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as assigned_to_doctor
+           (SELECT COUNT(*) FROM appointments WHERE patient_id = u.id AND doctor_id = ?) as assigned_to_doctor,
+           (SELECT d.name FROM appointments a JOIN doctors doc ON a.doctor_id = doc.id JOIN users d ON doc.user_id = d.id WHERE a.patient_id = u.id ORDER BY a.appointment_date DESC LIMIT 1) as assigned_doctor_name
           FROM users u
           LEFT JOIN admissions adm ON adm.patient_id = u.id AND adm.status IN ('admitted', 'discharged')
           WHERE u.role = 'patient'
@@ -1569,8 +1575,9 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (r
           totalVisits: p.total_visits,
           lastVisitDate: p.last_visit_date,
           latestDiagnosis: p.latest_diagnosis,
-          latestDiagnosisDate: p.latest_diagnosis_date,
-          assignedToDoctor: p.assigned_to_doctor > 0
+           latestDiagnosisDate: p.latest_diagnosis_date,
+          assignedToDoctor: p.assigned_to_doctor > 0,
+          assignedDoctorName: p.assigned_doctor_name || null
         }))
      });
    } catch (error) {
