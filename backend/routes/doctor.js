@@ -2368,7 +2368,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
 
     // Fetch the current record to verify it exists and check check_type
     const [existing] = await connection.execute(
-      'SELECT id, checked_by, check_type, follow_up_notes FROM round_checks WHERE id = ?',
+      'SELECT id FROM round_checks WHERE id = ?',
       [id]
     );
 
@@ -2376,8 +2376,6 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
       connection.release();
       return res.status(404).json({ success: false, message: 'Round check not found' });
     }
-
-    const record = existing[0];
 
     // Build allowed updates only
     const updates = [];
@@ -2395,20 +2393,14 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
 
     // Append follow-up note to JSON array
     if (follow_up_note !== undefined && follow_up_note.trim() !== '') {
-      let currentNotes = [];
-      try {
-        currentNotes = typeof record.follow_up_notes === 'string' ? JSON.parse(record.follow_up_notes) : (record.follow_up_notes || []);
-      } catch (e) {
-        currentNotes = [];
-      }
-      currentNotes.push({
+      const newNote = {
         userId: doctorId,
         checkType: 'doctor',
         text: follow_up_note.trim(),
         createdAt: new Date().toISOString()
-      });
-      updates.push('follow_up_notes = ?');
-      values.push(JSON.stringify(currentNotes));
+      };
+      updates.push("follow_up_notes = JSON_ARRAY_APPEND(COALESCE(follow_up_notes, JSON_ARRAY()), '$', CAST(? AS JSON))");
+      values.push(JSON.stringify(newNote));
     }
 
     if (updates.length === 0) {

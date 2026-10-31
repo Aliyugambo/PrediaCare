@@ -6251,7 +6251,7 @@
           ${rc.next_plan ? `<p class="rc-next-plan"><strong>Next Plan:</strong> ${rc.next_plan.substring(0, 80)}${rc.next_plan.length > 80 ? '...' : ''}</p>` : ''}
           <div class="rc-actions">
             <button class="view-btn" onclick="viewDoctorRoundCheckDetail(${rc.id})">View</button>
-            <button class="view-btn light" onclick="openDoctorRoundCheckEdit(${rc.id})">Add Note</button>
+            ${rc.status === 'ongoing' ? `<button class="view-btn light" onclick="openDoctorRoundCheckEdit(${rc.id})">Add Note</button>` : ''}
             ${rc.admission_id ? `<button class="view-btn" style="background:#dc2626;color:white;" onclick="openDischargeForm(${rc.admission_id}, ${rc.patient_id}, '${(rc.patient_name || 'Patient').replace(/'/g, "\\'")}')">Discharge</button>` : ''}
           </div>
         </div>`;
@@ -6513,7 +6513,7 @@
         }
       }
       
-      switchRoundCheckTab('vitals');
+      switchRoundCheckTab('note');
       if (modal) modal.style.display = 'flex';
     }
 
@@ -6579,7 +6579,7 @@
       const rc = doctorRoundChecks.find(r => r.id === id);
       if (!rc) return;
       
-      openNurseRoundCheckModalFromDoctor(rc);
+      openRoundCheckModalFromExisting(rc);
     }
 
     function openNurseRoundCheckModalFromDoctor(rc) {
@@ -6590,6 +6590,7 @@
       document.getElementById('nrcPatientName').textContent = rc.patient_name || 'Patient';
       document.getElementById('nrcBedInfo').textContent = rc.admission_id ? `Admitted (ID: ${rc.admission_id})` : 'Outpatient';
       document.getElementById('nrcTime').textContent = formatDateTime(rc.check_date);
+      document.getElementById('nrcDoctorNote').value = '';
       
       const vs = rc.vital_signs || {};
       const refVitals = `BP: ${vs.bpSystolic || '--'}/${vs.bpDiastolic || '--'} mmHg | HR: ${vs.heartRate || '--'} bpm | Temp: ${vs.temperature || '--'} °C | SpO2: ${vs.spo2 || '--'}% | RR: ${vs.respiratory || '--'}/min | Glucose: ${vs.glucose || '--'} mg/dL | Weight: ${vs.weight || '--'} kg | BMI: ${vs.bmi || '--'}`;
@@ -6665,6 +6666,11 @@
         return;
       }
 
+      if (!isNewDoctorRound && !doctorNote.trim()) {
+        alert('Enter a note before saving');
+        return;
+      }
+
       const payload = isNewDoctorRound
         ? {
             patient_id: patientId,
@@ -6687,9 +6693,7 @@
             status: 'ongoing'
           }
         : {
-            status: 'ongoing',
-            next_plan: '',
-            follow_up_note: doctorNote
+            follow_up_note: doctorNote.trim()
           };
 
       try {

@@ -542,6 +542,12 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
           drugChat = typeof c.drug_chat === 'string' ? JSON.parse(c.drug_chat) : c.drug_chat;
         } catch (e) {}
       }
+      let followUpNotes = [];
+      if (c.follow_up_notes) {
+        try {
+          followUpNotes = typeof c.follow_up_notes === 'string' ? JSON.parse(c.follow_up_notes) : c.follow_up_notes;
+        } catch (e) {}
+      }
       return {
         id: c.id,
         patientId: c.patient_id,
@@ -556,6 +562,7 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
         vitalSigns: vitalSigns,
         fluidBalance: fluidBalance,
         drugChat: drugChat,
+        follow_up_notes: followUpNotes,
         nextPlan: c.next_plan,
         status: c.status,
         checkDate: c.check_date,
