@@ -20,6 +20,7 @@ router.get('/pending-tests', checkPermission(PERMISSIONS.VIEW_PENDING_TESTS), as
     let referralQuery = `
       SELECT 
         tr.id,
+        tr.patient_id,
         tr.test_name,
         tr.test_type,
         tr.reason_for_test,
@@ -30,6 +31,9 @@ router.get('/pending-tests', checkPermission(PERMISSIONS.VIEW_PENDING_TESTS), as
         u.name as patient_name,
         u.email as patient_email,
         u.phone as patient_phone,
+        u.address as patient_address,
+        u.patient_status,
+        u.created_at as patient_since,
         doctor.name as doctor_name
       FROM test_referrals tr
       LEFT JOIN users u ON tr.patient_id = u.id
@@ -65,6 +69,8 @@ router.get('/pending-tests', checkPermission(PERMISSIONS.VIEW_PENDING_TESTS), as
         'walkin' as source_type,
         wp.first_name,
         wp.last_name,
+        wp.date_of_birth,
+        wp.gender,
         wp.email,
         wp.phone,
         wp.address

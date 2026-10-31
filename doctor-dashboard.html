@@ -2678,6 +2678,7 @@
                          <option value="nurse">Nurse Check</option>
                          <option value="consultant">Consultant</option>
                        </select>
+                         <button type="button" onclick="openNewDoctorRoundCheck()" style="padding: 10px 20px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;"><i class="fas fa-plus"></i> New Doctor Round</button>
                        <button onclick="loadDoctorRoundChecks()" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;"><i class="fas fa-search"></i> Load Rounds</button>
                      </div>
                      <div class="appointment-list" id="doctorRoundChecksList">
@@ -3001,7 +3002,7 @@
           </div>
 
           <div class="rc-tabs">
-            <button type="button" class="rc-tab-btn active" onclick="switchRoundCheckTab('vitals')"><i class="fas fa-heartbeat"></i> Vitals from Nurses</button>
+            <button type="button" class="rc-tab-btn active" onclick="switchRoundCheckTab('vitals')"><i class="fas fa-heartbeat"></i> Vitals</button>
             <button type="button" class="rc-tab-btn" onclick="switchRoundCheckTab('fluid')"><i class="fas fa-tint"></i> Fluid Balance</button>
             <button type="button" class="rc-tab-btn" onclick="switchRoundCheckTab('drug')"><i class="fas fa-pills"></i> Drug Chat</button>
             <button type="button" class="rc-tab-btn" onclick="switchRoundCheckTab('note')"><i class="fas fa-sticky-note"></i> Doctor Note</button>
@@ -3010,8 +3011,20 @@
 
           <div id="rcTabVitals" class="rc-tab-panel active">
             <div class="rc-section">
-              <div class="rc-section-title"><i class="fas fa-heartbeat"></i> Vitals from Nurses</div>
-              <div class="rc-grid-3">
+              <div class="rc-section-title"><i class="fas fa-heartbeat"></i> Doctor-Observed Vitals</div>
+              <div id="rcDoctorVitalsInput" class="rc-grid-3" style="display: none;">
+                <div class="rc-field"><label for="rcDoctorBpSystolic">BP Sys</label><input id="rcDoctorBpSystolic" class="rc-input" type="number" min="0" placeholder="mmHg"></div>
+                <div class="rc-field"><label for="rcDoctorBpDiastolic">BP Dia</label><input id="rcDoctorBpDiastolic" class="rc-input" type="number" min="0" placeholder="mmHg"></div>
+                <div class="rc-field"><label for="rcDoctorHeartRate">HR</label><input id="rcDoctorHeartRate" class="rc-input" type="number" min="0" placeholder="bpm"></div>
+                <div class="rc-field"><label for="rcDoctorTemperature">Temp</label><input id="rcDoctorTemperature" class="rc-input" type="number" step="0.1" placeholder="°C"></div>
+                <div class="rc-field"><label for="rcDoctorSpo2">SpO2</label><input id="rcDoctorSpo2" class="rc-input" type="number" min="0" max="100" placeholder="%"></div>
+                <div class="rc-field"><label for="rcDoctorRespiratory">RR</label><input id="rcDoctorRespiratory" class="rc-input" type="number" min="0" placeholder="/min"></div>
+                <div class="rc-field"><label for="rcDoctorGlucose">Glucose</label><input id="rcDoctorGlucose" class="rc-input" type="number" step="0.1" min="0" placeholder="mg/dL"></div>
+                <div class="rc-field"><label for="rcDoctorWeight">Weight</label><input id="rcDoctorWeight" class="rc-input" type="number" step="0.1" min="0" placeholder="kg"></div>
+                <div class="rc-field"><label for="rcDoctorHeight">Height</label><input id="rcDoctorHeight" class="rc-input" type="number" step="0.1" min="0" placeholder="cm"></div>
+                <div class="rc-field"><label for="rcDoctorBmi">BMI</label><input id="rcDoctorBmi" class="rc-input" type="number" step="0.1" min="0" placeholder="kg/m²"></div>
+              </div>
+              <div id="rcNurseVitalsReadOnly" class="rc-grid-3">
                 <div class="rc-field"><label>BP Sys</label><span id="rcViewBpSystolic" class="rc-readonly">--</span></div>
                 <div class="rc-field"><label>BP Dia</label><span id="rcViewBpDiastolic" class="rc-readonly">--</span></div>
                 <div class="rc-field"><label>HR</label><span id="rcViewHeartRate" class="rc-readonly">--</span> <span style="font-size:11px;color:#94a3b8;">bpm</span></div>
@@ -6394,10 +6407,13 @@
     function openNewDoctorRoundCheck() {
       const modal = document.getElementById('roundCheckModal');
       document.getElementById('roundCheckForm').reset();
+      document.getElementById('rcDoctorVitalsInput').style.display = 'grid';
+      document.getElementById('rcNurseVitalsReadOnly').style.display = 'none';
       document.getElementById('roundCheckId').value = '';
       document.getElementById('roundCheckPatientId').value = '';
       document.getElementById('roundCheckAdmissionId').value = '';
       document.getElementById('roundCheckType').value = 'doctor';
+      document.getElementById('roundCheckStaffName').textContent = 'Doctor';
       document.getElementById('roundCheckPatientName').textContent = 'Select patient below';
       document.getElementById('roundCheckPatientSelect').innerHTML = '<option value="">-- Choose an admitted patient --</option>';
       document.getElementById('rcNotes').value = '';
@@ -6435,6 +6451,8 @@
 
     function openRoundCheckModalFromExisting(rc) {
       const modal = document.getElementById('roundCheckModal');
+      document.getElementById('rcDoctorVitalsInput').style.display = 'none';
+      document.getElementById('rcNurseVitalsReadOnly').style.display = 'grid';
       document.getElementById('roundCheckId').value = rc.id || '';
       document.getElementById('roundCheckPatientId').value = rc.patient_id || '';
       document.getElementById('roundCheckAdmissionId').value = rc.admission_id || '';
@@ -6633,28 +6651,59 @@
       const noteFieldId = isNurseModal ? 'nrcDoctorNote' : 'rcNotes';
       const noteEl = document.getElementById(noteFieldId);
       const doctorNote = noteEl ? noteEl.value : '';
+      const isNewDoctorRound = !isNurseModal && !id;
+      const patientId = document.getElementById('roundCheckPatientId').value;
+      const admissionId = document.getElementById('roundCheckAdmissionId').value;
 
-      if (!id) {
+      if (isNewDoctorRound && !patientId) {
+        alert('Select an admitted patient first');
+        return;
+      }
+
+      if (!isNewDoctorRound && !id) {
         alert('No round check selected');
         return;
       }
 
-      const payload = {
-        status: 'ongoing',
-        next_plan: '',
-        follow_up_note: doctorNote
-      };
+      const payload = isNewDoctorRound
+        ? {
+            patient_id: patientId,
+            admission_id: admissionId || null,
+            examination_id: document.getElementById('roundCheckExaminationId').value || null,
+            check_type: 'doctor',
+            notes: doctorNote,
+            vital_signs: Object.fromEntries([
+              ['bpSystolic', 'rcDoctorBpSystolic'],
+              ['bpDiastolic', 'rcDoctorBpDiastolic'],
+              ['heartRate', 'rcDoctorHeartRate'],
+              ['temperature', 'rcDoctorTemperature'],
+              ['spo2', 'rcDoctorSpo2'],
+              ['respiratory', 'rcDoctorRespiratory'],
+              ['glucose', 'rcDoctorGlucose'],
+              ['weight', 'rcDoctorWeight'],
+              ['height', 'rcDoctorHeight'],
+              ['bmi', 'rcDoctorBmi']
+            ].map(([key, elementId]) => [key, document.getElementById(elementId).value.trim()]).filter(([, value]) => value)),
+            status: 'ongoing'
+          }
+        : {
+            status: 'ongoing',
+            next_plan: '',
+            follow_up_note: doctorNote
+          };
 
       try {
-        const res = await fetch(`${API_BASE}/doctor/round-checks/${id}`, {
-          method: 'PUT',
+        const res = await fetch(isNewDoctorRound
+          ? `${API_BASE}/doctor/round-checks`
+          : `${API_BASE}/doctor/round-checks/${id}`, {
+          method: isNewDoctorRound ? 'POST' : 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.success) {
-          alert('Clinical note appended successfully!');
+          alert(isNewDoctorRound ? 'Doctor round-check recorded successfully!' : 'Clinical note appended successfully!');
           if (isNurseModal) closeNurseRoundCheckModal();
           else closeRoundCheckModal();
           loadDoctorRoundChecks();
@@ -6678,7 +6727,7 @@
     }
 
     window.openNewDoctorRoundCheck = openNewDoctorRoundCheck;
-    window.saveRoundCheck = saveRoundCheck;
+    window.saveRoundCheck = saveDoctorRoundCheck;
     window.closeRoundCheckModal = closeRoundCheckModal;
     window.viewDoctorRoundCheckDetail = viewDoctorRoundCheckDetail;
     window.openDoctorRoundCheckEdit = openDoctorRoundCheckEdit;

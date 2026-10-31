@@ -434,6 +434,48 @@
     .modal-body {
       padding: 20px;
     }
+
+    .patient-profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .patient-profile-dialog {
+      position: relative;
+      display: block;
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .patient-profile-field {
+      min-width: 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .patient-profile-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .patient-profile-value {
+      overflow-wrap: anywhere;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    @media (max-width: 540px) {
+      .patient-profile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     
     .modal-footer {
       padding: 20px;
@@ -1111,6 +1153,19 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="pendingPatientProfileModal" onclick="if (event.target === this) closePendingPatientProfile()">
+    <div class="patient-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="pendingPatientProfileTitle">
+      <div class="modal-header">
+        <h3 id="pendingPatientProfileTitle">Patient Profile</h3>
+        <button type="button" class="modal-close" aria-label="Close patient profile" onclick="closePendingPatientProfile()">✕</button>
+      </div>
+      <div class="modal-body" id="pendingPatientProfileBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closePendingPatientProfile()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // API Base URL
     const API_BASE = '/api';
@@ -1118,6 +1173,7 @@
     // Current user data
     let currentUser = null;
     let currentTemplate = null;
+    const pendingPatientProfiles = new Map();
     
     // Sidebar toggle
     function toggleSidebar() {
@@ -1208,6 +1264,25 @@
             ...doctorReferrals.map(r => ({...r, source: 'doctor'})),
             ...walkinPatients.map(w => ({...w, source: 'walkin'}))
           ];
+
+          pendingPatientProfiles.clear();
+          allTests.forEach(test => {
+            const isWalkin = test.source === 'walkin';
+            pendingPatientProfiles.set(`${test.source}:${test.id}`, {
+              id: isWalkin ? test.id : test.patient_id,
+              name: isWalkin ? `${test.first_name} ${test.last_name}` : test.patient_name,
+              email: isWalkin ? test.email : test.patient_email,
+              phone: isWalkin ? test.phone : test.patient_phone,
+              address: isWalkin ? test.address : test.patient_address,
+              dateOfBirth: test.date_of_birth,
+              gender: test.gender,
+              status: isWalkin ? test.status : test.patient_status,
+              registered: isWalkin ? test.created_at : test.patient_since,
+              testName: test.test_name,
+              testType: test.test_type,
+              source: isWalkin ? 'Walk-in' : 'Registered patient'
+            });
+          });
           
           document.getElementById('pendingCount').textContent = allTests.length;
           document.getElementById('urgentCount').textContent = allTests.filter(t => t.urgency === 'urgent').length;
@@ -1233,6 +1308,7 @@
                   <span class="badge badge-${urgency === 'urgent' ? 'urgent' : 'routine'}">${urgency}</span>
                 </div>
                 <div class="test-actions">
+                  <button class="btn btn-secondary" onclick="openPendingPatientProfile('${test.source}', ${test.id})">Profile</button>
                   <button class="btn btn-primary" onclick="openResultModal('${test.source}', ${test.id}, '${test.test_type || 'other'}', '${patientName}', '${test.test_name || ''}', ${patientId})">
                     Upload Result
                   </button>
@@ -1245,6 +1321,52 @@
         console.error('Error loading pending tests:', error);
         container.innerHTML = '<p style="color: #dc2626; text-align: center; padding: 40px;">Error loading tests: ' + error.message + '</p>';
       }
+    }
+
+    function openPendingPatientProfile(source, testId) {
+      const patient = pendingPatientProfiles.get(`${source}:${testId}`);
+      if (!patient) return;
+
+      const fields = [
+        ['Patient ID', patient.id],
+        ['Name', patient.name],
+        ['Patient type', patient.source],
+        ['Email', patient.email],
+        ['Phone', patient.phone],
+        ['Date of birth', patient.dateOfBirth ? formatDate(patient.dateOfBirth) : null],
+        ['Gender', patient.gender],
+        ['Address', patient.address],
+        ['Status', patient.status],
+        ['Registered', patient.registered ? formatDate(patient.registered) : null],
+        ['Pending test', patient.testName],
+        ['Test type', patient.testType]
+      ];
+
+      document.getElementById('pendingPatientProfileBody').innerHTML = `
+        <div class="patient-profile-grid">
+          ${fields.map(([label, value]) => `
+            <div class="patient-profile-field">
+              <span class="patient-profile-label">${escapeHtml(label)}</span>
+              <span class="patient-profile-value">${escapeHtml(value || 'Not provided')}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('pendingPatientProfileModal').classList.add('active');
+    }
+
+    function closePendingPatientProfile() {
+      document.getElementById('pendingPatientProfileModal').classList.remove('active');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character]);
     }
     
     // Open result form on results tab for pending test
