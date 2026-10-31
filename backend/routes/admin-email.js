@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/users', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res) => {
   try {
     const { role, search, limit = 100, offset = 0 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const limitNum = Math.max(1, Math.min(500, parseInt(limit, 10) || 100));
     const offsetNum = Math.max(0, parseInt(offset, 10) || 0);
@@ -65,7 +65,7 @@ router.get('/users', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res)
 
 router.get('/users-by-role', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [rows] = await connection.execute(
       `SELECT role, COUNT(*) as count FROM users WHERE is_active = TRUE GROUP BY role`
     );
@@ -88,7 +88,7 @@ router.post('/send', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res)
       return res.status(400).json({ success: false, message: 'Subject and body are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let emails = [];
     let recipientCount = 0;
@@ -188,7 +188,7 @@ router.post('/send', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res)
 router.get('/history', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res) => {
   try {
     const { limit = 50, offset = 0 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const limitNum = Math.max(1, Math.min(500, parseInt(limit, 10) || 50));
     const offsetNum = Math.max(0, parseInt(offset, 10) || 0);
@@ -215,7 +215,7 @@ router.get('/history', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, re
 router.get('/history/:id', checkPermission(PERMISSIONS.MANAGE_USERS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [rows] = await connection.execute('SELECT * FROM email_history WHERE id = ?', [id]);
     connection.release();
 

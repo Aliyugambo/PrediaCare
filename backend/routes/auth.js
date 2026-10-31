@@ -37,7 +37,7 @@ router.post('/register', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Only patients can register themselves. Doctors and staff must be created by the admin.' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Check if email already exists
     const [existingUser] = await connection.execute(
@@ -136,7 +136,7 @@ router.post('/login', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Find user by email
     const [users] = await connection.execute(
@@ -291,7 +291,7 @@ router.post('/google', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Google account must have email and name' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Check if user exists by google_id
     const [existingByGoogle] = await connection.execute(
@@ -449,7 +449,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [users] = await connection.execute(
       'SELECT id, name FROM users WHERE email = ?',
@@ -539,7 +539,7 @@ router.post('/reset-password', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [users] = await connection.execute(
       'SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()',
@@ -590,7 +590,7 @@ router.post('/change-password', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: 'New password and confirmation do not match' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [users] = await connection.execute(
       'SELECT password_hash FROM users WHERE id = ?',

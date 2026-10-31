@@ -28,7 +28,7 @@ const requireAdmin = checkPermission(PERMISSIONS.MANAGE_USERS);
  */
 router.get('/dashboard-stats', requireAdmin, async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Total users by role
     const [userCounts] = await connection.execute(`
@@ -137,7 +137,7 @@ router.get('/users', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, re
     
     query += ` ORDER BY created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [rows] = await connection.query(query, params);
     
     // Get total count
@@ -179,7 +179,7 @@ router.get('/users', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, re
 router.get('/users/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
       SELECT id, name, email, role, created_at, is_active, patient_status FROM users WHERE id = ?
@@ -226,7 +226,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
@@ -334,7 +334,7 @@ router.post('/set-role', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [users] = await connection.execute('SELECT id FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
       connection.release();
@@ -359,7 +359,7 @@ router.post('/toggle-user-status', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'userId is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [users] = await connection.execute('SELECT is_active FROM users WHERE id = ?', [userId]);
     
     if (users.length === 0) {
@@ -392,7 +392,7 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id, email FROM users WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -434,7 +434,7 @@ router.delete('/delete-user', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'userId is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // prevent deleting admins
     const [users] = await connection.execute('SELECT role FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
@@ -504,7 +504,7 @@ router.get('/appointments', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [appointments] = await connection.query(query, params);
     
     // Get count
@@ -556,7 +556,7 @@ router.post('/appointments/:id/update-status', requireAdmin, async (req, res) =>
       return res.status(400).json({ success: false, message: 'Status is required' });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute('SELECT id FROM appointments WHERE id = ?', [id]);
     if (appointments.length === 0) {
@@ -593,7 +593,7 @@ router.delete('/appointments/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute('SELECT id FROM appointments WHERE id = ?', [id]);
     if (appointments.length === 0) {
@@ -665,7 +665,7 @@ router.get('/messages', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY m.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [messages] = await connection.query(query, params);
     
     // Get unread count for admin's inbox
@@ -706,7 +706,7 @@ router.post('/messages', requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'receiver_id, subject and message are required' });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [result] = await connection.execute(
       'INSERT INTO messages (sender_id, receiver_id, subject, message) VALUES (?, ?, ?, ?)',
@@ -751,7 +751,7 @@ router.get('/results', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [results] = await connection.query(query, params);
     
     // Get count
@@ -812,7 +812,7 @@ router.get('/doctors', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY u.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [doctors] = await connection.query(query, params);
     
     // Get count
@@ -858,7 +858,7 @@ router.put('/doctors/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { specialization, qualification, experience_years, consultation_fee, bio, available_days, available_time_start, available_time_end, is_active } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [doctors] = await connection.execute('SELECT id FROM doctors WHERE id = ?', [id]);
     if (doctors.length === 0) {
@@ -925,7 +925,7 @@ router.get('/health-summaries', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [summaries] = await connection.query(query, params);
     
     // Get count
@@ -967,7 +967,7 @@ router.get('/medications', requireAdmin, async (req, res) => {
   try {
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [medications] = await connection.execute(`
       SELECT m.*, 
@@ -1036,7 +1036,7 @@ router.get('/test-referrals', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY tr.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [referrals] = await connection.query(query, params);
     
     // Get count
@@ -1107,7 +1107,7 @@ router.get('/reports', requireAdmin, async (req, res) => {
     
     query += ` ORDER BY r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [reports] = await connection.query(query, params);
     
     // Get count
@@ -1148,7 +1148,7 @@ router.get('/reports/:id/file', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.execute(`
       SELECT file_path, file_name FROM reports WHERE id = ?
@@ -1229,7 +1229,7 @@ router.post('/clear-user-permissions', requireAdmin, async (req, res) => {
 router.get('/user-permissions/:id', requireAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [users] = await connection.execute('SELECT id, role FROM users WHERE id = ?', [userId]);
     connection.release();
     if (users.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
@@ -1288,7 +1288,7 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
 
      query += ` ORDER BY a.discharge_date DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
 
-     const connection = await pool.getConnection();
+     let connection = await pool.getConnection();
     const [rows] = await connection.execute(query, params);
 
     let countQuery = `
@@ -1344,7 +1344,7 @@ router.get('/discharged-patients', requireAdmin, async (req, res) => {
 router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [rows] = await connection.execute(`
       SELECT
@@ -1417,7 +1417,7 @@ router.get('/patients/:id/discharge-history', requireAdmin, async (req, res) => 
 router.get('/patients/:id/history', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [patients] = await connection.execute(`
       SELECT id, name, email, phone, address, created_at, patient_status, is_active

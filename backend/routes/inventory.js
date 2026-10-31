@@ -13,7 +13,7 @@ const ExcelJS = require('exceljs');
 
 router.get('/stats', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [totalItems] = await connection.execute('SELECT COUNT(*) as count FROM inventory_items');
     const [lowStock] = await connection.execute('SELECT COUNT(*) as count FROM inventory_items WHERE stock_quantity <= reorder_point AND status = \'active\'');
@@ -47,7 +47,7 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
   try {
     const { category, subcategory, search, stock_filter, limit = 50, offset = 0 } = req.query;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let query = `SELECT i.*, c.name as category_name, sc.name as subcategory_name,
       s.name as primary_supplier_name
@@ -134,7 +134,7 @@ router.get('/items', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, re
 router.get('/items/:id', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [items] = await connection.execute('SELECT * FROM inventory_items WHERE id = ?', [id]);
 
@@ -167,7 +167,7 @@ router.post('/items', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (req,
       return res.status(400).json({ success: false, message: 'Item name is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(
       `INSERT INTO inventory_items (
@@ -214,7 +214,7 @@ router.put('/items/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (r
       status, enable_low_stock_alerts, enable_expiry_alerts
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM inventory_items WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -259,7 +259,7 @@ router.put('/items/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (r
 router.delete('/items/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM inventory_items WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -281,7 +281,7 @@ router.delete('/items/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async
 
 router.get('/suppliers', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [suppliers] = await connection.execute('SELECT * FROM inventory_suppliers ORDER BY name ASC');
     connection.release();
     res.json({ success: true, data: suppliers });
@@ -300,7 +300,7 @@ router.post('/suppliers', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (
       return res.status(400).json({ success: false, message: 'Supplier name is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(
       `INSERT INTO inventory_suppliers (
@@ -330,7 +330,7 @@ router.put('/suppliers/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), asyn
     const { name, category, description, contact_person, email, phone, location, website,
           payment_terms, avg_lead_time, min_order_value, rating, is_preferred, status } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM inventory_suppliers WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -363,7 +363,7 @@ router.put('/suppliers/:id', checkPermission(PERMISSIONS.MANAGE_INVENTORY), asyn
 
 router.get('/categories', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [categories] = await connection.execute(
       `SELECT c1.*, c2.name as parent_name
        FROM inventory_categories c1
@@ -385,7 +385,7 @@ router.post('/categories', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async 
       return res.status(400).json({ success: false, message: 'Category name is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [result] = await connection.execute(
       'INSERT INTO inventory_categories (name, parent_id, description) VALUES (?, ?, ?)',
       [name, parent_id || null, description || null]
@@ -403,7 +403,7 @@ router.post('/categories', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async 
 
 router.get('/alerts', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [lowStock] = await connection.execute(
       `SELECT i.id, i.item_name, i.stock_quantity, i.reorder_point, i.min_stock_level,
@@ -449,7 +449,7 @@ router.get('/alerts', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, r
 router.get('/orders', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
     const { status } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let query = `SELECT o.*, i.item_name, s.name as supplier_name
                  FROM inventory_orders o
@@ -483,7 +483,7 @@ router.post('/orders', checkPermission(PERMISSIONS.MANAGE_INVENTORY), async (req
     }
 
     const totalAmount = (Number(quantity) || 0) * (Number(unit_price) || 0);
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [result] = await connection.execute(
       `INSERT INTO inventory_orders (item_id, supplier_id, quantity, unit_price, total_amount, expected_delivery, notes, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
@@ -503,7 +503,7 @@ router.put('/orders/:id/status', checkPermission(PERMISSIONS.MANAGE_INVENTORY), 
     const { id } = req.params;
     const { status } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     await connection.execute('UPDATE inventory_orders SET status = ? WHERE id = ?', [status, id]);
     connection.release();
 
@@ -519,7 +519,7 @@ router.put('/orders/:id/status', checkPermission(PERMISSIONS.MANAGE_INVENTORY), 
 router.get('/export', checkPermission(PERMISSIONS.VIEW_INVENTORY), async (req, res) => {
   try {
     const { type } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let data;
     let sheetName = 'Inventory';

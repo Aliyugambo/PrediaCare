@@ -48,7 +48,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_APPOINTMENTS), async (req, 
     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // Use query() instead of execute() to avoid MySQL prepared statement LIMIT issues
     const [appointments] = await connection.query(query, params);
     
@@ -100,7 +100,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_APPOINTMENTS), async (req, 
 router.get('/next', checkPermission(PERMISSIONS.VIEW_NEXT_APPOINTMENT), async (req, res) => {
   try {
     const patientId = req.session.userId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute(`
       SELECT 
@@ -201,7 +201,7 @@ router.post('/', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), async (req, res)
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify doctor exists and is active
     const [doctors] = await connection.execute(`
@@ -363,7 +363,7 @@ router.post('/:id/cancel', checkPermission(PERMISSIONS.CANCEL_APPOINTMENT), asyn
     const { id } = req.params;
     const { reason } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify appointment exists and belongs to this patient
     const [appointments] = await connection.execute(`
@@ -427,7 +427,7 @@ router.get('/:id', checkPermission(PERMISSIONS.VIEW_OWN_APPOINTMENTS), async (re
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute(`
       SELECT 

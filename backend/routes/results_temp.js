@@ -48,7 +48,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, res) => {
     query += ` ORDER BY r.result_date DESC, r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // Use query() instead of execute() to avoid MySQL prepared statement LIMIT issues
     const [results] = await connection.query(query, params);
     
@@ -115,7 +115,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, re
     const patientId = req.session.userId;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.query(`
       SELECT 
@@ -182,7 +182,7 @@ router.get('/reports/:id/file', checkPermission(PERMISSIONS.VIEW_RESULTS), async
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.execute(`
       SELECT file_path, file_name, report_title FROM reports WHERE id = ? AND patient_id = ?
@@ -228,7 +228,7 @@ router.get('/:id', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, res) =
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.execute(`
       SELECT 
@@ -303,7 +303,7 @@ router.get('/:id/file', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req, r
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.execute(`
       SELECT report_file, file_name FROM results WHERE id = ? AND patient_id = ?
@@ -349,7 +349,7 @@ router.get('/recent/latest', checkPermission(PERMISSIONS.VIEW_RESULTS), async (r
     const patientId = req.session.userId;
     const { limit = 5 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.query(`
       SELECT 
@@ -404,7 +404,7 @@ router.get('/by-type/:type', checkPermission(PERMISSIONS.VIEW_RESULTS), async (r
     const { type } = req.params;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.query(`
       SELECT 
@@ -468,7 +468,7 @@ router.get('/meta/types', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req,
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [types] = await connection.execute(`
       SELECT DISTINCT test_type, COUNT(*) as count
@@ -504,7 +504,7 @@ router.get('/meta/types', checkPermission(PERMISSIONS.VIEW_RESULTS), async (req,
 router.get('/doctor/pending', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res) => {
   try {
     const doctorId = req.session.doctorId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.execute(`
       SELECT 
@@ -564,7 +564,7 @@ router.post('/:id/review', checkPermission(PERMISSIONS.ADD_RESULTS), async (req,
     const { id } = req.params;
     const { notes } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify result exists and belongs to this doctor
     const [results] = await connection.execute(`
@@ -626,7 +626,7 @@ router.post('/', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res) => {
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Create the result
     const [result] = await connection.execute(`
@@ -663,7 +663,7 @@ router.post('/:id/share', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, 
     const { id } = req.params;
     const { share_notes } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.execute(`
       SELECT id, status FROM results WHERE id = ? AND doctor_id = ?
@@ -706,7 +706,7 @@ router.get('/doctor/lab-results', checkPermission(PERMISSIONS.ADD_RESULTS), asyn
   try {
     const doctorId = req.session.doctorId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [results] = await connection.execute(`
       SELECT 
@@ -779,7 +779,7 @@ router.get('/doctor/all', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, 
     const doctorId = req.session.doctorId;
     const { status, patient_id } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     let query = 'SELECT r.id, r.patient_id, r.test_name, r.test_type, r.result_data, r.report_file, r.file_name, r.status, r.notes, r.result_date, r.created_at, u.name as patient_name, u.email as patient_email FROM results r JOIN users u ON r.patient_id = u.id WHERE r.doctor_id = ?';
     const params = [doctorId];
@@ -838,7 +838,7 @@ router.get('/medical-reports', checkPermission(PERMISSIONS.VIEW_RESULTS), async 
     const patientId = req.session.userId;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.query(`
       SELECT e.id, e.examination_date as report_date, e.chief_complaint, e.vital_signs, e.diagnosis, e.treatment_plan, e.status, e.created_at, d.id as doctor_id, d.specialization, u.name as doctor_name

@@ -29,7 +29,7 @@ router.post('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [existing] = await connection.execute('SELECT id FROM users WHERE email = ?', [email]);
 
     if (existing.length > 0) {
@@ -61,7 +61,7 @@ router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_ALL_TEST_REFERRAL
   try {
     const { status, search } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     let query = `
       SELECT 
@@ -176,7 +176,7 @@ router.post('/walkin-patients', checkPermission(PERMISSIONS.REGISTER_WALKIN_PATI
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [result] = await connection.execute(`
       INSERT INTO walkin_patients 
@@ -218,7 +218,7 @@ router.get('/walkin-patients', checkPermission(PERMISSIONS.VIEW_WALKIN_REGISTRAT
   try {
     const { status, search } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     let query = `
       SELECT 
@@ -268,7 +268,7 @@ router.put('/walkin-patients/:id/status', checkPermission(PERMISSIONS.REGISTER_W
     const { id } = req.params;
     const { status } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     let query = 'UPDATE walkin_patients SET status = ?';
     let params = [status];
@@ -302,7 +302,7 @@ router.get('/walkin-patients/:id', checkPermission(PERMISSIONS.VIEW_WALKIN_REGIS
   try {
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [patients] = await connection.execute(`
       SELECT 
@@ -379,7 +379,7 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_ALL_APPOINTMENTS), 
     }
 
     query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [appointments] = await connection.query(query, params);
 
     let countQuery = 'SELECT COUNT(*) as total FROM appointments WHERE 1=1';
@@ -441,7 +441,7 @@ router.post('/appointments', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), asyn
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Verify doctor exists and is active
     const [doctors] = await connection.execute(`

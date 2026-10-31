@@ -948,11 +948,12 @@ router.post('/invoices', checkPermission(PERMISSIONS.CREATE_INVOICE), async (req
  * Update an invoice
  */
 router.put('/invoices/:id', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
+  let connection;
   try {
     const { id } = req.params;
     const { due_date, payment_method, notes, status } = req.body;
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
 
     const [existing] = await connection.execute(
       'SELECT id FROM billing_invoices WHERE id = ?',
@@ -1078,7 +1079,8 @@ router.post('/invoices/:id/status', checkPermission(PERMISSIONS.PROCESS_PAYMENT)
  * Permanently delete an invoice and its items
  */
 router.delete('/invoices/:id', checkPermission(PERMISSIONS.MANAGE_BILLING), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;

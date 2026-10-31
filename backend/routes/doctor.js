@@ -20,7 +20,7 @@ router.get('/dashboard/stats', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), a
   try {
     const doctorId = req.session.doctorId;
     console.log('dashboard/stats called for doctorId=', doctorId);
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get today's appointments count
     const [todayAppointments] = await connection.execute(`
@@ -91,7 +91,7 @@ router.get('/appointments/today', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
   try {
     const doctorId = req.session.doctorId;
     console.log('appointments/today called for doctorId=', doctorId);
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // use the database's current date so that server timezone/SQL timezone
     // mismatches can't push the doctor one day out of sync with the stored
@@ -179,7 +179,7 @@ router.get('/appointments', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOINTMENT
     }
     
     console.log('appointments called for doctorId=', doctorId, 'date=', date);
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute(`
       SELECT 
@@ -264,7 +264,7 @@ router.get('/appointments/count', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOI
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [result] = await connection.execute(`
       SELECT COUNT(*) as count FROM appointments 
@@ -297,7 +297,7 @@ router.get('/appointments/upcoming', checkPermission(PERMISSIONS.VIEW_PATIENT_AP
     const doctorId = req.session.doctorId;
     console.log('appointments/upcoming called for doctorId=', doctorId, 'limit=', req.query.limit, 'startDate=', req.query.start_date);
     const limit = parseInt(req.query.limit) || 20;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // allow an optional ?start_date=YYYY-MM-DD query parameter so the front‑end
     // (or during debugging) can request a specific day range instead of always
@@ -373,7 +373,7 @@ router.get('/appointments/upcoming', checkPermission(PERMISSIONS.VIEW_PATIENT_AP
 router.get('/appointments/urgent', checkPermission(PERMISSIONS.VIEW_PATIENT_APPOINTMENTS), async (req, res) => {
   try {
     const doctorId = req.session.doctorId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [appointments] = await connection.execute(`
       SELECT 
@@ -438,7 +438,7 @@ router.post('/appointments/:id/complete', checkPermission(PERMISSIONS.MANAGE_APP
     const { id } = req.params;
     const { notes } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify appointment exists
     const [appointments] = await connection.execute(`
@@ -492,7 +492,7 @@ router.post('/appointments/:id/cancel', checkPermission(PERMISSIONS.MANAGE_APPOI
     const { id } = req.params;
     const { reason } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify appointment exists
     const [appointments] = await connection.execute(`
@@ -544,7 +544,7 @@ router.get('/patients/today', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), as
   try {
     const doctorId = req.session.doctorId;
     console.log('patients/today called for doctorId=', doctorId);
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [patients] = await connection.execute(`
       SELECT DISTINCT
@@ -605,7 +605,7 @@ router.get('/patients/:id', checkPermission(PERMISSIONS.VIEW_PATIENT_RECORDS), a
     const doctorId = req.session.doctorId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get patient basic info
     const [patients] = await connection.execute(`
@@ -1050,9 +1050,7 @@ router.post('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asy
       });
     }
 
-    const connection = await pool.getConnection();
-
-    const [result] = await connection.execute(`
+    const [result] = await pool.execute(`
       INSERT INTO examinations 
       (patient_id, doctor_id, appointment_id, examination_date, vital_signs, chief_complaint, diagnosis, treatment_plan, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1067,8 +1065,6 @@ router.post('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asy
       treatment_plan || null,
       status || 'completed'
     ]);
-
-    connection.release();
 
     res.status(201).json({
       success: true,
@@ -1163,7 +1159,7 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
       status
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Verify the examination exists
     const [exams] = await connection.execute(`
@@ -1266,7 +1262,7 @@ router.post('/reports', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (r
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       INSERT INTO reports 
@@ -1335,7 +1331,7 @@ router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), as
     const doctorId = req.session.doctorId;
     const { search, status } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     let query = `
       SELECT 
@@ -1391,7 +1387,7 @@ router.get('/appointments/:appointmentId/examination', checkPermission(PERMISSIO
     const doctorId = req.session.doctorId;
     const { appointmentId } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // get appointment details
     const [appointments] = await connection.execute(`
@@ -1503,7 +1499,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (r
       const { search, status } = req.query;
       console.log('patients called for doctorId=', doctorId, 'search=', search, 'status=', status);
       
-      const connection = await pool.getConnection();
+      let connection = await pool.getConnection();
       
         let query = `
          SELECT DISTINCT
@@ -1740,7 +1736,7 @@ router.post('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async
       return res.status(400).json({ success: false, message: 'Patient ID and doctor ID are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       INSERT INTO admissions
@@ -1781,7 +1777,7 @@ router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async 
     const doctorId = req.session.doctorId;
     const { status = 'admitted' } = req.query;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [admissions] = await connection.execute(`
       SELECT 
@@ -1849,7 +1845,7 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
   try {
     const { id } = req.params;
     const dischargeData = req.body;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const updateFields = ["status = 'discharged'", "discharge_date = ?", "updated_at = NOW()"];
     const params = [new Date()];
@@ -1894,7 +1890,7 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
 router.get('/admissions/:id/discharge/pdf', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [admissions] = await connection.execute(`
       SELECT a.*, u.name as patient_name, u.email as patient_email
@@ -2258,7 +2254,7 @@ router.get('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), as
 
     query += ' ORDER BY rc.check_date DESC LIMIT 100';
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [checks] = await connection.execute(query, params);
     connection.release();
 
@@ -2326,7 +2322,7 @@ router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), a
       return res.status(400).json({ success: false, message: 'Patient ID is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       INSERT INTO round_checks
@@ -2368,7 +2364,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
     const doctorId = req.session.doctorId;
     const { status, next_plan, follow_up_note, notes, fluid_chat, drug_chat } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Fetch the current record to verify it exists and check check_type
     const [existing] = await connection.execute(
@@ -2453,7 +2449,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
 router.get('/admitted-patients', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
   try {
     const doctorId = req.session.doctorId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [patients] = await connection.execute(`
       SELECT 
@@ -2513,7 +2509,7 @@ router.get('/medications', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async 
 
     query += ' ORDER BY m.created_at DESC';
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [medications] = await connection.execute(query, params);
     connection.release();
 
@@ -2552,7 +2548,7 @@ router.get('/medications/:id', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), as
     const doctorId = req.session.doctorId;
     const { id } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [medications] = await connection.execute(`
       SELECT m.*, 
         u_patient.name as patient_name,
@@ -2610,7 +2606,7 @@ router.post('/medications', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), a
       return res.status(400).json({ success: false, message: 'Patient, medication name, dosage, and frequency are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       INSERT INTO medications (patient_id, doctor_id, appointment_id, medication_name, dosage, frequency, duration, instructions, refills_remaining, status, prescribed_date, expiry_date)
@@ -2653,7 +2649,7 @@ router.put('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION)
       return res.status(400).json({ success: false, message: 'Medication name, dosage, and frequency are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       UPDATE medications SET 
@@ -2684,7 +2680,7 @@ router.post('/medications/:id/cancel', checkPermission(PERMISSIONS.PRESCRIBE_MED
     const doctorId = req.session.doctorId;
     const { id } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       UPDATE medications SET status = 'stopped', updated_at = NOW()
@@ -2714,7 +2710,7 @@ router.post('/medications/:id/renew', checkPermission(PERMISSIONS.PRESCRIBE_MEDI
     const doctorId = req.session.doctorId;
     const { id } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       UPDATE medications SET status = 'active', refills_remaining = refills_remaining + 1, updated_at = NOW()
@@ -2744,7 +2740,7 @@ router.delete('/medications/:id', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATI
     const doctorId = req.session.doctorId;
     const { id } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [result] = await connection.execute(
       'DELETE FROM medications WHERE id = ?',
       [id]
@@ -2773,7 +2769,7 @@ router.post('/medications/:id/refill', checkPermission(PERMISSIONS.PRESCRIBE_MED
     const { id } = req.params;
     const { refills = 1 } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       UPDATE medications SET refills_remaining = refills_remaining + ?, updated_at = NOW()
@@ -2803,7 +2799,7 @@ router.get('/patients/:id/medications', checkPermission(PERMISSIONS.VIEW_PATIENT
     const doctorId = req.session.doctorId;
     const { id: patientId } = req.params;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [medications] = await connection.execute(`
       SELECT m.*, u_doctor.name as doctor_name

@@ -14,7 +14,7 @@ router.get('/pending-tests', checkPermission(PERMISSIONS.VIEW_PENDING_TESTS), as
   try {
     const { test_type, search } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get doctor referrals
     let referralQuery = `
@@ -124,7 +124,7 @@ router.post('/results/doctor-referral', checkPermission(PERMISSIONS.UPLOAD_DIAGN
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get referral details for the report
     const [referrals] = await connection.execute(`
@@ -228,7 +228,7 @@ router.post('/results/walkin', checkPermission(PERMISSIONS.UPLOAD_DIAGNOSTIC_RES
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get walk-in patient details
     const [walkins] = await connection.execute(`
@@ -409,7 +409,7 @@ router.get('/result-template/:testType', checkPermission(PERMISSIONS.UPLOAD_DIAG
 router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (req, res) => {
   try {
     const { search = '', limit = 50 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const limitNum = parseInt(limit) || 50;
     
     // Recent patients from appointments/results + walkins
@@ -458,7 +458,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async (r
 router.get('/results', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res) => {
   try {
     const { search = '', limit = 50 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const limitNum = parseInt(limit) || 50;
     
     // Results table
@@ -508,6 +508,69 @@ router.get('/results', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res
   }
 });
 
+router.get('/results/:id', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res) => {
+  let connection;
+
+  try {
+    const { id } = req.params;
+    const { source } = req.query;
+    connection = await pool.getConnection();
+
+    let filePath;
+    let resultContent;
+    let fileName;
+
+    if (source === 'walkin_report') {
+      const [reports] = await connection.execute(`
+        SELECT file_path, file_name, report_description
+        FROM reports
+        WHERE id = ? AND patient_id IS NULL AND report_type = 'lab'
+      `, [id]);
+
+      if (reports.length === 0) {
+        return res.status(404).json({ success: false, message: 'Result not found' });
+      }
+
+      filePath = reports[0].file_path;
+      fileName = reports[0].file_name;
+      resultContent = reports[0].report_description;
+    } else {
+      const [results] = await connection.execute(`
+        SELECT report_file, file_name, result_data, notes
+        FROM results
+        WHERE id = ?
+      `, [id]);
+
+      if (results.length === 0) {
+        return res.status(404).json({ success: false, message: 'Result not found' });
+      }
+
+      filePath = results[0].report_file;
+      fileName = results[0].file_name;
+      resultContent = [results[0].result_data, results[0].notes].filter(Boolean).join('\n\n');
+    }
+
+    if (!filePath) {
+      return res.type('text/plain').send(resultContent || 'No result content or attachment is available.');
+    }
+
+    res.sendFile(filePath, {
+      dotfiles: 'allow',
+      headers: fileName ? { 'Content-Disposition': `inline; filename="${fileName}"` } : {}
+    }, (error) => {
+      if (error && !res.headersSent) {
+        console.error('Error serving diagnostic result:', error);
+        res.status(404).json({ success: false, message: 'Result file not found' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching diagnostic result:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch result' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 // POST /api/diagnostic/results - upload test result
 router.post('/results', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, res) => {
   try {
@@ -520,7 +583,7 @@ router.post('/results', checkPermission(PERMISSIONS.ADD_RESULTS), async (req, re
       return res.status(400).json({ success: false, message: 'Title is required' });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Check if this is a walk-in patient (no valid user ID)
     const [userCheck] = await connection.execute(

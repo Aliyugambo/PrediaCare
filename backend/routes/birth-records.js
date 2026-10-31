@@ -12,7 +12,7 @@ const { checkPermission, PERMISSIONS } = require('../config/permissions');
 
 router.get('/stats', checkPermission(PERMISSIONS.VIEW_BIRTH_RECORDS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [totalBirths] = await connection.execute('SELECT COUNT(*) as count FROM birth_records WHERE status = \'active\'');
     const [thisYearBirths] = await connection.execute("SELECT COUNT(*) as count FROM birth_records WHERE YEAR(child_dob) = YEAR(CURDATE())");
@@ -43,7 +43,7 @@ router.get('/stats', checkPermission(PERMISSIONS.VIEW_BIRTH_RECORDS), async (req
 router.get('/', checkPermission(PERMISSIONS.VIEW_BIRTH_RECORDS), async (req, res) => {
   try {
     const { search, limit = 50, offset = 0 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let query = `SELECT * FROM birth_records WHERE 1=1`;
     const params = [];
@@ -77,7 +77,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_BIRTH_RECORDS), async (req, res
 router.get('/:id', checkPermission(PERMISSIONS.VIEW_BIRTH_RECORDS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [records] = await connection.execute('SELECT * FROM birth_records WHERE id = ?', [id]);
     connection.release();
@@ -109,7 +109,7 @@ router.post('/', checkPermission(PERMISSIONS.MANAGE_BIRTH_RECORDS), async (req, 
       return res.status(400).json({ success: false, message: 'Child first name and last name are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(
       `INSERT INTO birth_records (
@@ -155,7 +155,7 @@ router.put('/:id', checkPermission(PERMISSIONS.MANAGE_BIRTH_RECORDS), async (req
       attending_doctor, hospital_facility, additional_remarks
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM birth_records WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -210,7 +210,7 @@ router.put('/:id', checkPermission(PERMISSIONS.MANAGE_BIRTH_RECORDS), async (req
 router.delete('/:id', checkPermission(PERMISSIONS.MANAGE_BIRTH_RECORDS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM birth_records WHERE id = ?', [id]);
     if (existing.length === 0) {

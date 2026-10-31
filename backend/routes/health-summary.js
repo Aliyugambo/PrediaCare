@@ -53,7 +53,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (req, re
     query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // Use query() instead of execute() to avoid MySQL prepared statement LIMIT issues
     const [summaries] = await connection.query(query, params);
     
@@ -117,7 +117,7 @@ router.get('/latest', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (r
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [summaries] = await connection.execute(`
       SELECT 
@@ -188,7 +188,7 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), as
     const patientId = req.session.userId;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [examinations] = await connection.query(`
       SELECT 
@@ -304,7 +304,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (
     query += ` ORDER BY h.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [reports] = await connection.query(query, params);
     
     // Get total count
@@ -362,7 +362,7 @@ router.get('/reports/:id/file', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY)
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.execute(`
       SELECT attachments FROM health_summaries WHERE id = ? AND patient_id = ?
@@ -420,7 +420,7 @@ router.get('/:id', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), async (req,
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [summaries] = await connection.execute(`
       SELECT 
@@ -505,7 +505,7 @@ router.get('/by-type/:type', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), a
     const { type } = req.params;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [summaries] = await connection.query(`
       SELECT 
@@ -568,7 +568,7 @@ router.get('/history/vitals', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), 
     const patientId = req.session.userId;
     const { limit = 10 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [vitals] = await connection.query(`
       SELECT 
@@ -610,7 +610,7 @@ router.get('/upcoming/visits', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY),
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [visits] = await connection.execute(`
       SELECT 
@@ -655,7 +655,7 @@ router.get('/meta/types', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), asyn
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [types] = await connection.execute(`
       SELECT DISTINCT summary_type, COUNT(*) as count
@@ -695,7 +695,7 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_HEALTH_SUMMARY), as
     const patientId = req.session.userId;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [examinations] = await connection.query(`
       SELECT 

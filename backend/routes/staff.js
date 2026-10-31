@@ -56,7 +56,7 @@ router.get('/test-referrals', checkPermission(PERMISSIONS.VIEW_TEST_REFERRALS), 
     query += ` ORDER BY tr.urgency DESC, tr.created_at ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [referrals] = await connection.query(query, params);
     
     // Get total count
@@ -111,7 +111,7 @@ router.get('/test-referrals/:id', checkPermission(PERMISSIONS.VIEW_TEST_REFERRAL
   try {
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [referrals] = await connection.execute(`
       SELECT 
@@ -193,7 +193,7 @@ router.put('/test-referrals/:id', checkPermission(PERMISSIONS.VIEW_TEST_REFERRAL
     const { id } = req.params;
     const { status, assigned_to_staff_id, notes } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify the test referral exists
     const [referrals] = await connection.execute(`
@@ -275,7 +275,7 @@ router.post('/test-referrals/:id/results', checkPermission(PERMISSIONS.VIEW_TEST
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get the test referral details
     const [referrals] = await connection.execute(`
@@ -390,7 +390,7 @@ router.get('/reports', checkPermission(PERMISSIONS.VIEW_REPORTS), async (req, re
     query += ` ORDER BY r.urgency DESC, r.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [reports] = await connection.query(query, params);
     
     // Get total count
@@ -444,7 +444,7 @@ router.get('/reports/:id/file', checkPermission(PERMISSIONS.VIEW_REPORTS), async
   try {
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [reports] = await connection.execute(`
       SELECT file_path, file_name FROM reports WHERE id = ? AND (visibility = 'staff' OR visibility = 'all' OR is_test_referral = TRUE)
@@ -519,7 +519,7 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
 
     query += ' ORDER BY rc.check_date DESC LIMIT 100';
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [checks] = await connection.execute(query, params);
     connection.release();
 
@@ -596,7 +596,7 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
         return res.status(400).json({ success: false, message: 'Patient ID is required' });
       }
 
-      const connection = await pool.getConnection();
+      let connection = await pool.getConnection();
 
       const [result] = await connection.execute(`
         INSERT INTO round_checks
@@ -640,7 +640,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
     const staffId = req.session.userId;
     const { status, next_plan, follow_up_note, notes, vital_signs, fluid_balance } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute(
       'SELECT id, checked_by, check_type, follow_up_notes FROM round_checks WHERE id = ?',
@@ -857,7 +857,7 @@ router.post('/appointments/:id/vitals', checkPermission(PERMISSIONS.MANAGE_ROUND
       return res.status(400).json({ success: false, message: 'BP, heart rate, and temperature are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [appointments] = await connection.execute(`
       SELECT a.id, a.patient_id, a.doctor_id, a.appointment_date, a.appointment_time, a.status,
@@ -1014,7 +1014,7 @@ router.get('/nurse-vitals', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
  */
 router.get('/admitted-patients', checkPermission(PERMISSIONS.VIEW_ADMISSIONS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [patients] = await connection.execute(`
       SELECT 
@@ -1052,7 +1052,7 @@ router.get('/admitted-patients', checkPermission(PERMISSIONS.VIEW_ADMISSIONS), a
  */
 router.get('/nurse-stats', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [totalResult] = await connection.execute(
       'SELECT COUNT(*) as count FROM users WHERE role = ?',
@@ -1098,7 +1098,7 @@ router.get('/nurse-stats', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (r
  */
 router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const { search = '', status = 'all' } = req.query;
     
     let query = `

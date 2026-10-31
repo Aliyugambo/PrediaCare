@@ -15,7 +15,7 @@ const { checkPermission, PERMISSIONS } = require('../config/permissions');
  */
 router.get('/', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [doctors] = await connection.execute(`
       SELECT 
@@ -78,7 +78,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (req, res) => {
 router.get('/:id', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [doctors] = await connection.execute(`
       SELECT 
@@ -149,7 +149,7 @@ router.get('/:id/schedule', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (re
     const { id } = req.params;
     const { date } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get doctor details
     const [doctors] = await connection.execute(`
@@ -212,7 +212,7 @@ router.get('/:id/schedule', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (re
  */
 router.get('/meta/specializations', checkPermission(PERMISSIONS.VIEW_DOCTORS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [specializations] = await connection.execute(`
       SELECT DISTINCT specialization

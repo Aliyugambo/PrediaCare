@@ -34,7 +34,7 @@ router.post('/subscribe', async (req, res) => {
   }
 
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Check if already subscribed (and active)
     const [existing] = await connection.execute(
@@ -93,7 +93,7 @@ router.get('/health-news', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 3;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [rows] = await connection.execute(`
       SELECT id, title, summary, category, author, created_at
       FROM health_news
@@ -141,7 +141,7 @@ router.get('/subscribers', async (req, res) => {
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [rows] = await connection.execute(`
       SELECT id, email, name, subscribed_at, is_active
       FROM newsletter_subscribers

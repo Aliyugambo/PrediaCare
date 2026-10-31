@@ -51,7 +51,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req, res) 
     query += ` ORDER BY m.prescribed_date DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // Use query() instead of execute() to avoid MySQL prepared statement LIMIT issues
     const [medications] = await connection.query(query, params);
     
@@ -121,7 +121,7 @@ router.get('/active', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req,
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [medications] = await connection.execute(`
       SELECT 
@@ -183,7 +183,7 @@ router.get('/:id', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), async (req, re
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [medications] = await connection.execute(`
       SELECT 
@@ -264,7 +264,7 @@ router.get('/recent/latest', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), asyn
     const patientId = req.session.userId;
     const { limit = 5 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [medications] = await connection.query(`
       SELECT 
@@ -318,7 +318,7 @@ router.get('/summary/stats', checkPermission(PERMISSIONS.VIEW_MEDICATIONS), asyn
   try {
     const patientId = req.session.userId;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get counts by status
     const [statusCounts] = await connection.execute(`
@@ -401,7 +401,7 @@ router.post('/', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, 
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Create the medication/prescription
     const [result] = await connection.execute(`
@@ -445,7 +445,7 @@ router.post('/', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, 
 router.get('/doctor/pending', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), async (req, res) => {
   try {
     const doctorId = req.session.doctorId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get active medications prescribed by this doctor
     const [medications] = await connection.execute(`
@@ -528,7 +528,7 @@ router.post('/:id/refill', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), as
     const { id } = req.params;
     const { refills_to_add = 1 } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify medication exists
     const [medications] = await connection.execute(`
@@ -574,7 +574,7 @@ router.post('/:id/stop', checkPermission(PERMISSIONS.PRESCRIBE_MEDICATION), asyn
     const { id } = req.params;
     const { reason } = req.body;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify medication exists
     const [medications] = await connection.execute(`
@@ -645,7 +645,7 @@ router.post('/prescribe', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async 
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(`
       INSERT INTO medications 
@@ -700,7 +700,7 @@ router.put('/:id/doctor', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), async 
       expiry_date
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Verify the medication belongs to this doctor
     const [meds] = await connection.execute(`

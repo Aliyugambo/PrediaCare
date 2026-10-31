@@ -87,7 +87,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, res)
     query += ` ORDER BY m.created_at DESC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     // Use query() instead of execute() to avoid MySQL prepared statement LIMIT issues
     const [messages] = await connection.query(query, params);
     
@@ -145,7 +145,7 @@ router.get('/unread-count-generic', async (req, res) => {
   }
 
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let unreadCount = 0;
     if (userRole === 'admin' || userRole === 'staff' || userRole === 'nurse' || userRole === 'customer_care') {
@@ -200,7 +200,7 @@ router.get('/unread-count-generic', async (req, res) => {
 router.get('/unread-count', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, res) => {
   try {
     const patientId = req.session.userId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [result] = await connection.execute(`
       SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = FALSE
@@ -240,7 +240,7 @@ router.post('/', checkPermission(PERMISSIONS.MESSAGE_DOCTOR), async (req, res) =
     }
     
     // Verify receiver exists and is a doctor
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [users] = await connection.execute(`
       SELECT id, name, role FROM users WHERE id = ?
     `, [receiver_id]);
@@ -337,7 +337,7 @@ router.post('/:id/read', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify message exists and belongs to this patient
     const [messages] = await connection.execute(`
@@ -382,7 +382,7 @@ router.post('/:id/read', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (
 router.post('/read-all', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, res) => {
   try {
     const patientId = req.session.userId;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     await connection.execute(`
       UPDATE messages SET is_read = TRUE WHERE receiver_id = ? AND is_read = FALSE
@@ -413,7 +413,7 @@ router.get('/:id', checkPermission(PERMISSIONS.VIEW_OWN_MESSAGES), async (req, r
     const patientId = req.session.userId;
     const { id } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [messages] = await connection.execute(`
       SELECT 
@@ -491,7 +491,7 @@ router.get('/conversation/:doctorId', checkPermission(PERMISSIONS.VIEW_OWN_MESSA
     const { doctorId } = req.params;
     const { limit = 50, offset = 0 } = req.query;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     const [messages] = await connection.query(`
       SELECT 
@@ -546,11 +546,12 @@ router.get('/conversation/:doctorId', checkPermission(PERMISSIONS.VIEW_OWN_MESSA
  * Permission: VIEW_PATIENT_MESSAGES (doctor)
  */
 router.get('/doctor/inbox', checkPermission(PERMISSIONS.VIEW_PATIENT_MESSAGES), async (req, res) => {
+  let connection;
   try {
     const doctorId = req.session.userId;
     const { limit = 50, offset = 0, unread_only = false } = req.query;
     
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     let query = `
       SELECT 
@@ -635,7 +636,7 @@ router.post('/doctor/:messageId/read', checkPermission(PERMISSIONS.VIEW_PATIENT_
     const doctorId = req.session.userId;
     const { messageId } = req.params;
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Verify message belongs to this doctor
     const [messages] = await connection.execute(`
@@ -689,7 +690,7 @@ router.post('/doctor/reply/:messageId', checkPermission(PERMISSIONS.REPLY_MESSAG
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get the original message to find the patient
     const [originalMessages] = await connection.execute(`
@@ -762,7 +763,7 @@ router.post('/patient/reply/:messageId', checkPermission(PERMISSIONS.MESSAGE_DOC
       });
     }
     
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     
     // Get the original message to find the doctor
     const [originalMessages] = await connection.execute(`

@@ -197,7 +197,8 @@ router.post('/inventory', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async 
 });
 
 router.put('/inventory/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
@@ -250,7 +251,8 @@ router.put('/inventory/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), asy
 });
 
 router.delete('/inventory/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
@@ -424,7 +426,8 @@ router.post('/donors', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (re
 });
 
 router.put('/donors/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
@@ -483,7 +486,8 @@ router.put('/donors/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async 
 });
 
 router.delete('/donors/:id', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
@@ -640,7 +644,8 @@ router.post('/issues', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (re
 });
 
 router.put('/issues/:id/return', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
@@ -670,7 +675,8 @@ router.put('/issues/:id/return', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK),
 });
 
 router.put('/issues/:id/cancel', checkPermission(PERMISSIONS.MANAGE_BLOOD_BANK), async (req, res) => {
-  const connection = await pool.getConnection();
+  let connection;
+connection = await pool.getConnection();
 
   try {
     const { id } = req.params;

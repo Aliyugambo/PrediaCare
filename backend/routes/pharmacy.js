@@ -16,7 +16,7 @@ const { checkPermission, PERMISSIONS } = require('../config/permissions');
  */
 router.get('/stats', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [totalMedicines] = await connection.execute(
       'SELECT COUNT(*) as count FROM pharmacy_medicines'
@@ -111,7 +111,7 @@ router.get('/medicines', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req,
     query += ` ORDER BY medicine_name ASC LIMIT ${Math.floor(Number(limit)) || 50} OFFSET ${Math.floor(Number(offset)) || 0}`;
     params.push(parseInt(limit), parseInt(offset));
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
     const [medicines] = await connection.query(query, params);
 
     // Get total count
@@ -175,7 +175,7 @@ router.get('/medicines', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req,
 router.get('/medicines/:id', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [medicines] = await connection.execute(
       'SELECT * FROM pharmacy_medicines WHERE id = ?', [id]
@@ -239,7 +239,7 @@ router.post('/medicines', checkPermission(PERMISSIONS.MANAGE_PHARMACY), async (r
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(
       `INSERT INTO pharmacy_medicines 
@@ -293,7 +293,7 @@ router.put('/medicines/:id', checkPermission(PERMISSIONS.MANAGE_PHARMACY), async
       storage_conditions, status
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM pharmacy_medicines WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -345,7 +345,7 @@ router.put('/medicines/:id', checkPermission(PERMISSIONS.MANAGE_PHARMACY), async
 router.delete('/medicines/:id', checkPermission(PERMISSIONS.MANAGE_PHARMACY), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM pharmacy_medicines WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -374,7 +374,7 @@ router.get('/sales', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res
     const limit = Number.isInteger(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 50;
     const offset = Number.isInteger(parseInt(req.query.offset)) ? parseInt(req.query.offset) : 0;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [sales] = await connection.query(`
       SELECT ps.*, 
@@ -430,7 +430,7 @@ router.post('/sales', checkPermission(PERMISSIONS.DISPENSE_MEDICINE), async (req
       });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     // Check medicine exists and has enough stock
     const [medicines] = await connection.execute(
@@ -502,7 +502,7 @@ router.post('/discharge-medications', checkPermission(PERMISSIONS.DISPENSE_MEDIC
       return res.status(400).json({ success: false, message: 'admission_id, patient_id, patient_name and medications array are required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const insertPromises = medications.map(med => {
       return connection.execute(`
@@ -540,7 +540,7 @@ router.post('/discharge-medications', checkPermission(PERMISSIONS.DISPENSE_MEDIC
 router.get('/discharge-medications', checkPermission(PERMISSIONS.VIEW_PHARMACY), async (req, res) => {
   try {
     const { status = 'pending', patient_id, admission_id } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let query = `
       SELECT dm.*, u.name as created_by_name
@@ -604,7 +604,7 @@ router.post('/discharge-medications/:id/dispense', checkPermission(PERMISSIONS.D
   try {
     const { id } = req.params;
     const { medicine_id, quantity } = req.body;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT * FROM discharge_medications WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -669,7 +669,7 @@ router.post('/discharge-medications/:id/cancel', checkPermission(PERMISSIONS.DIS
   try {
     const { id } = req.params;
     const { reason, status = 'cancelled' } = req.body;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT * FROM discharge_medications WHERE id = ?', [id]);
     if (existing.length === 0) {

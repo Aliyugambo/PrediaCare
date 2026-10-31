@@ -12,7 +12,7 @@ const { checkPermission, PERMISSIONS } = require('../config/permissions');
 
 router.get('/stats', checkPermission(PERMISSIONS.VIEW_DEATH_RECORDS), async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [totalDeaths] = await connection.execute('SELECT COUNT(*) as count FROM death_records WHERE status = \'active\'');
     const [thisYearDeaths] = await connection.execute("SELECT COUNT(*) as count FROM death_records WHERE YEAR(date_of_death) = YEAR(CURDATE())");
@@ -43,7 +43,7 @@ router.get('/stats', checkPermission(PERMISSIONS.VIEW_DEATH_RECORDS), async (req
 router.get('/', checkPermission(PERMISSIONS.VIEW_DEATH_RECORDS), async (req, res) => {
   try {
     const { search, limit = 50, offset = 0 } = req.query;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     let query = `SELECT * FROM death_records WHERE 1=1`;
     const params = [];
@@ -77,7 +77,7 @@ router.get('/', checkPermission(PERMISSIONS.VIEW_DEATH_RECORDS), async (req, res
 router.get('/:id', checkPermission(PERMISSIONS.VIEW_DEATH_RECORDS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [records] = await connection.execute('SELECT * FROM death_records WHERE id = ?', [id]);
     connection.release();
@@ -108,7 +108,7 @@ router.post('/', checkPermission(PERMISSIONS.MANAGE_DEATH_RECORDS), async (req, 
       return res.status(400).json({ success: false, message: 'Full name is required' });
     }
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [result] = await connection.execute(
       `INSERT INTO death_records (
@@ -151,7 +151,7 @@ router.put('/:id', checkPermission(PERMISSIONS.MANAGE_DEATH_RECORDS), async (req
       informant_name, informant_relationship, informant_contact, additional_notes
     } = req.body;
 
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM death_records WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -204,7 +204,7 @@ router.put('/:id', checkPermission(PERMISSIONS.MANAGE_DEATH_RECORDS), async (req
 router.delete('/:id', checkPermission(PERMISSIONS.MANAGE_DEATH_RECORDS), async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     const [existing] = await connection.execute('SELECT id FROM death_records WHERE id = ?', [id]);
     if (existing.length === 0) {
