@@ -4625,16 +4625,17 @@ const hr = vitalData?.heartRate || '--';
         const timeSelect = document.getElementById('appointmentTime');
         if (timeSelect && timeSelect.options.length <= 1) {
           timeSelect.innerHTML = '<option value="">Select time</option>';
-          // Generate time slots from 07:00 AM to 10:00 PM (22:00)
+          // Generate 24-hour time slots for the full day
           const times = [];
-          for (let hour = 7; hour <= 22; hour++) {
-            times.push(`${hour.toString().padStart(2, '0')}:00`);
-            times.push(`${hour.toString().padStart(2, '0')}:30`);
+          for (let minutes = 0; minutes < 24 * 60; minutes += 30) {
+            const hour = Math.floor(minutes / 60).toString().padStart(2, '0');
+            const minute = (minutes % 60).toString().padStart(2, '0');
+            times.push(`${hour}:${minute}`);
           }
           times.forEach(time => {
             const option = document.createElement('option');
             option.value = time;
-            option.textContent = formatTime(time);
+            option.textContent = time;
             timeSelect.appendChild(option);
           });
         }

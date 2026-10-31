@@ -205,7 +205,7 @@ router.post('/', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), async (req, res)
     
     // Verify doctor exists and is active
     const [doctors] = await connection.execute(`
-      SELECT d.id, d.available_days, d.available_time_start, d.available_time_end, u.name as doctor_name, u.email as doctor_email
+      SELECT d.id, u.name as doctor_name, u.email as doctor_email
       FROM doctors d
       JOIN users u ON d.user_id = u.id
       WHERE d.id = ? AND d.is_active = TRUE
@@ -221,27 +221,11 @@ router.post('/', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), async (req, res)
     }
     
     const doctor = doctors[0];
-    console.log('✅ Doctor found:', { doctor_id: doctor.id, available_days: doctor.available_days, available_time_start: doctor.available_time_start, available_time_end: doctor.available_time_end });
-    
-    // Check if time is within available hours
-    const availableDays = doctor.available_days.split(',');
-    const requestedDate = new Date(appointment_date);
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Sun'];
-    const requestedDay = dayNames[requestedDate.getDay()];
-    
-    console.log('Day check:', { appointment_date, requestedDay, availableDays });
-    const requestedTime = new Date(`1970-01-01T${appointment_time}`);
-    const startTime = new Date(`1970-01-01T${doctor.available_time_start}`);
-    const endTime = new Date(`1970-01-01T${doctor.available_time_end}`);
-    
-    console.log('Time check:', { appointment_time, startTime: doctor.available_time_start, endTime: doctor.available_time_end, isValid: requestedTime >= startTime && requestedTime <= endTime });
-    
-    if (requestedTime < startTime || requestedTime > endTime) {
-      console.log('❌ Time outside available hours');
+    if (typeof appointment_time !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(appointment_time)) {
       connection.release();
-      return res.status(400).json({ 
-        success: false, 
-        message: `Time must be between ${doctor.available_time_start} and ${doctor.available_time_end}` 
+      return res.status(400).json({
+        success: false,
+        message: 'Appointment time must be in 24-hour HH:mm format from 00:00 to 23:59'
       });
     }
     

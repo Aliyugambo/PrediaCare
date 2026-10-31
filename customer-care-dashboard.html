@@ -982,7 +982,9 @@
                </div>
                <div class="form-group">
                  <label>Time *</label>
-                 <input type="time" id="appointmentTime" required>
+                 <select id="appointmentTime" required>
+                   <option value="">Select time (24-hour)</option>
+                 </select>
                </div>
              </div>
              <div class="form-row">
@@ -1137,6 +1139,7 @@
      
      // Check authentication
     document.addEventListener('DOMContentLoaded', async function() {
+      populateAppointmentTimes();
       await checkAuthentication();
     });
     
@@ -2036,6 +2039,21 @@
 
     function resetAppointmentForm() {
       document.getElementById('appointmentForm').reset();
+    }
+
+    function populateAppointmentTimes() {
+      const select = document.getElementById('appointmentTime');
+      if (!select) return;
+
+      for (let minutes = 0; minutes < 24 * 60; minutes += 30) {
+        const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
+        const minute = String(minutes % 60).padStart(2, '0');
+        const time = `${hour}:${minute}`;
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        select.appendChild(option);
+      }
     }
 
     async function loadPatientsForAppointment() {

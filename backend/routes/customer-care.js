@@ -445,7 +445,7 @@ router.post('/appointments', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), asyn
 
     // Verify doctor exists and is active
     const [doctors] = await connection.execute(`
-      SELECT d.id, d.available_days, d.available_time_start, d.available_time_end, u.name as doctor_name, u.email as doctor_email
+      SELECT d.id, u.name as doctor_name, u.email as doctor_email
       FROM doctors d
       JOIN users u ON d.user_id = u.id
       WHERE d.id = ? AND d.is_active = TRUE
@@ -461,29 +461,11 @@ router.post('/appointments', checkPermission(PERMISSIONS.BOOK_APPOINTMENT), asyn
 
     const doctor = doctors[0];
 
-    // Check if time is within available hours
-    const availableDays = doctor.available_days.split(',');
-    const requestedDate = new Date(appointment_date);
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const requestedDay = dayNames[requestedDate.getDay()];
-
-    const requestedTime = new Date(`1970-01-01T${appointment_time}`);
-    const startTime = new Date(`1970-01-01T${doctor.available_time_start}`);
-    const endTime = new Date(`1970-01-01T${doctor.available_time_end}`);
-
-    if (!availableDays.includes(requestedDay)) {
+    if (typeof appointment_time !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(appointment_time)) {
       connection.release();
       return res.status(400).json({
         success: false,
-        message: `Doctor is not available on ${requestedDay}s`
-      });
-    }
-
-    if (requestedTime < startTime || requestedTime > endTime) {
-      connection.release();
-      return res.status(400).json({
-        success: false,
-        message: `Time must be between ${doctor.available_time_start} and ${doctor.available_time_end}`
+        message: 'Appointment time must be in 24-hour HH:mm format from 00:00 to 23:59'
       });
     }
 
