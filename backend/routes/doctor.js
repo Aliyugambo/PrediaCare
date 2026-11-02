@@ -943,10 +943,7 @@ router.get('/examinations', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), asyn
       SELECT e.*, u.name as patient_name, u.email as patient_email
       FROM examinations e
       LEFT JOIN users u ON e.patient_id = u.id AND u.role = 'patient'
-      WHERE e.patient_id IN (
-        SELECT DISTINCT a.patient_id FROM appointments a 
-        WHERE a.doctor_id = ? AND a.status IN ('scheduled', 'confirmed', 'pending', 'completed')
-      )
+      WHERE e.doctor_id = ?
     `;
     const params = [doctorId];
     
@@ -1098,8 +1095,8 @@ router.get('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
       SELECT e.*, u.name as patient_name, u.email as patient_email
       FROM examinations e
       LEFT JOIN users u ON e.patient_id = u.id AND u.role = 'patient'
-      WHERE e.id = ?
-    `, [id]);
+      WHERE e.id = ? AND e.doctor_id = ?
+    `, [id, doctorId]);
     
     if (exams.length === 0) {
       connection.release();
@@ -1152,6 +1149,7 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
     const doctorId = req.session.doctorId;
     const { id } = req.params;
     const {
+      examination_date,
       vital_signs,
       chief_complaint,
       diagnosis,
@@ -1163,8 +1161,8 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
 
     // Verify the examination exists
     const [exams] = await connection.execute(`
-      SELECT id FROM examinations WHERE id = ?
-    `, [id]);
+      SELECT id FROM examinations WHERE id = ? AND doctor_id = ?
+    `, [id, doctorId]);
 
     if (exams.length === 0) {
       connection.release();
@@ -1177,6 +1175,10 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
     const updateParts = [];
     const updateParams = [];
 
+    if (examination_date !== undefined) {
+      updateParts.push('examination_date = ?');
+      updateParams.push(examination_date);
+    }
     if (vital_signs !== undefined) {
       updateParts.push('vital_signs = ?');
       updateParams.push(vital_signs ? JSON.stringify(vital_signs) : null);
@@ -1207,7 +1209,8 @@ router.put('/examinations/:id', checkPermission(PERMISSIONS.VIEW_OWN_PATIENTS), 
     }
 
     updateParams.push(id);
-    const query = `UPDATE examinations SET ${updateParts.join(', ')} WHERE id = ?`;
+    updateParams.push(doctorId);
+    const query = `UPDATE examinations SET ${updateParts.join(', ')} WHERE id = ? AND doctor_id = ?`;
 
     await connection.execute(query, updateParams);
     connection.release();
@@ -1842,10 +1845,24 @@ router.get('/admissions', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async 
  * Permission: MANAGE_ADMISSIONS (doctor)
  */
 router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMISSIONS), async (req, res) => {
+  let connection;
   try {
     const { id } = req.params;
     const dischargeData = req.body;
-    let connection = await pool.getConnection();
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [admissions] = await connection.execute(
+      'SELECT patient_id FROM admissions WHERE id = ? FOR UPDATE',
+      [id]
+    );
+
+    if (admissions.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Admission not found' });
+    }
+
+    const patientId = admissions[0].patient_id;
 
     const updateFields = ["status = 'discharged'", "discharge_date = ?", "updated_at = NOW()"];
     const params = [new Date()];
@@ -1855,30 +1872,37 @@ router.put('/admissions/:id/discharge', checkPermission(PERMISSIONS.MANAGE_ADMIS
       params.push(JSON.stringify(dischargeData));
     }
 
-    const [admissionResult] = await connection.execute(`
+    await connection.execute(`
       UPDATE admissions SET ${updateFields.join(', ')} WHERE id = ?
     `, [...params, id]);
 
-    if (admissionResult.affectedRows > 0 && dischargeData && dischargeData.patient_id) {
-      await connection.execute(
-        'UPDATE users SET patient_status = ? WHERE id = ?',
-        ['discharged', dischargeData.patient_id]
-      );
+    await connection.execute(
+      'UPDATE users SET patient_status = ? WHERE id = ?',
+      ['discharged', patientId]
+    );
 
-      await connection.execute(
-        `UPDATE round_checks
-         SET status = 'discharged', updated_at = NOW()
-         WHERE patient_id = ? AND admission_id = ? AND status = 'ongoing'`,
-        [dischargeData.patient_id, id]
-      );
-    }
+    await connection.execute(
+      `UPDATE round_checks
+       SET status = 'discharged', updated_at = NOW()
+       WHERE patient_id = ? AND admission_id = ? AND status = 'ongoing'`,
+      [patientId, id]
+    );
 
-    connection.release();
+    await connection.commit();
 
     res.json({ success: true, message: 'Patient discharged successfully' });
   } catch (error) {
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (rollbackError) {
+        console.error('Error rolling back patient discharge:', rollbackError.message);
+      }
+    }
     console.error('Error discharging patient:', error);
     res.status(500).json({ success: false, message: 'Failed to discharge patient' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
@@ -2355,20 +2379,21 @@ router.post('/round-checks', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), a
 
 /**
  * PUT /api/doctor/round-checks/:id
- * Doctor can append follow-up notes and change status, but CANNOT edit vital_signs or original notes
+ * Doctors can edit their own ongoing doctor round-checks or append notes to other ongoing rounds
  * Permission: MANAGE_ROUND_CHECKS (doctor)
  */
 router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
   try {
     const { id } = req.params;
     const doctorId = req.session.doctorId;
-    const { status, next_plan, follow_up_note, notes, fluid_chat, drug_chat } = req.body;
+    const userId = req.session.userId;
+    const { status, next_plan, follow_up_note, notes, vital_signs, edit_record } = req.body;
 
     let connection = await pool.getConnection();
 
     // Fetch the current record to verify it exists and check check_type
     const [existing] = await connection.execute(
-      'SELECT id FROM round_checks WHERE id = ?',
+      'SELECT id, check_type, checked_by, status, follow_up_notes FROM round_checks WHERE id = ?',
       [id]
     );
 
@@ -2377,24 +2402,45 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
       return res.status(404).json({ success: false, message: 'Round check not found' });
     }
 
-    // Build allowed updates only
+    const record = existing[0];
     const updates = [];
     const values = [];
 
-    // Doctors CANNOT edit vital_signs or original notes - only append follow_up_note or change status/next_plan
-    if (status !== undefined) {
-      updates.push('status = ?');
-      values.push(status);
-    }
-    if (next_plan !== undefined) {
-      updates.push('next_plan = ?');
-      values.push(next_plan);
+    if (edit_record) {
+      if (record.check_type !== 'doctor' || Number(record.checked_by) !== Number(userId)) {
+        connection.release();
+        return res.status(403).json({ success: false, message: 'You can only edit your own doctor round-checks' });
+      }
+      if (record.status !== 'ongoing') {
+        connection.release();
+        return res.status(409).json({ success: false, message: 'Only ongoing round-checks can be edited' });
+      }
+      if (notes !== undefined) {
+        updates.push('notes = ?');
+        values.push(notes || null);
+      }
+      if (vital_signs !== undefined) {
+        updates.push('vital_signs = ?');
+        values.push(vital_signs ? JSON.stringify(vital_signs) : null);
+      }
+      if (next_plan !== undefined) {
+        updates.push('next_plan = ?');
+        values.push(next_plan || null);
+      }
+    } else {
+      if (status !== undefined) {
+        updates.push('status = ?');
+        values.push(status);
+      }
+      if (next_plan !== undefined) {
+        updates.push('next_plan = ?');
+        values.push(next_plan);
+      }
     }
 
-    // Append follow-up note to JSON array
-    if (follow_up_note !== undefined && follow_up_note.trim() !== '') {
+    if (!edit_record && typeof follow_up_note === 'string' && follow_up_note.trim() !== '') {
       const newNote = {
-        userId: doctorId,
+        userId,
         checkType: 'doctor',
         text: follow_up_note.trim(),
         createdAt: new Date().toISOString()
@@ -2408,13 +2454,9 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
       return res.status(400).json({ success: false, message: 'No allowed fields to update' });
     }
 
-    // Prevent updating vital_signs or original notes
-    const forbidden = [];
-    if (req.body.notes !== undefined) forbidden.push('notes');
-    if (req.body.vital_signs !== undefined) forbidden.push('vital_signs');
-    if (forbidden.length > 0) {
+    if (!edit_record && (notes !== undefined || vital_signs !== undefined)) {
       connection.release();
-      return res.status(403).json({ success: false, message: `Forbidden: cannot update ${forbidden.join(', ')} after creation` });
+      return res.status(403).json({ success: false, message: 'Original notes and vitals can only be edited on your own doctor round-checks' });
     }
 
     updates.push('updated_at = NOW()');
@@ -2426,7 +2468,7 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
 
     connection.release();
 
-    res.json({ success: true, message: 'Doctor follow-up note added successfully' });
+    res.json({ success: true, message: edit_record ? 'Doctor round-check updated successfully' : 'Doctor follow-up note added successfully' });
   } catch (error) {
     console.error('Error updating round check by doctor:', error);
     res.status(500).json({ success: false, message: 'Failed to update round check' });

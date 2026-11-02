@@ -1959,7 +1959,7 @@
   <div id="nurseRoundCheckModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
     <div style="background:white;border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
       <div class="rc-modal-header">
-        <h3>Nurse Round-Check</h3>
+        <h3 id="nurseRoundCheckTitle">Nurse Round-Check</h3>
         <button class="rc-close-btn" onclick="closeNurseRoundCheckModal()">✕</button>
       </div>
       
@@ -1978,7 +1978,7 @@
             </div>
           </div>
 
-          <div class="rc-field">
+          <div class="rc-field" id="nrcPatientSelectorField">
             <label>Select Admitted Patient</label>
             <select id="nrcPatientSelect" onchange="onNrcPatientSelectChange()" class="rc-input">
               <option value="">-- Choose an admitted patient --</option>
@@ -2065,7 +2065,7 @@
       
       <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: white; border-radius: 0 0 12px 12px;">
         <button type="button" class="rc-btn rc-btn-secondary" onclick="closeNurseRoundCheckModal()">Cancel</button>
-        <button type="button" class="rc-btn rc-btn-primary" onclick="saveNurseRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
+        <button type="button" id="saveNurseRoundCheckButton" class="rc-btn rc-btn-primary" onclick="saveNurseRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
       </div>
     </div>
   </div>
@@ -3291,6 +3291,8 @@
 
     // ===================== ROUND CHECKS (Nurse) =====================
     let nurseRoundChecks = [];
+    let editingNurseRoundCheck = false;
+    let editingNurseDrugChat = [];
 
     function switchNrcTab(tab) {
       ['vitals', 'fluid', 'drug', 'note', 'doctorNotes'].forEach(t => {
@@ -3362,6 +3364,15 @@
     function openNewNurseRoundCheck() {
       const modal = document.getElementById('nurseRoundCheckModal');
       document.getElementById('nurseRoundCheckForm').reset();
+      editingNurseRoundCheck = false;
+      editingNurseDrugChat = [];
+      document.getElementById('nurseRoundCheckTitle').textContent = 'Nurse Round-Check';
+      document.getElementById('nrcPatientSelectorField').style.display = '';
+      document.getElementById('saveNurseRoundCheckButton').style.display = '';
+      document.getElementById('saveNurseRoundCheckButton').innerHTML = '<i class="fas fa-save"></i> Save Round-Check';
+      document.querySelectorAll('#nurseRoundCheckForm input:not([type="hidden"]), #nurseRoundCheckForm textarea, #nurseRoundCheckForm select').forEach(input => {
+        input.disabled = false;
+      });
       document.getElementById('nrcId').value = '';
       document.getElementById('nrcPatientId').value = '';
       document.getElementById('nrcAdmissionId').value = '';
@@ -3388,11 +3399,22 @@
       loadAdmittedPatientsForRoundCheck();
     }
 
-    function openNurseRoundCheckDetail(id) {
+    function openNurseRoundCheckDetail(id, edit = false) {
       const rc = nurseRoundChecks.find(r => r.id === id);
       if (!rc) return;
+
+      const canEdit = edit && rc.checkType === 'nurse' && Number(rc.staffId) === Number(currentUser?.id) && rc.status === 'ongoing';
+      editingNurseRoundCheck = canEdit;
+      editingNurseDrugChat = Array.isArray(rc.drugChat) ? rc.drugChat.map(drug => ({ ...drug })) : [];
       
       const modal = document.getElementById('nurseRoundCheckModal');
+      document.getElementById('nurseRoundCheckTitle').textContent = canEdit ? 'Edit Nurse Round-Check' : `${capitalizeFirst(rc.checkType || 'nurse')} Round-Check`;
+      document.getElementById('nrcPatientSelectorField').style.display = 'none';
+      document.getElementById('saveNurseRoundCheckButton').style.display = canEdit ? '' : 'none';
+      document.getElementById('saveNurseRoundCheckButton').innerHTML = '<i class="fas fa-save"></i> Save Changes';
+      document.querySelectorAll('#nurseRoundCheckForm input:not([type="hidden"]), #nurseRoundCheckForm textarea, #nurseRoundCheckForm select').forEach(input => {
+        input.disabled = !canEdit;
+      });
       document.getElementById('nrcId').value = rc.id || '';
       document.getElementById('nrcPatientId').value = rc.patientId || '';
       document.getElementById('nrcAdmissionId').value = rc.admissionId || '';
@@ -3422,12 +3444,16 @@
       document.getElementById('nrcFluidBlood').value = fb.blood || '';
       document.getElementById('nrcFluidEnteral').value = fb.enteral || '';
       document.getElementById('nrcFluidMedications').value = fb.medications || '';
-      document.getElementById('nrcDrugName').value = '';
-      document.getElementById('nrcDrugDose').value = '';
-      document.getElementById('nrcDrugRoute').value = '';
-      document.getElementById('nrcDrugFrequency').value = '';
-      document.getElementById('nrcDrugStartDate').value = '';
-      document.getElementById('nrcDrugPrescriber').value = '';
+      const currentDrug = editingNurseDrugChat[0] || {};
+      document.getElementById('nrcDrugName').value = canEdit ? currentDrug.drugName || '' : '';
+      document.getElementById('nrcDrugDose').value = canEdit ? currentDrug.dose || '' : '';
+      document.getElementById('nrcDrugRoute').value = canEdit ? currentDrug.route || '' : '';
+      document.getElementById('nrcDrugFrequency').value = canEdit ? currentDrug.frequency || '' : '';
+      document.getElementById('nrcDrugStartDate').value = canEdit ? currentDrug.startDate || '' : '';
+      document.getElementById('nrcDrugPrescriber').value = canEdit ? currentDrug.prescribingDoctor || '' : '';
+      document.getElementById('nrcDrugChatHistory').innerHTML = editingNurseDrugChat.length
+        ? editingNurseDrugChat.map(drug => `<p><strong>${escapeHtml(drug.drugName || 'Drug')}</strong> ${escapeHtml(drug.dose || '')} ${escapeHtml(drug.route || '')} ${escapeHtml(drug.frequency || '')}</p>`).join('')
+        : '<p style="color: #94a3b8; font-size: 13px; text-align: center;">No drugs recorded</p>';
       
       const followUps = rc.follow_up_notes || [];
       const doctorNotes = followUps.filter(n => n.checkType === 'doctor');
@@ -3503,7 +3529,7 @@
            ${drugCount ? `<p style="font-size:12px;color:#7c3aed;margin:2px 0;"><i class="fas fa-pills"></i> Drug: ${drugCount} item${drugCount !== 1 ? 's' : ''}</p>` : ''}
            <div style="margin-top:8px;display:flex;gap:8px;">
              <button class="view-btn" onclick="openNurseRoundCheckDetail(${rc.id})">Open</button>
-             ${rc.status === 'ongoing' ? `<button class="view-btn light" onclick="openNurseRoundCheckDetail(${rc.id})">Update</button>` : ''}
+             ${rc.status === 'ongoing' && rc.checkType === 'nurse' && Number(rc.staffId) === Number(currentUser?.id) ? `<button class="view-btn light" onclick="openNurseRoundCheckDetail(${rc.id}, true)">Edit</button>` : ''}
            </div>
          </div>`;
        }).join('');
@@ -3537,9 +3563,9 @@
       const drugStartDate = document.getElementById('nrcDrugStartDate').value;
       const drugPrescriber = document.getElementById('nrcDrugPrescriber').value.trim();
       
-      let drugChat = null;
+      let drugChat = editingNurseRoundCheck ? editingNurseDrugChat.map(drug => ({ ...drug })) : null;
       if (drugName || drugDose || drugRoute || drugFrequency || drugStartDate || drugPrescriber) {
-        drugChat = [{
+        const updatedDrug = {
           drugName,
           dose: drugDose,
           route: drugRoute,
@@ -3547,7 +3573,12 @@
           startDate: drugStartDate,
           prescribingDoctor: drugPrescriber,
           createdAt: new Date().toISOString()
-        }];
+        };
+        if (editingNurseRoundCheck && drugChat.length > 0) {
+          drugChat[0] = { ...drugChat[0], ...updatedDrug };
+        } else {
+          drugChat = [...(drugChat || []), updatedDrug];
+        }
       }
       
       const payload = {

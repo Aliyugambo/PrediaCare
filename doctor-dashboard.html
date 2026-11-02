@@ -3081,7 +3081,7 @@
       
       <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: white; border-radius: 0 0 12px 12px;">
         <button type="button" class="rc-btn rc-btn-secondary" onclick="closeRoundCheckModal()">Cancel</button>
-        <button type="button" class="rc-btn rc-btn-primary" onclick="saveDoctorRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
+        <button type="button" id="saveDoctorRoundCheckButton" class="rc-btn rc-btn-primary" onclick="saveDoctorRoundCheck()"><i class="fas fa-save"></i> Save Round-Check</button>
       </div>
     </div>
   </div>
@@ -3231,6 +3231,7 @@
         </div>
       </div>
     </div>
+   </div>
 
     <!-- Discharge Form Modal -->
     <div id="dischargeModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:10001;">
@@ -3703,9 +3704,12 @@
      async function openDischargeForm(admissionId, patientId, patientName) {
        const modal = document.getElementById('dischargeModal');
        if (!modal) return;
+      modal.style.display = 'flex';
        
        document.getElementById('dischargeAdmissionId').value = admissionId;
        document.getElementById('dischargePatientId').value = patientId;
+      document.getElementById('dischargePatientName').value = patientName || 'Patient';
+      document.getElementById('dischargePatientIdDisplay').value = patientId;
        
        const today = new Date().toISOString().split('T')[0];
        document.getElementById('dischargeDateOfDischarge').value = today;
@@ -4151,8 +4155,6 @@
           ? new Date(currentUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
           : 'N/A';
       }
-
-      modal.style.display = 'flex';
     }
 
     function closeProfileModal() {
@@ -6073,8 +6075,6 @@
         <button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>
         <button type="button" onclick="showReplyForm(${msg.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #8b5cf6; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Reply</button>
       `;
-      
-      modal.style.display = 'flex';
     }
     
     // Show reply form for a message
@@ -6190,6 +6190,7 @@
 
     // ==================== ROUND CHECKS (Doctor) ====================
     let doctorRoundChecks = [];
+    let editingDoctorRoundCheck = false;
 
     function loadDoctorRoundChecks() {
       const statusFilter = document.getElementById('roundCheckStatusFilter')?.value || 'all';
@@ -6252,6 +6253,7 @@
           <div class="rc-actions">
             <button class="view-btn" onclick="viewDoctorRoundCheckDetail(${rc.id})">View</button>
             ${rc.status === 'ongoing' ? `<button class="view-btn light" onclick="openDoctorRoundCheckEdit(${rc.id})">Add Note</button>` : ''}
+            ${rc.status === 'ongoing' && rc.check_type === 'doctor' && Number(rc.checked_by) === Number(currentUser?.id) ? `<button class="view-btn light" onclick="openDoctorRoundCheckRecordEdit(${rc.id})">Edit</button>` : ''}
             ${rc.admission_id ? `<button class="view-btn" style="background:#dc2626;color:white;" onclick="openDischargeForm(${rc.admission_id}, ${rc.patient_id}, '${(rc.patient_name || 'Patient').replace(/'/g, "\\'")}')">Discharge</button>` : ''}
           </div>
         </div>`;
@@ -6305,7 +6307,8 @@
       `;
       
       footer.innerHTML = `<button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>
-        <button type="button" onclick="openDoctorRoundCheckEdit(${rc.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #8b5cf6; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Add Note</button>`;
+        ${rc.status === 'ongoing' ? `<button type="button" onclick="openDoctorRoundCheckEdit(${rc.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #8b5cf6; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Add Note</button>` : ''}
+        ${rc.status === 'ongoing' && rc.check_type === 'doctor' && Number(rc.checked_by) === Number(currentUser?.id) ? `<button type="button" onclick="openDoctorRoundCheckRecordEdit(${rc.id})" style="padding: 8px 16px; border-radius: 8px; border: none; background: #2563eb; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Edit Record</button>` : ''}`;
       modal.style.display = 'flex';
     }
 
@@ -6407,6 +6410,9 @@
     function openNewDoctorRoundCheck() {
       const modal = document.getElementById('roundCheckModal');
       document.getElementById('roundCheckForm').reset();
+      editingDoctorRoundCheck = false;
+      document.querySelector('#roundCheckModal .rc-modal-header h3').textContent = 'Doctor Round-Check';
+      document.getElementById('saveDoctorRoundCheckButton').innerHTML = '<i class="fas fa-save"></i> Save Round-Check';
       document.getElementById('rcDoctorVitalsInput').style.display = 'grid';
       document.getElementById('rcNurseVitalsReadOnly').style.display = 'none';
       document.getElementById('roundCheckId').value = '';
@@ -6449,10 +6455,13 @@
       });
     }
 
-    function openRoundCheckModalFromExisting(rc) {
+    function openRoundCheckModalFromExisting(rc, editRecord = false) {
       const modal = document.getElementById('roundCheckModal');
-      document.getElementById('rcDoctorVitalsInput').style.display = 'none';
-      document.getElementById('rcNurseVitalsReadOnly').style.display = 'grid';
+      editingDoctorRoundCheck = editRecord;
+      document.querySelector('#roundCheckModal .rc-modal-header h3').textContent = editRecord ? 'Edit Doctor Round-Check' : 'Add Doctor Note';
+      document.getElementById('saveDoctorRoundCheckButton').innerHTML = editRecord ? '<i class="fas fa-save"></i> Save Changes' : '<i class="fas fa-save"></i> Append Note';
+      document.getElementById('rcDoctorVitalsInput').style.display = editRecord ? 'grid' : 'none';
+      document.getElementById('rcNurseVitalsReadOnly').style.display = editRecord ? 'none' : 'grid';
       document.getElementById('roundCheckId').value = rc.id || '';
       document.getElementById('roundCheckPatientId').value = rc.patient_id || '';
       document.getElementById('roundCheckAdmissionId').value = rc.admission_id || '';
@@ -6473,6 +6482,18 @@
       document.getElementById('rcViewWeight').textContent = vs.weight || '--';
       document.getElementById('rcViewHeight').textContent = vs.height || '--';
       document.getElementById('rcViewBmi').textContent = vs.bmi || '--';
+      if (editRecord) {
+        document.getElementById('rcDoctorBpSystolic').value = vs.bpSystolic || '';
+        document.getElementById('rcDoctorBpDiastolic').value = vs.bpDiastolic || '';
+        document.getElementById('rcDoctorHeartRate').value = vs.heartRate || '';
+        document.getElementById('rcDoctorTemperature').value = vs.temperature || '';
+        document.getElementById('rcDoctorSpo2').value = vs.spo2 || '';
+        document.getElementById('rcDoctorRespiratory').value = vs.respiratory || '';
+        document.getElementById('rcDoctorGlucose').value = vs.glucose || '';
+        document.getElementById('rcDoctorWeight').value = vs.weight || '';
+        document.getElementById('rcDoctorHeight').value = vs.height || '';
+        document.getElementById('rcDoctorBmi').value = vs.bmi || '';
+      }
 
       const fb = rc.fluid_balance || {};
       document.getElementById('rcFluidOral').textContent = fb.oral ? `${fb.oral} ml` : 'Not recorded';
@@ -6496,7 +6517,7 @@
         }
       }
       
-      document.getElementById('rcNotes').value = '';
+      document.getElementById('rcNotes').value = editRecord ? (rc.notes || '') : '';
       
       const followUps = rc.follow_up_notes || [];
       const doctorNotes = followUps.filter(n => n.checkType === 'doctor');
@@ -6579,7 +6600,14 @@
       const rc = doctorRoundChecks.find(r => r.id === id);
       if (!rc) return;
       
-      openRoundCheckModalFromExisting(rc);
+      openRoundCheckModalFromExisting(rc, false);
+    }
+
+    function openDoctorRoundCheckRecordEdit(id) {
+      const rc = doctorRoundChecks.find(r => r.id === id);
+      if (!rc || rc.check_type !== 'doctor' || Number(rc.checked_by) !== Number(currentUser?.id) || rc.status !== 'ongoing') return;
+
+      openRoundCheckModalFromExisting(rc, true);
     }
 
     function openNurseRoundCheckModalFromDoctor(rc) {
@@ -6653,6 +6681,7 @@
       const noteEl = document.getElementById(noteFieldId);
       const doctorNote = noteEl ? noteEl.value : '';
       const isNewDoctorRound = !isNurseModal && !id;
+      const isEditingDoctorRecord = !isNurseModal && !isNewDoctorRound && editingDoctorRoundCheck;
       const patientId = document.getElementById('roundCheckPatientId').value;
       const admissionId = document.getElementById('roundCheckAdmissionId').value;
 
@@ -6666,10 +6695,23 @@
         return;
       }
 
-      if (!isNewDoctorRound && !doctorNote.trim()) {
+      if (!isNewDoctorRound && !isEditingDoctorRecord && !doctorNote.trim()) {
         alert('Enter a note before saving');
         return;
       }
+
+      const doctorVitals = Object.fromEntries([
+        ['bpSystolic', 'rcDoctorBpSystolic'],
+        ['bpDiastolic', 'rcDoctorBpDiastolic'],
+        ['heartRate', 'rcDoctorHeartRate'],
+        ['temperature', 'rcDoctorTemperature'],
+        ['spo2', 'rcDoctorSpo2'],
+        ['respiratory', 'rcDoctorRespiratory'],
+        ['glucose', 'rcDoctorGlucose'],
+        ['weight', 'rcDoctorWeight'],
+        ['height', 'rcDoctorHeight'],
+        ['bmi', 'rcDoctorBmi']
+      ].map(([key, elementId]) => [key, document.getElementById(elementId).value.trim()]).filter(([, value]) => value));
 
       const payload = isNewDoctorRound
         ? {
@@ -6678,19 +6720,14 @@
             examination_id: document.getElementById('roundCheckExaminationId').value || null,
             check_type: 'doctor',
             notes: doctorNote,
-            vital_signs: Object.fromEntries([
-              ['bpSystolic', 'rcDoctorBpSystolic'],
-              ['bpDiastolic', 'rcDoctorBpDiastolic'],
-              ['heartRate', 'rcDoctorHeartRate'],
-              ['temperature', 'rcDoctorTemperature'],
-              ['spo2', 'rcDoctorSpo2'],
-              ['respiratory', 'rcDoctorRespiratory'],
-              ['glucose', 'rcDoctorGlucose'],
-              ['weight', 'rcDoctorWeight'],
-              ['height', 'rcDoctorHeight'],
-              ['bmi', 'rcDoctorBmi']
-            ].map(([key, elementId]) => [key, document.getElementById(elementId).value.trim()]).filter(([, value]) => value)),
+            vital_signs: doctorVitals,
             status: 'ongoing'
+          }
+        : isEditingDoctorRecord
+        ? {
+            edit_record: true,
+            notes: doctorNote,
+            vital_signs: doctorVitals
           }
         : {
             follow_up_note: doctorNote.trim()
@@ -6707,7 +6744,7 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert(isNewDoctorRound ? 'Doctor round-check recorded successfully!' : 'Clinical note appended successfully!');
+          alert(isNewDoctorRound ? 'Doctor round-check recorded successfully!' : isEditingDoctorRecord ? 'Doctor round-check updated successfully!' : 'Clinical note appended successfully!');
           if (isNurseModal) closeNurseRoundCheckModal();
           else closeRoundCheckModal();
           loadDoctorRoundChecks();
@@ -6735,6 +6772,7 @@
     window.closeRoundCheckModal = closeRoundCheckModal;
     window.viewDoctorRoundCheckDetail = viewDoctorRoundCheckDetail;
     window.openDoctorRoundCheckEdit = openDoctorRoundCheckEdit;
+    window.openDoctorRoundCheckRecordEdit = openDoctorRoundCheckRecordEdit;
     window.closeAdmissionModal = closeAdmissionModal;
     window.closeDispositionModal = closeDispositionModal;
     window.chooseOutpatient = chooseOutpatient;

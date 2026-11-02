@@ -638,19 +638,19 @@ router.get('/round-checks', checkPermission(PERMISSIONS.VIEW_ROUND_CHECKS), asyn
 
 /**
  * PUT /api/staff/round-checks/:id
- * Nurse can append follow-up notes and change status, but CANNOT edit vital_signs or original notes
+ * Nurses can edit their own ongoing nurse round-checks
  * Permission: MANAGE_ROUND_CHECKS (staff)
  */
 router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS), async (req, res) => {
   try {
     const { id } = req.params;
     const staffId = req.session.userId;
-    const { status, next_plan, follow_up_note, notes, vital_signs, fluid_balance } = req.body;
+    const { status, next_plan, follow_up_note, notes, vital_signs, fluid_balance, drug_chat } = req.body;
 
     let connection = await pool.getConnection();
 
     const [existing] = await connection.execute(
-      'SELECT id, checked_by, check_type, follow_up_notes FROM round_checks WHERE id = ?',
+      'SELECT id, checked_by, check_type, status FROM round_checks WHERE id = ?',
       [id]
     );
 
@@ -660,6 +660,15 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
     }
 
     const record = existing[0];
+    if (record.check_type !== 'nurse' || Number(record.checked_by) !== Number(staffId)) {
+      connection.release();
+      return res.status(403).json({ success: false, message: 'You can only edit your own nurse round-checks' });
+    }
+    if (record.status !== 'ongoing') {
+      connection.release();
+      return res.status(409).json({ success: false, message: 'Only ongoing nurse round-checks can be edited' });
+    }
+
     const updates = [];
     const values = [];
 
@@ -683,6 +692,10 @@ router.put('/round-checks/:id', checkPermission(PERMISSIONS.MANAGE_ROUND_CHECKS)
     if (fluid_balance !== undefined) {
       updates.push('fluid_balance = ?');
       values.push(JSON.stringify(fluid_balance));
+    }
+    if (drug_chat !== undefined) {
+      updates.push('drug_chat = ?');
+      values.push(drug_chat ? JSON.stringify(drug_chat) : null);
     }
 
     if (updates.length === 0) {

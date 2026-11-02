@@ -419,7 +419,7 @@ async function initializeDatabase() {
         drug_chat JSON,
         follow_up_notes JSON,
         next_plan TEXT,
-        status ENUM('ongoing', 'resolved', 'escalated') DEFAULT 'ongoing',
+        status ENUM('ongoing', 'resolved', 'escalated', 'discharged') DEFAULT 'ongoing',
         check_date DATETIME DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -430,6 +430,12 @@ async function initializeDatabase() {
       )
     `);
     console.log('Round checks table created or already exists');
+
+    try {
+      await connection.execute("ALTER TABLE round_checks MODIFY COLUMN status ENUM('ongoing', 'resolved', 'escalated', 'discharged') DEFAULT 'ongoing'");
+    } catch (e) {
+      console.log('round_checks status enum check:', e.message);
+    }
 
     // Ensure follow_up_notes column exists on older installs
     try {

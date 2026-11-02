@@ -5,6 +5,7 @@ var currentExamination = null;
 var prescriptions = [];
 var testReferrals = []; // Array to store multiple test referrals
 var selectedAppointment = null;
+var editingExaminationId = null;
 
 // Initialize examination functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -177,6 +178,9 @@ function calculateBMI() {
 
 // Open examination modal
 async function openExamination(appointmentId, patientName, patientId, hasVitals) {
+  editingExaminationId = null;
+  document.querySelector('#examinationModal .examination-modal-header h3').textContent = 'Patient Examination';
+  document.querySelector('#examinationModal .examination-modal-footer button:last-child').textContent = 'Save Examination';
   selectedAppointment = { id: appointmentId, patientName: patientName, patientId: patientId, hasPreRecordedVitals: hasVitals };
 
   document.getElementById('examPatientId').value = patientId;
@@ -384,11 +388,19 @@ function closeExaminationModal() {
   var modal = document.getElementById('examinationModal');
   if (modal) modal.classList.remove('active');
   selectedAppointment = null;
+  editingExaminationId = null;
+  document.querySelector('#examinationModal .examination-modal-header h3').textContent = 'Patient Examination';
+  document.querySelector('#examinationModal .examination-modal-footer button:last-child').textContent = 'Save Examination';
   window._examinationMode = false;
 }
 
 // Save examination (saves as pending first, shows disposition modal)
 async function saveExamination() {
+  if (editingExaminationId) {
+    await saveEditedExamination();
+    return;
+  }
+
   if (!selectedAppointment) {
     alert('No patient selected');
     return;
@@ -437,6 +449,58 @@ var vitalSigns = {
   } else {
     // Fallback if modal not yet added - save directly
     await submitExamination();
+  }
+}
+
+async function saveEditedExamination() {
+  const diagnosis = document.getElementById('diagnosis').value.trim();
+  if (!diagnosis) {
+    alert('Please enter a diagnosis');
+    return;
+  }
+
+  const vitalSigns = {
+    bpSystolic: document.getElementById('vitalBpSystolic').value,
+    bpDiastolic: document.getElementById('vitalBpDiastolic').value,
+    heartRate: document.getElementById('vitalHeartRate').value,
+    temperature: document.getElementById('vitalTemperature').value,
+    respiratory: document.getElementById('vitalRespiratory').value,
+    spo2: document.getElementById('vitalSpo2').value,
+    glucose: document.getElementById('vitalGlucose').value,
+    weight: document.getElementById('vitalWeight').value,
+    height: document.getElementById('vitalHeight').value,
+    bmi: document.getElementById('vitalBmi').value
+  };
+
+  try {
+    const response = await fetch(API_BASE + '/doctor/examinations/' + editingExaminationId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        examination_date: document.getElementById('examinationDate').value,
+        vital_signs: vitalSigns,
+        chief_complaint: document.getElementById('chiefComplaint').value,
+        diagnosis,
+        treatment_plan: document.getElementById('treatmentPlan').value
+      })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      alert(data.message || 'Failed to update examination');
+      return;
+    }
+
+    const patientId = selectedAppointment?.patientId;
+    alert('Examination updated successfully!');
+    closeExaminationModal();
+    loadExaminations();
+    if (patientId && document.getElementById('patientProfileModal')?.style.display === 'flex') {
+      viewPatientProfile(patientId);
+    }
+  } catch (error) {
+    console.error('Error updating examination:', error);
+    alert('Error updating examination. Please try again.');
   }
 }
 
@@ -1302,6 +1366,7 @@ function renderExaminationsList(examinations) {
     html += '<div class="appointment-actions">';
     html += '<span class="appointment-badge ' + getBadgeClass(exam.status) + '">' + capitalizeFirst(exam.status) + '</span>';
     html += '<button class="view-btn" onclick="viewExaminationDetails(' + exam.id + ')">View</button>';
+    html += '<button class="view-btn light" onclick="editExaminationRecord(' + exam.id + ')">Edit</button>';
     html += '</div>';
     html += '</div>';
   });
@@ -1328,6 +1393,53 @@ function viewExaminationDetails(examinationId) {
     }
   })
   .catch(function(err) { console.error('Error loading examination details:', err); });
+}
+
+async function editExaminationRecord(examinationId) {
+  try {
+    const response = await fetch(API_BASE + '/doctor/examinations/' + examinationId, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success || !data.examination) {
+      alert(data.message || 'Unable to load examination for editing');
+      return;
+    }
+
+    const exam = data.examination;
+    editingExaminationId = exam.id;
+    selectedAppointment = {
+      id: exam.appointment_id || null,
+      patientId: exam.patient_id,
+      patientName: exam.patient_name || 'Patient'
+    };
+    resetExaminationForm();
+    ['vitalBpSystolic', 'vitalBpDiastolic', 'vitalHeartRate', 'vitalTemperature', 'vitalRespiratory', 'vitalSpo2', 'vitalGlucose', 'vitalWeight', 'vitalHeight', 'vitalBmi'].forEach(function(id) {
+      const input = document.getElementById(id);
+      input.readOnly = false;
+      input.style.backgroundColor = '';
+    });
+    document.getElementById('examPatientId').value = exam.patient_id;
+    document.getElementById('examAppointmentId').value = exam.appointment_id || '';
+    document.getElementById('examPatientName').textContent = exam.patient_name || 'Patient';
+    document.getElementById('examPatientAvatar').textContent = getInitials(exam.patient_name || 'Patient');
+    document.getElementById('examPatientDetails').textContent = exam.patient_email || '';
+    document.getElementById('examinationDate').value = String(exam.examination_date || '').slice(0, 10);
+    populateExaminationForm({
+      vitalSigns: exam.vital_signs || {},
+      chiefComplaint: exam.chief_complaint,
+      diagnosis: exam.diagnosis,
+      treatmentPlan: exam.treatment_plan
+    });
+    document.querySelector('#examinationModal .examination-modal-header h3').textContent = 'Edit Examination';
+    document.querySelector('#examinationModal .examination-modal-footer button:last-child').textContent = 'Save Changes';
+    if (typeof closeAppointmentModal === 'function') closeAppointmentModal();
+    document.getElementById('examinationModal').classList.add('active');
+  } catch (error) {
+    console.error('Error loading examination for editing:', error);
+    alert('Unable to load examination for editing');
+  }
 }
 
 function showExaminationModal(exam) {
@@ -1370,7 +1482,7 @@ function showExaminationModal(exam) {
     </div>
   `;
   
-  modalFooter.innerHTML = '<button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>';
+  modalFooter.innerHTML = '<button type="button" onclick="closeAppointmentModal()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #f1f5f9; color: #0f172a; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button><button type="button" onclick="editExaminationRecord(' + exam.id + ')" style="padding: 8px 16px; border-radius: 8px; border: none; background: #2563eb; color: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 8px;">Edit</button>';
   
   modal.style.display = 'flex';
 }
