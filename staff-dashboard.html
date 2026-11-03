@@ -1423,6 +1423,9 @@
           <a href="#" class="nav-item">
             <div class="nav-item-left" onclick="switchTab('appointment-vitals');"><i class="fas fa-user-injured"></i><span>Appointment Vitals</span></div>
           </a>
+          <a href="#" class="nav-item" onclick="switchTab('patients'); return false;">
+            <div class="nav-item-left"><i class="fas fa-users"></i><span>Patients</span></div>
+          </a>
           <a href="#" class="nav-item has-submenu">
             <div class="nav-item-left" onclick="switchTab('round-checks');"><i class="fas fa-calendar-alt"></i><span>Round Checks</span></div>
           </a>
@@ -2071,6 +2074,19 @@
   </div>
 
   <!-- Patient History Modal -->
+  <div id="patientProfileModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:501;padding:16px;">
+    <div style="background:white;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;">
+      <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Patient Profile</h3>
+        <button type="button" onclick="closePatientProfile()" aria-label="Close patient profile" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+      <div id="patientProfileBody" style="padding:20px;"></div>
+      <div style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;">
+        <button type="button" class="rc-btn rc-btn-secondary" onclick="closePatientProfile()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div id="diagnosesModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:500;">
     <div style="background:white;border-radius:12px;width:100%;max-width:900px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;">
       <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
@@ -2148,6 +2164,7 @@
     let csrfToken = null;
     
     let currentUser = null;
+    let staffPatients = [];
 
      // Sidebar toggle
     function toggleSidebar() {
@@ -2744,6 +2761,7 @@
          }
          
          const patients = data.patients || [];
+         staffPatients = patients;
          if (patients.length === 0) {
            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">No patients found</td></tr>';
            return;
@@ -2758,9 +2776,12 @@
              <td>${p.status === 'admitted' ? `<span class="badge badge-active">Admitted</span><br><small>Room: ${escapeHtml(p.roomNumber || '-')} | Bed: ${escapeHtml(p.bedNumber || '-')}</small>` : '<span class="badge badge-inactive">Non-Admitted</span>'}</td>
              <td style="color: #64748b; font-size: 13px;">${p.latestDiagnosisDate ? formatDate(p.latestDiagnosisDate) : 'N/A'}</td>
              <td style="font-size: 13px; color: #475569; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.latestDiagnosis || '')}">${p.latestDiagnosis ? escapeHtml(p.latestDiagnosis) : '<span style="color:#94a3b8;">None</span>'}</td>
-             <td>
-               <button class="action-btn" onclick="viewDiagnoses(${p.id}, '${escapeHtml(p.name)}')" style="padding: 6px 12px; font-size: 12px;">
-                 <i class="fas fa-eye"></i> View History
+             <td style="display:flex;gap:6px;flex-wrap:wrap;">
+               <button class="action-btn secondary" onclick="viewPatientProfile(${p.id})" style="padding: 6px 10px; font-size: 12px;">
+                 <i class="fas fa-user"></i> Profile
+               </button>
+               <button class="action-btn" onclick="viewDiagnoses(${p.id})" style="padding: 6px 10px; font-size: 12px;">
+                 <i class="fas fa-clock-rotate-left"></i> History
                </button>
              </td>
            </tr>
@@ -2770,6 +2791,46 @@
          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">Error loading patients</td></tr>';
        }
      }
+
+    function viewPatientProfile(patientId) {
+      const patient = staffPatients.find(item => Number(item.id) === Number(patientId));
+      if (!patient) return;
+
+      const fields = [
+        ['Patient ID', patient.id],
+        ['Email', patient.email],
+        ['Phone', patient.phone],
+        ['Address', patient.address],
+        ['Patient status', patient.patientStatus],
+        ['Admission status', patient.admissionStatus],
+        ['Room / bed', [patient.roomNumber, patient.bedNumber].filter(Boolean).join(' / ')],
+        ['Admission date', patient.admissionDate ? formatDateTime(patient.admissionDate) : null],
+        ['Attending doctor', patient.doctorName],
+        ['Latest diagnosis', patient.latestDiagnosis],
+        ['Diagnosis date', patient.latestDiagnosisDate ? formatDateTime(patient.latestDiagnosisDate) : null],
+        ['Registered', patient.createdAt ? formatDateTime(patient.createdAt) : null]
+      ];
+
+      document.getElementById('patientProfileBody').innerHTML = `
+        <div style="margin-bottom:16px;padding:14px;background:#eff6ff;border-radius:8px;">
+          <strong style="font-size:18px;color:#0f172a;">${escapeHtml(patient.name || 'Patient')}</strong>
+          <span class="badge ${patient.isActive ? 'badge-active' : 'badge-inactive'}" style="margin-left:8px;">${patient.isActive ? 'Active' : 'Inactive'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">
+          ${fields.map(([label, value]) => `
+            <div style="padding:10px 0;border-bottom:1px solid #e2e8f0;min-width:0;">
+              <span style="display:block;color:#64748b;font-size:12px;margin-bottom:4px;">${escapeHtml(label)}</span>
+              <span style="display:block;color:#0f172a;font-size:14px;overflow-wrap:anywhere;">${escapeHtml(value || 'Not provided')}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('patientProfileModal').style.display = 'flex';
+    }
+
+    function closePatientProfile() {
+      document.getElementById('patientProfileModal').style.display = 'none';
+    }
 
     function searchPatients() {
       loadPatients();
@@ -2791,7 +2852,8 @@
       if (!modal || !body) return;
       
       activeHistoryPatientId = patientId;
-      title.textContent = `Patient History - ${patientName}`;
+      const patient = staffPatients.find(item => Number(item.id) === Number(patientId));
+      title.textContent = `Patient History - ${patientName || patient?.name || 'Patient'}`;
       modal.style.display = 'flex';
       body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 

@@ -1127,6 +1127,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         u.name,
         u.email,
         u.phone,
+        u.address,
         u.is_active,
         u.patient_status,
         u.created_at,
@@ -1156,6 +1157,8 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
       query += " AND a.status = 'admitted'";
     } else if (status === 'outpost') {
       query += " AND a.status = 'outpost'";
+    } else if (status === 'non-admitted') {
+      query += ' AND a.id IS NULL';
     } else if (status === 'discharged') {
       query += " AND u.patient_status = 'discharged'";
     } else if (status === 'active') {
@@ -1182,6 +1185,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         name: p.name,
         email: p.email,
         phone: p.phone,
+        address: p.address,
         isActive: p.is_active,
         patientStatus: p.patient_status,
         createdAt: p.created_at,
@@ -1194,7 +1198,7 @@ router.get('/patients', checkPermission(PERMISSIONS.VIEW_ALL_USERS), async (req,
         doctorName: p.doctor_name,
         latestDiagnosis: p.latest_diagnosis,
         latestDiagnosisDate: p.latest_diagnosis_date,
-        status: p.patient_status || (p.admission_id ? 'admitted' : 'active')
+        status: p.admission_status || p.patient_status || 'active'
       })),
       total: countResult[0].total
     });
